@@ -1,24 +1,36 @@
 #pragma once
 #include <string>
 #include <memory>
-#include "Transform.h"
+#include <vector>
+#include <glm/glm.hpp>
 
+class Component;
+class TransformComponent;
 namespace dae
 {
 	class Texture2D;
-	class GameObject 
+	class GameObject final
 	{
-		Transform m_transform{};
-		std::shared_ptr<Texture2D> m_texture{};
+		//Transform m_transform{};
+		//std::shared_ptr<Texture2D> m_texture{};
+		std::shared_ptr<TransformComponent> m_transform{};
+		std::vector<std::shared_ptr<Component>> m_attachedComponents{};
+		void AddBaseComponents();
 	public:
-		virtual void Update();
-		virtual void Render() const;
+		void Init();
+		void Update();
+		void Render() const;
 
-		void SetTexture(const std::string& filename);
 		void SetPosition(float x, float y);
+		const glm::vec2& GetPosition();
 
-		GameObject() = default;
-		virtual ~GameObject();
+		template<typename T, typename ...Args>
+		std::shared_ptr<T> AddComponent(Args && ...args);
+
+		GameObject();
+		GameObject(float PosX, float PosY);
+		GameObject(glm::vec2 Position);
+		~GameObject();
 		GameObject(const GameObject& other) = delete;
 		GameObject(GameObject&& other) = delete;
 		GameObject& operator=(const GameObject& other) = delete;
