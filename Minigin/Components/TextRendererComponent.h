@@ -13,12 +13,10 @@ namespace dae
 	class Texture2D;
 }
 
-using namespace dae;
-
-class TextRenderComponent : public RenderComponent
+class TextRenderComponent final : public RenderComponent
 {
 public:
-	TextRenderComponent(GameObject* Parent, const std::string& Text, const SDL_Color& color, std::shared_ptr<Font> font);
+	TextRenderComponent(dae::GameObject* Parent, const std::string& Text, const SDL_Color& color, std::shared_ptr<dae::Font> font);
 
 	void SetText(const std::string& text) { m_text = text; m_needsUpdate = true; };
 	void SetColor(const SDL_Color& color) { m_color = color; m_needsUpdate = true; };
@@ -31,8 +29,8 @@ private:
 	bool m_needsUpdate{};
 	std::string m_text{};
 	SDL_Color m_color{ 255,255,255,255 };
-	std::shared_ptr<Font> m_font{};
-	std::shared_ptr<Texture2D> m_textTexture{};
+	std::shared_ptr<dae::Font> m_font{};
+	std::unique_ptr<dae::Texture2D> m_textTexture{};
 };
 
 #endif // ! _TEXTRENDERCOMPONENT_H_

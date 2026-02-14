@@ -5,7 +5,7 @@
 #include "GameObject.h"
 #include "Texture2D.h"
 
-TextRenderComponent::TextRenderComponent(GameObject* Parent, const std::string& Text, const SDL_Color& color, std::shared_ptr<Font> font)
+TextRenderComponent::TextRenderComponent(dae::GameObject* Parent, const std::string& Text, const SDL_Color& color, std::shared_ptr<dae::Font> font)
 	: m_needsUpdate(true), m_text(Text), m_color(color), m_font(std::move(font)), m_textTexture(nullptr), RenderComponent(Parent)
 {
 	m_subtype = RenderSubtype::RENDER_TEXT;
@@ -35,7 +35,7 @@ void TextRenderComponent::Update()
 			throw std::runtime_error(std::string("Create text texture from surface failed: ") + SDL_GetError());
 		}
 		SDL_DestroySurface(surf);
-		m_textTexture = std::make_shared<Texture2D>(texture);
+		m_textTexture = std::make_unique<dae::Texture2D>(texture);
 		m_needsUpdate = false;
 	}
 }

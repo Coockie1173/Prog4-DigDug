@@ -7,6 +7,7 @@
 #include "Components/TransformComponent.h"
 #include "Components/RenderComponent.h"
 #include <iostream>
+#include "Debugger.h"
 
 class Component;
 class TransformComponent;
@@ -21,6 +22,7 @@ namespace dae
 		TransformComponent* m_transform{};
 		RenderComponent* m_renderer{};
 		std::vector<std::unique_ptr<Component>> m_attachedComponents{};
+		std::string m_objectName{};
 		void AddBaseComponents();
 
 	public:
@@ -31,21 +33,22 @@ namespace dae
 		void SetPosition(float x, float y);
 		const glm::vec2& GetPosition();
 
-		GameObject();
-		GameObject(float PosX, float PosY);
-		GameObject(glm::vec2 Position);
+		GameObject(std::string Name);
+		GameObject(std::string Name, float PosX, float PosY);
+		GameObject(std::string Name, glm::vec2 Position);
 		~GameObject();
 		GameObject(const GameObject& other) = delete;
 		GameObject(GameObject&& other) = delete;
 		GameObject& operator=(const GameObject& other) = delete;
 		GameObject& operator=(GameObject&& other) = delete;
+		const std::string& GetName() { return m_objectName; };
 
 		template <typename T, typename... Args>
 		void AddComponent(Args&&... args)
 		{
 			static_assert(std::is_base_of<Component, T>::value, "T must derive from Component");
 
-			auto component = std::make_unique<T>(this, std::forward<Args>(args)...);
+			auto component = std::make_unique<T>(this, std::forward<Args>(args)...); //intellisense hates this for some reason
 			T* componentPtr = component.get();
 
 			// Handle base types separately
@@ -54,6 +57,7 @@ namespace dae
 				if (m_transform)
 				{
 					std::cout << "\033Warning: an object cannot have multiple transforms. Ignoring addition of transform.\037\n";
+					Debugger::GetInstance().LogWarning(m_objectName + " cannot have multiple transforms. Ignoring extra transform.");
 					return;
 				}
 				m_transform = dynamic_cast<TransformComponent*>(componentPtr); //every gameobject has a transform, best to keep a separate reference
@@ -63,6 +67,7 @@ namespace dae
 				if (m_renderer)
 				{
 					std::cout << "\033Warning: an object cannot have multiple renderers. Ignoring addition of renderer.\037\n";
+					Debugger::GetInstance().LogWarning(m_objectName + " cannot have multiple renderers. Ignoring extra renderer.");
 					return;
 				}
 				m_renderer = dynamic_cast<RenderComponent*>(componentPtr);

@@ -29,7 +29,7 @@ add_executable(${TARGET_NAME} ${TARGET_PARAM}
   Minigin/Renderer.cpp   
   "Minigin/Components/TransformComponent.cpp" 
   "Minigin/Components/TextureRendererComponent.cpp" 
-  "Minigin/Components/Component.cpp" "Minigin/Components/TextRendererComponent.cpp")
+  "Minigin/Components/Component.cpp" "Minigin/Components/TextRendererComponent.cpp" "Minigin/Debugger.cpp")
 
 # enable c++20 features
 target_compile_features(${TARGET_NAME} PUBLIC cxx_std_20)

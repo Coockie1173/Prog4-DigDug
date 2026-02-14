@@ -7,18 +7,18 @@
 #include "Components/RenderComponent.h"
 #include <iostream>
 
-dae::GameObject::GameObject()
+dae::GameObject::GameObject(std::string Name) : m_objectName(Name)
 {	
     AddBaseComponents();
 }
 
-dae::GameObject::GameObject(float PosX, float PosY)
+dae::GameObject::GameObject(std::string Name, float PosX, float PosY) : m_objectName(Name)
 {
     AddBaseComponents();
     m_transform->SetPosition(PosX, PosY);
 }
 
-dae::GameObject::GameObject(glm::vec2 Position)
+dae::GameObject::GameObject(std::string Name, glm::vec2 Position) : m_objectName(Name)
 {
     AddBaseComponents();
     m_transform->SetPosition(Position);

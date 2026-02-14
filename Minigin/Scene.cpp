@@ -1,5 +1,6 @@
 #include <algorithm>
 #include "Scene.h"
+#include <string>
 
 using namespace dae;
 
@@ -36,9 +37,23 @@ void Scene::Update()
 
 void Scene::Render() const
 {
+	std::vector<int> DebugItems{};
+	int CurrentObjectIndex{-1};
 	for (const auto& object : m_objects)
 	{
+		CurrentObjectIndex++;
+		if (object->GetName().find("Debug") != std::string::npos)
+		{
+			DebugItems.push_back(CurrentObjectIndex);
+			continue;
+		}
 		object->Render();
+	}
+
+	//ensure anything debug related gets rendered last
+	for (const auto idx : DebugItems)
+	{
+		m_objects[idx]->Render();
 	}
 }
 
