@@ -6,6 +6,7 @@
 #include "Components/Component.h"
 #include "Components/TransformComponent.h"
 #include "Components/RenderComponent.h"
+#include <iostream>
 
 class Component;
 class TransformComponent;
@@ -45,19 +46,25 @@ namespace dae
 			static_assert(std::is_base_of<Component, T>::value, "T must derive from Component");
 
 			auto component = std::make_unique<T>(this, std::forward<Args>(args)...);
-			T* componentPtr = component.get(); // raw pointer to return
+			T* componentPtr = component.get();
 
 			// Handle base types separately
 			if (component->GetType() == ComponentType::TYPE_TRANSFORM)
 			{
 				if (m_transform)
+				{
+					std::cout << "\033Warning: an object cannot have multiple transforms. Ignoring addition of transform.\037\n";
 					return;
-				m_transform = dynamic_cast<TransformComponent*>(componentPtr);
+				}
+				m_transform = dynamic_cast<TransformComponent*>(componentPtr); //every gameobject has a transform, best to keep a separate reference
 			}
 			else if (component->GetType() == ComponentType::TYPE_RENDERER)
 			{
 				if (m_renderer)
+				{
+					std::cout << "\033Warning: an object cannot have multiple renderers. Ignoring addition of renderer.\037\n";
 					return;
+				}
 				m_renderer = dynamic_cast<RenderComponent*>(componentPtr);
 			}
 			m_attachedComponents.push_back(std::move(component));
