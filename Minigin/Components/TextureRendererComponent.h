@@ -4,12 +4,16 @@
 #include <string>
 #include <memory>
 #include "RenderComponent.h"
+#include "../Texture2D.h"
 
-class TextureRenderComponent final : RenderComponent
+class TextureRenderComponent final : public RenderComponent
 {
 public:
-	TextureRenderComponent(GameObject& Parent, const std::string& TextureName);
+	TextureRenderComponent(GameObject* Parent, const std::string& TextureName);
 	void Render() const override;
+	void Update() override;
+	void LateUpdate() override;
+	void Init() override;
 private:
 	std::shared_ptr<Texture2D> m_texture{};
 };

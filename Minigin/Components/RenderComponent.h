@@ -1,3 +1,5 @@
+#ifndef _RENDERCOMPONENT_H_
+#define _RENDERCOMPONENT_H_
 #include "Component.h"
 
 //can be multiple, bitmask
@@ -8,11 +10,13 @@ enum class RenderSubtype
 	RENDER_TEXT = 0x00000002,
 };
 
-class RenderComponent : Component
+class RenderComponent : public Component
 {
 public:
-	RenderComponent(GameObject& Parent);
+	RenderComponent(GameObject* Parent);
 	virtual void Render() const = 0;
-private:
+protected:
 	RenderSubtype m_subtype;
 };
+
+#endif

@@ -12,6 +12,8 @@
 #include "Scene.h"
 
 #include <filesystem>
+#include "Components/TextureRendererComponent.h"
+#include "Components/TextRendererComponent.h"
 namespace fs = std::filesystem;
 
 static void load()
@@ -19,17 +21,19 @@ static void load()
 	auto& scene = dae::SceneManager::GetInstance().CreateScene();
 
 	auto go = std::make_unique<dae::GameObject>();
-	go->SetTexture("background.png");
+	std::string BGName{ "background.png" };
+	go->AddComponent<TextureRenderComponent>(BGName);
 	scene.Add(std::move(go));
 
 	go = std::make_unique<dae::GameObject>();
-	go->SetTexture("logo.png");
+	BGName = "logo.png";
+	go->AddComponent<TextureRenderComponent>(BGName);
 	go->SetPosition(358, 180);
 	scene.Add(std::move(go));
-
+	
 	auto font = dae::ResourceManager::GetInstance().LoadFont("Lingua.otf", 36);
-	auto to = std::make_unique<dae::TextObject>("Programming 4 Assignment", font);
-	to->SetColor({ 255, 255, 0, 255 });
+	auto to = std::make_unique<dae::GameObject>();
+	to->AddComponent<TextRenderComponent>("Programming 4 Assignment", (SDL_Color)(255,255,255,255), font);
 	to->SetPosition(292, 20);
 	scene.Add(std::move(to));
 }
