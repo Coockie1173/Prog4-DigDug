@@ -12,6 +12,8 @@ namespace dae
 		void Add(std::unique_ptr<GameObject> object);
 		void Remove(const GameObject& object);
 		void RemoveAll();
+		void CleanupMarked();
+		void CleanupDebug();
 
 		void Update();
 		void Render() const;

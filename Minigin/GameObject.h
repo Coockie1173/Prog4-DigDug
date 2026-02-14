@@ -23,6 +23,8 @@ namespace dae
 		RenderComponent* m_renderer{};
 		std::vector<std::unique_ptr<Component>> m_attachedComponents{};
 		std::string m_objectName{};
+		bool m_isDebugData{};
+		bool m_markedForRemoval{};
 		void AddBaseComponents();
 
 	public:
@@ -32,16 +34,20 @@ namespace dae
 
 		void SetPosition(float x, float y);
 		const glm::vec2& GetPosition();
+		bool IsDebug() { return m_isDebugData; };
 
-		GameObject(std::string Name);
-		GameObject(std::string Name, float PosX, float PosY);
-		GameObject(std::string Name, glm::vec2 Position);
+		GameObject(std::string Name, bool IsDebugObject = false);
+		GameObject(std::string Name, float PosX, float PosY, bool IsDebugObject = false);
+		GameObject(std::string Name, glm::vec2 Position, bool IsDebugObject = false);
 		~GameObject();
 		GameObject(const GameObject& other) = delete;
 		GameObject(GameObject&& other) = delete;
 		GameObject& operator=(const GameObject& other) = delete;
 		GameObject& operator=(GameObject&& other) = delete;
 		const std::string& GetName() { return m_objectName; };
+
+		void MarkForDeletion() { m_markedForRemoval = true; };
+		bool IsMarkedForDelete() { return m_markedForRemoval; };
 
 		template <typename T, typename... Args>
 		void AddComponent(Args&&... args)

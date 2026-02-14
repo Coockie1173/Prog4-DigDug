@@ -21,6 +21,9 @@ static void load()
 {
 	auto& scene = dae::SceneManager::GetInstance().CreateScene();
 	Debugger::GetInstance().AttachToScene(&scene);
+	Debugger::GetInstance().LogError("some arbitrary error!");
+	Debugger::GetInstance().LogWarning("this shouldn't happen - I'll take care of it");
+	Debugger::GetInstance().LogDebug("you've reached line 26! nice!!");
 
 	auto go = std::make_unique<dae::GameObject>("Background");
 	std::string BGName{ "background.png" };

@@ -20,17 +20,17 @@ constexpr SDL_Color ErrorColor{ 255, 0, 0, 255 };
 
 void Debugger::LogDebug(const std::string& TextToLog, bool Logtime)
 {
-	LogMessage(TextToLog, DebugColor, Logtime);
+	LogMessage("INFO: " + TextToLog, DebugColor, Logtime);
 }
 
 void Debugger::LogWarning(const std::string& TextToLog, bool Logtime)
 {
-	LogMessage(TextToLog, WarningColor, Logtime);
+	LogMessage("WARNING: " + TextToLog, WarningColor, Logtime);
 }
 
 void Debugger::LogError(const std::string& TextToLog, bool Logtime)
 {
-	LogMessage(TextToLog, ErrorColor, Logtime);
+	LogMessage("ERROR: " + TextToLog, ErrorColor, Logtime);
 }
 
 void Debugger::LogMessage(const std::string& Text, const SDL_Color& LogColour, bool Logtime)
@@ -63,9 +63,15 @@ void Debugger::LogMessage(const std::string& Text, const SDL_Color& LogColour, b
 	const std::string ObjectName = "Debug_Message_" + std::to_string(m_messageCount);
 	
 
-	auto to = std::make_unique<dae::GameObject>(ObjectName);
+	auto to = std::make_unique<dae::GameObject>(ObjectName, true);
 	to->AddComponent<TextRenderComponent>(PrintText, LogColour, m_debugFont);
 	to->SetPosition(10, (float)(((DebugTextSize + 1) * m_messageCount) + 10));
 	m_messageCount++;
 	m_attachedScene->Add(std::move(to));
+}
+
+void Debugger::DeleteAllLogs()
+{
+	m_messageCount = 0;
+	m_attachedScene->CleanupDebug();
 }

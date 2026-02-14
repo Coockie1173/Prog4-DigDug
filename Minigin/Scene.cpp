@@ -27,6 +27,37 @@ void Scene::RemoveAll()
 	m_objects.clear();
 }
 
+void dae::Scene::CleanupMarked()
+{
+	//after everything has been updated, loop through all objects see who's marked for deletion
+	//anyone marked gets taken out of the array (or rather: left out of the array)
+	//this should be safer than just yoinking them out of the array
+	std::vector<std::unique_ptr<GameObject>> filtered;
+	filtered.reserve(m_objects.size());
+
+	for (auto& obj : m_objects)
+	{
+		if (!obj->IsMarkedForDelete())
+		{
+			filtered.push_back(std::move(obj));
+		}
+	}
+
+	m_objects = std::move(filtered);
+}
+
+//so we don't necessarily need access to m_objects outside of the scene
+void dae::Scene::CleanupDebug()
+{
+	for (auto& object : m_objects)
+	{
+		if (object->IsDebug())
+		{
+			object->MarkForDeletion();
+		}
+	}
+}
+
 void Scene::Update()
 {
 	for(auto& object : m_objects)
@@ -42,7 +73,7 @@ void Scene::Render() const
 	for (const auto& object : m_objects)
 	{
 		CurrentObjectIndex++;
-		if (object->GetName().find("Debug") != std::string::npos)
+		if (object->IsDebug())
 		{
 			DebugItems.push_back(CurrentObjectIndex);
 			continue;
