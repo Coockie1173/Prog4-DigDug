@@ -13,7 +13,8 @@ enum class RenderSubtype
 class RenderComponent : public Component
 {
 public:
-	RenderComponent(GameObject* Parent);
+	RenderComponent(dae::GameObject* Parent);
+	RenderSubtype GetSubtype() { return m_subtype; };
 	virtual void Render() const = 0;
 protected:
 	RenderSubtype m_subtype;

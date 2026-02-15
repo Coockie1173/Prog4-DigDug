@@ -16,7 +16,7 @@ void TextRenderComponent::Render() const
 	if (m_textTexture != nullptr)
 	{
 		const auto& pos = m_parent->GetPosition();
-		Renderer::GetInstance().RenderTexture(*m_textTexture, pos.x, pos.y);
+		dae::Renderer::GetInstance().RenderTexture(*m_textTexture, pos.x, pos.y);
 	}
 }
 
@@ -29,7 +29,7 @@ void TextRenderComponent::Update()
 		{
 			throw std::runtime_error(std::string("Render text failed: ") + SDL_GetError());
 		}
-		auto texture = SDL_CreateTextureFromSurface(Renderer::GetInstance().GetSDLRenderer(), surf);
+		auto texture = SDL_CreateTextureFromSurface(dae::Renderer::GetInstance().GetSDLRenderer(), surf);
 		if (texture == nullptr)
 		{
 			throw std::runtime_error(std::string("Create text texture from surface failed: ") + SDL_GetError());

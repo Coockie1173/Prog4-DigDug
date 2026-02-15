@@ -15,8 +15,11 @@ namespace dae
 		void CleanupMarked();
 		void CleanupDebug();
 
+		void Init();
 		void Update();
 		void Render() const;
+
+		bool HasInitialised() { return m_SceneHasInitialised; };
 
 		~Scene() = default;
 		Scene(const Scene& other) = delete;
@@ -29,6 +32,7 @@ namespace dae
 		explicit Scene() = default;
 
 		std::vector < std::unique_ptr<GameObject>> m_objects{};
+		bool m_SceneHasInitialised{false};
 	};
 
 }

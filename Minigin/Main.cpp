@@ -15,15 +15,16 @@
 #include <filesystem>
 #include "Components/TextureRendererComponent.h"
 #include "Components/TextRendererComponent.h"
+#include "Components/FPSCounterComponent.h"
 namespace fs = std::filesystem;
 
 static void load()
 {
 	auto& scene = dae::SceneManager::GetInstance().CreateScene();
 	Debugger::GetInstance().AttachToScene(&scene);
-	Debugger::GetInstance().LogError("some arbitrary error!");
-	Debugger::GetInstance().LogWarning("this shouldn't happen - I'll take care of it");
-	Debugger::GetInstance().LogDebug("you've reached line 26! nice!!");
+	//Debugger::GetInstance().LogError("some arbitrary error!");
+	//Debugger::GetInstance().LogWarning("this shouldn't happen - I'll take care of it");
+	//Debugger::GetInstance().LogDebug("you've reached line 26! nice!!");
 
 	auto go = std::make_unique<dae::GameObject>("Background");
 	std::string BGName{ "background.png" };
@@ -41,6 +42,12 @@ static void load()
 	SDL_Color col{ 255,255,255,255 };
 	to->AddComponent<TextRenderComponent>("Programming 4 Assignment", col, font);
 	to->SetPosition(292, 20);
+	scene.Add(std::move(to));
+
+	to = std::make_unique<dae::GameObject>("Text_FPS");
+	to->AddComponent<TextRenderComponent>("FPS: 0", col, font);
+	to->AddComponent<FPSCounterComponent>();
+	to->SetPosition(10, 10);
 	scene.Add(std::move(to));
 }
 

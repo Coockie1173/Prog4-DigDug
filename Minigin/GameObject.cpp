@@ -34,6 +34,10 @@ void dae::GameObject::AddBaseComponents()
 
 void dae::GameObject::Init()
 {
+    for (auto& c : m_attachedComponents)
+    {
+        c->Init();
+    }
 }
 
 void dae::GameObject::Update()

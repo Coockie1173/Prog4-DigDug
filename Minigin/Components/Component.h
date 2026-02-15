@@ -17,12 +17,10 @@ namespace dae
 	class GameObject;
 }
 
-using namespace dae;
-
 class Component
 {
 public:
-	Component(GameObject* Parent);
+	Component(dae::GameObject* Parent);
 	virtual void Update() = 0;
 	virtual void LateUpdate() = 0;
 	virtual void Init() = 0;
@@ -32,7 +30,7 @@ public:
 protected:
 	ComponentType m_myType;
 	//make sure we can also access whatever we're attached to
-	GameObject* m_parent;
+	dae::GameObject* m_parent;
 };
 
 #endif // !_COMPONENT_H_

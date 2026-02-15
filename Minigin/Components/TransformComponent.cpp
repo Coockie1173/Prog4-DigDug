@@ -1,6 +1,6 @@
 #include "TransformComponent.h"
 
-TransformComponent::TransformComponent(GameObject* Parent) : Component(Parent)
+TransformComponent::TransformComponent(dae::GameObject* Parent) : Component(Parent)
 {
 	m_myType = ComponentType::TYPE_TRANSFORM;
 

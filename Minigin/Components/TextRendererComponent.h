@@ -6,11 +6,11 @@
 #include <SDL3_ttf/SDL_ttf.h>
 
 #include "RenderComponent.h"
+#include "Texture2D.h"
 
 namespace dae
 {
 	class Font;
-	class Texture2D;
 }
 
 class TextRenderComponent final : public RenderComponent

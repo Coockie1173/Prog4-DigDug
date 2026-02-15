@@ -7,7 +7,7 @@
 class TransformComponent final : public Component
 {
 public:
-	TransformComponent(GameObject* Parent);
+	TransformComponent(dae::GameObject* Parent);
 
 	const glm::vec2& GetPosition() { return m_position; }
 	void SetPosition(float x, float y);

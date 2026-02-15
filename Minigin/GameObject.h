@@ -14,7 +14,6 @@ class TransformComponent;
 class RenderComponent;
 namespace dae
 {
-	class Texture2D;
 	class GameObject final
 	{
 		//Transform m_transform{};
@@ -35,6 +34,8 @@ namespace dae
 		void SetPosition(float x, float y);
 		const glm::vec2& GetPosition();
 		bool IsDebug() { return m_isDebugData; };
+		RenderComponent* GetAttachedRenderer() { return m_renderer; };
+		TransformComponent* GetTransform() { return m_transform; };
 
 		GameObject(std::string Name, bool IsDebugObject = false);
 		GameObject(std::string Name, float PosX, float PosY, bool IsDebugObject = false);

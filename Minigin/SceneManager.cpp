@@ -25,6 +25,17 @@ void dae::SceneManager::Cleanup()
 	}
 }
 
+void dae::SceneManager::CheckScenesInited()
+{
+	for (auto& scene : m_scenes)
+	{
+		if (!scene->HasInitialised())
+		{
+			scene->Init();
+		}
+	}
+}
+
 dae::Scene& dae::SceneManager::CreateScene()
 {
 	m_scenes.emplace_back(new Scene());
