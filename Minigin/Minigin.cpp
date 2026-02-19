@@ -92,38 +92,34 @@ dae::Minigin::~Minigin()
 void dae::Minigin::Run(const std::function<void()>& load)
 {
 	load();
-	auto lastTime = std::chrono::high_resolution_clock::now();
-	float lag = 0;
+	m_lastTime = std::chrono::high_resolution_clock::now();
+#ifndef __EMSCRIPTEN__
 	while (!m_quit)
 	{
-		const auto currentTime = std::chrono::high_resolution_clock::now();
-		const float deltaTime = std::chrono::duration<float>(currentTime - lastTime).count();
-		lastTime = currentTime;
-		lag += deltaTime;
-		Timing::GetInstance().SetTimings(deltaTime);
-
-		m_quit = !InputManager::GetInstance().ProcessInput();
-		while (lag >= FIXEDTIMESTEP)
-		{
-			//TODO: implement fixed update
-			lag -= FIXEDTIMESTEP;
-		}
-
-		SceneManager::GetInstance().CheckScenesInited();
-		SceneManager::GetInstance().Update();
-		Renderer::GetInstance().Render();
-		SceneManager::GetInstance().Cleanup(); //get rid of anything marked for deletion
-
-		auto frameEnd = std::chrono::high_resolution_clock::now();
-		std::chrono::duration<float> frameDuration = frameEnd - currentTime;
-		std::chrono::duration<float> target(TARGET_FRAME_TIME);
-
-		std::this_thread::sleep_for(target - frameDuration);
+		RunOneFrame();
 	}
+#else
+	emscripten_set_main_loop_arg(&LoopCallback, this, 0, true);
+#endif
 }
 
-[[deprecated("All logic moved to Run()")]]
 void dae::Minigin::RunOneFrame()
 {
+	const auto currentTime = std::chrono::high_resolution_clock::now();
+	const float deltaTime = std::chrono::duration<float>(currentTime - m_lastTime).count();
+	m_lastTime = currentTime;
+	Timing::GetInstance().SetTimings(deltaTime);
 
+	m_quit = !InputManager::GetInstance().ProcessInput();
+
+	SceneManager::GetInstance().CheckScenesInited();
+	SceneManager::GetInstance().Update();
+	Renderer::GetInstance().Render();
+	SceneManager::GetInstance().Cleanup(); //get rid of anything marked for deletion
+
+	auto frameEnd = std::chrono::high_resolution_clock::now();
+	std::chrono::duration<float> frameDuration = frameEnd - currentTime;
+	std::chrono::duration<float> target(TARGET_FRAME_TIME);
+
+	std::this_thread::sleep_for(target - frameDuration);
 }

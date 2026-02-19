@@ -24,11 +24,11 @@ namespace dae
 		void LateUpdate() override;
 		void Init() override;
 	private:
-		bool m_needsUpdate{};
+		bool m_needsUpdate{true};
 		std::string m_text{};
 		SDL_Color m_color{ 255,255,255,255 };
-		std::shared_ptr<dae::Font> m_font{};
 		std::unique_ptr<dae::Texture2D> m_textTexture{};
+		std::shared_ptr<dae::Font> m_font{};
 	};
 }
 

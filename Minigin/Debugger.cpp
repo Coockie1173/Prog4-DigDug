@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include "Debugger.h"
 #include "Font.h"
 #include <SDL3_ttf/SDL_ttf.h>
@@ -45,16 +46,35 @@ void Debugger::LogMessage(const std::string& Text, const SDL_Color& LogColour, b
 	{
 		auto now = std::chrono::system_clock::now();
 		std::time_t now_time_t = std::chrono::system_clock::to_time_t(now);
-		std::tm local_tm;
-		localtime_s(&local_tm, &now_time_t); 
+		std::tm local_tm = *std::localtime(&now_time_t);
 
 		auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()) % 1000;
 
-		std::ostringstream oss;
-		oss << std::put_time(&local_tm, "%H:%M:%S")
-			<< '.' << std::setw(3) << std::setfill('0') << ms.count();
+		std::string time_str;
 
-		std::string time_str = oss.str();
+		auto two = [](int v) {
+			std::string s;
+			s += char('0' + (v / 10));
+			s += char('0' + (v % 10));
+			return s;
+			};
+
+		auto three = [](int v) {
+			std::string s;
+			s += char('0' + (v / 100));
+			s += char('0' + ((v / 10) % 10));
+			s += char('0' + (v % 10));
+			return s;
+			};
+
+		time_str += two(local_tm.tm_hour);
+		time_str += ':';
+		time_str += two(local_tm.tm_min);
+		time_str += ':';
+		time_str += two(local_tm.tm_sec);
+		time_str += '.';
+		time_str += three(static_cast<int>(ms.count()));
+
 		PrintText += time_str;
 		PrintText += " - ";
 	}

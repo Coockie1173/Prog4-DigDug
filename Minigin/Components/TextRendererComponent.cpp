@@ -8,7 +8,7 @@
 namespace dae
 {
 	TextRenderComponent::TextRenderComponent(dae::GameObject* Parent, const std::string& Text, const SDL_Color& color, std::shared_ptr<dae::Font> font)
-		: m_needsUpdate(true), m_text(Text), m_color(color), m_font(std::move(font)), m_textTexture(nullptr), RenderComponent(Parent)
+		: RenderComponent(Parent), m_text(Text), m_color(color), m_textTexture(nullptr), m_font(std::move(font))
 	{
 
 	}
