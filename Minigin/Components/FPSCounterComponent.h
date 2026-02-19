@@ -3,16 +3,20 @@
 
 #include "Component.h"
 
-class TextRenderComponent;
-class FPSCounterComponent : public Component
+namespace dae
 {
-public:
-	FPSCounterComponent(dae::GameObject* Parent);
-	void Update() override;
-	void LateUpdate() override;
-	void Init() override;
-private:
-	TextRenderComponent* m_parentRenderer;
+	class TextRenderComponent;
+	class FPSCounterComponent : public Component
+	{
+	public:
+		FPSCounterComponent(dae::GameObject* Parent);
+		void Update() override;
+		void LateUpdate() override;
+		void Init() override;
+	private:
+		TextRenderComponent* m_parentRenderer;
+		float m_UpdateTimer{};
+	};
 };
 
 #endif

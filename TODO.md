@@ -8,3 +8,4 @@
 [x] add framecounter
 	[] tweak framerate counter thing so it runs at stable 144 rather than weirdly fluctuating
 [] figure out what is causing VLD to see a million leaks
+[] Fix emscriptem

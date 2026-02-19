@@ -10,14 +10,17 @@ enum class RenderSubtype
 	RENDER_TEXT = 0x00000002,
 };
 
-class RenderComponent : public Component
+namespace dae
 {
-public:
-	RenderComponent(dae::GameObject* Parent);
-	RenderSubtype GetSubtype() { return m_subtype; };
-	virtual void Render() const = 0;
-protected:
-	RenderSubtype m_subtype;
+	class RenderComponent : public Component
+	{
+	public:
+		RenderComponent(dae::GameObject* Parent);
+		RenderSubtype GetSubtype() const noexcept { return m_subtype; };
+		virtual void Render() const = 0;
+	protected:
+		RenderSubtype m_subtype;
+	};
 };
 
 #endif

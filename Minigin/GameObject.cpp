@@ -61,7 +61,7 @@ void dae::GameObject::SetPosition(float x, float y)
 	m_transform->SetPosition(x, y);
 }
 
-const glm::vec2& dae::GameObject::GetPosition()
+const glm::vec2& dae::GameObject::GetPosition() const noexcept
 {
     return m_transform->GetPosition();
 }

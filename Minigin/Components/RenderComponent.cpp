@@ -2,8 +2,11 @@
 #include "../GameObject.h"
 #include "Component.h"
 
-RenderComponent::RenderComponent(dae::GameObject* Parent) : Component(Parent)
+namespace dae
 {
-	m_myType = ComponentType::TYPE_RENDERER;
-	m_subtype = RenderSubtype::RENDER_NONE;
-}
+	RenderComponent::RenderComponent(dae::GameObject* Parent) : Component(Parent)
+	{
+		m_myType = ComponentType::TYPE_RENDERER;
+		m_subtype = RenderSubtype::RENDER_NONE;
+	}
+};

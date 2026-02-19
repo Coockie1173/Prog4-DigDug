@@ -16,6 +16,7 @@
 #include "Components/TextureRendererComponent.h"
 #include "Components/TextRendererComponent.h"
 #include "Components/FPSCounterComponent.h"
+#include "ResourceManager.h"
 namespace fs = std::filesystem;
 
 static void load()
@@ -28,25 +29,25 @@ static void load()
 
 	auto go = std::make_unique<dae::GameObject>("Background");
 	std::string BGName{ "background.png" };
-	go->AddComponent<TextureRenderComponent>(BGName);
+	go->AddComponent<dae::TextureRenderComponent>(BGName);
 	scene.Add(std::move(go));
 
 	go = std::make_unique<dae::GameObject>("Logo");
 	BGName = "logo.png";
-	go->AddComponent<TextureRenderComponent>(BGName);
+	go->AddComponent<dae::TextureRenderComponent>(BGName);
 	go->SetPosition(358, 180);
 	scene.Add(std::move(go));
 	
 	auto font = dae::ResourceManager::GetInstance().LoadFont("Lingua.otf", 36);
 	auto to = std::make_unique<dae::GameObject>("Text_Assignment");
 	SDL_Color col{ 255,255,255,255 };
-	to->AddComponent<TextRenderComponent>("Programming 4 Assignment", col, font);
+	to->AddComponent<dae::TextRenderComponent>("Programming 4 Assignment", col, font);
 	to->SetPosition(292, 20);
 	scene.Add(std::move(to));
 
 	to = std::make_unique<dae::GameObject>("Text_FPS");
-	to->AddComponent<TextRenderComponent>("FPS: 0", col, font);
-	to->AddComponent<FPSCounterComponent>();
+	to->AddComponent<dae::TextRenderComponent>("FPS: 0", col, font);
+	to->AddComponent<dae::FPSCounterComponent>();
 	to->SetPosition(10, 10);
 	scene.Add(std::move(to));
 }
@@ -61,5 +62,6 @@ int main(int, char*[]) {
 #endif
 	dae::Minigin engine(data_location);
 	engine.Run(load);
+
     return 0;
 }

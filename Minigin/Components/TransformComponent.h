@@ -4,19 +4,22 @@
 #include <glm/glm.hpp>
 #include "Component.h"
 
-class TransformComponent final : public Component
+namespace dae
 {
-public:
-	TransformComponent(dae::GameObject* Parent);
+	class TransformComponent final : public Component
+	{
+	public:
+		TransformComponent(dae::GameObject* Parent);
 
-	const glm::vec2& GetPosition() { return m_position; }
-	void SetPosition(float x, float y);
-	void SetPosition(const glm::vec2& position);
-	void Update() override;
-	void LateUpdate() override;
-	void Init() override;
-private:
-	glm::vec2 m_position;
-};
+		const glm::vec2& GetPosition() { return m_position; }
+		void SetPosition(float x, float y);
+		void SetPosition(const glm::vec2& position);
+		void Update() override;
+		void LateUpdate() override;
+		void Init() override;
+	private:
+		glm::vec2 m_position;
+	};
+}
 
 #endif // !_TRANSFORMCOMPONENT_H_

@@ -6,41 +6,53 @@
 #include "Timing.h"
 #include <string>
 
-FPSCounterComponent::FPSCounterComponent(dae::GameObject* Parent) : Component(Parent)
+namespace dae
 {
-	m_parentRenderer = nullptr;
-}
-
-void FPSCounterComponent::Update()
-{
-	if (m_parentRenderer == nullptr)
+	FPSCounterComponent::FPSCounterComponent(dae::GameObject* Parent) : Component(Parent)
 	{
-		return;
-	}
-	float FPS = 1 / Timing::GetInstance().GetDeltaTime();
-	std::string FPSText = "FPS: ";
-	FPSText += std::to_string(FPS);
-	m_parentRenderer->SetText(FPSText);
-}
-
-void FPSCounterComponent::LateUpdate()
-{
-}
-
-void FPSCounterComponent::Init()
-{
-	auto rend = m_parent->GetAttachedRenderer();
-	if (rend == nullptr)
-	{
-		Debugger::GetInstance().LogError("Can't use FPSCounter without a renderer!");
-		return;
+		m_parentRenderer = nullptr;
 	}
 
-	if (rend->GetSubtype() != RenderSubtype::RENDER_TEXT)
+	void FPSCounterComponent::Update()
 	{
-		Debugger::GetInstance().LogError("Can't use FPSCounter on a non-text renderer!");
-		return;
+		float DT = Timing::GetInstance().GetDeltaTime();
+
+		if (m_parentRenderer == nullptr)
+		{
+			return;
+		}
+		if (m_UpdateTimer > 0)
+		{
+			m_UpdateTimer -= DT;
+			return;
+		}
+		m_UpdateTimer = 1;
+		float FPS = 1 / DT;
+		std::string FPSText = "FPS: ";
+		FPSText += std::to_string(FPS);
+		m_parentRenderer->SetText(FPSText);
 	}
 
-	m_parentRenderer = dynamic_cast<TextRenderComponent*>(rend);
-}
+	void FPSCounterComponent::LateUpdate()
+	{
+	}
+
+	void FPSCounterComponent::Init()
+	{
+		auto rend = GetParent()->GetAttachedRenderer();
+		if (rend == nullptr)
+		{
+			Debugger::GetInstance().LogError("Can't use FPSCounter without a renderer!");
+			return;
+		}
+
+		if (rend->GetSubtype() != RenderSubtype::RENDER_TEXT)
+		{
+			Debugger::GetInstance().LogError("Can't use FPSCounter on a non-text renderer!");
+			return;
+		}
+
+		m_parentRenderer = dynamic_cast<TextRenderComponent*>(rend);
+		m_UpdateTimer = 1;
+	}
+};

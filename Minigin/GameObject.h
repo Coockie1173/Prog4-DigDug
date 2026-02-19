@@ -32,10 +32,10 @@ namespace dae
 		void Render() const;
 
 		void SetPosition(float x, float y);
-		const glm::vec2& GetPosition();
-		bool IsDebug() { return m_isDebugData; };
-		RenderComponent* GetAttachedRenderer() { return m_renderer; };
-		TransformComponent* GetTransform() { return m_transform; };
+		const glm::vec2& GetPosition() const noexcept;
+		bool IsDebug() const noexcept { return m_isDebugData; };
+		RenderComponent* GetAttachedRenderer() const noexcept { return m_renderer; };
+		TransformComponent* GetTransform() const noexcept { return m_transform; };
 
 		GameObject(std::string Name, bool IsDebugObject = false);
 		GameObject(std::string Name, float PosX, float PosY, bool IsDebugObject = false);
@@ -45,10 +45,10 @@ namespace dae
 		GameObject(GameObject&& other) = delete;
 		GameObject& operator=(const GameObject& other) = delete;
 		GameObject& operator=(GameObject&& other) = delete;
-		const std::string& GetName() { return m_objectName; };
+		const std::string& GetName() const noexcept { return m_objectName; };
 
-		void MarkForDeletion() { m_markedForRemoval = true; };
-		bool IsMarkedForDelete() { return m_markedForRemoval; };
+		void MarkForDeletion() noexcept { m_markedForRemoval = true; };
+		bool IsMarkedForDelete() const noexcept { return m_markedForRemoval; };
 
 		template <typename T, typename... Args>
 		void AddComponent(Args&&... args)

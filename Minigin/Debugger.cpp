@@ -64,7 +64,7 @@ void Debugger::LogMessage(const std::string& Text, const SDL_Color& LogColour, b
 	
 
 	auto to = std::make_unique<dae::GameObject>(ObjectName, true);
-	to->AddComponent<TextRenderComponent>(PrintText, LogColour, m_debugFont);
+	to->AddComponent<dae::TextRenderComponent>(PrintText, LogColour, m_debugFont);
 	to->SetPosition(10, (float)(((DebugTextSize + 1) * m_messageCount) + 10));
 	m_messageCount++;
 	m_attachedScene->Add(std::move(to));
