@@ -55,11 +55,10 @@ namespace dae
 		{
 			static_assert(std::is_base_of<Component, T>::value, "T must derive from Component");
 
-			auto component = std::make_unique<T>(this, std::forward<Args>(args)...); //intellisense hates this for some reason
+			auto component = std::make_unique<T>(this, std::forward<Args>(args)...);
 			T* componentPtr = component.get();
 
-			// Handle base types separately
-			if (component->GetType() == ComponentType::TYPE_TRANSFORM)
+			if (auto t = dynamic_cast<TransformComponent*>(componentPtr))
 			{
 				if (m_transform)
 				{
@@ -67,9 +66,9 @@ namespace dae
 					Debugger::GetInstance().LogWarning(m_objectName + " cannot have multiple transforms. Ignoring extra transform.");
 					return;
 				}
-				m_transform = dynamic_cast<TransformComponent*>(componentPtr); //every gameobject has a transform, best to keep a separate reference
+				m_transform = t;
 			}
-			else if (component->GetType() == ComponentType::TYPE_RENDERER)
+			else if (auto r = dynamic_cast<RenderComponent*>(componentPtr))
 			{
 				if (m_renderer)
 				{
@@ -77,8 +76,9 @@ namespace dae
 					Debugger::GetInstance().LogWarning(m_objectName + " cannot have multiple renderers. Ignoring extra renderer.");
 					return;
 				}
-				m_renderer = dynamic_cast<RenderComponent*>(componentPtr);
+				m_renderer = r;
 			}
+
 			m_attachedComponents.push_back(std::move(component));
 		}
 

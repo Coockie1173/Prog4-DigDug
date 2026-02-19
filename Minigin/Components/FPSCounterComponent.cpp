@@ -46,13 +46,16 @@ namespace dae
 			return;
 		}
 
-		if (rend->GetSubtype() != RenderSubtype::RENDER_TEXT)
+		if(auto r = dynamic_cast<TextRenderComponent*>(rend))
 		{
-			Debugger::GetInstance().LogError("Can't use FPSCounter on a non-text renderer!");
-			return;
+			if (!r)
+			{
+				Debugger::GetInstance().LogError("Can't use FPSCounter on a non-text renderer!");
+				return;
+			}
+			m_parentRenderer = dynamic_cast<TextRenderComponent*>(rend);
 		}
 
-		m_parentRenderer = dynamic_cast<TextRenderComponent*>(rend);
 		m_UpdateTimer = 1;
 	}
 };

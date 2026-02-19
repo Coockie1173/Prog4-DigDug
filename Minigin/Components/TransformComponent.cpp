@@ -4,8 +4,6 @@ namespace dae
 {
 	TransformComponent::TransformComponent(dae::GameObject* Parent) : Component(Parent)
 	{
-		m_myType = ComponentType::TYPE_TRANSFORM;
-
 		glm::vec2 Empty{ 0 };
 		m_position = Empty;
 	}

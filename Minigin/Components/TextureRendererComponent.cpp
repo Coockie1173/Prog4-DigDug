@@ -10,7 +10,6 @@ namespace dae
 {
 	TextureRenderComponent::TextureRenderComponent(dae::GameObject* Parent, const std::string& TextureName) : RenderComponent(Parent)
 	{
-		m_subtype = RenderSubtype::RENDER_TEXTURE2D;
 		m_texture = dae::ResourceManager::GetInstance().LoadTexture(TextureName);
 	}
 
