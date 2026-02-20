@@ -33,21 +33,10 @@ void Scene::RemoveAll()
 
 void dae::Scene::CleanupMarked()
 {
-	//after everything has been updated, loop through all objects see who's marked for deletion
-	//anyone marked gets taken out of the array (or rather: left out of the array)
-	//this should be safer than just yoinking them out of the array
-	std::vector<std::unique_ptr<GameObject>> filtered;
-	filtered.reserve(m_objects.size());
-
-	for (auto& obj : m_objects)
-	{
-		if (!obj->IsMarkedForDelete())
+	std::erase_if(m_objects, [](const std::unique_ptr<GameObject>& obj)
 		{
-			filtered.push_back(std::move(obj));
-		}
-	}
-
-	m_objects = std::move(filtered);
+			return obj->IsMarkedForDelete();
+		});
 }
 
 //so we don't necessarily need access to m_objects outside of the scene
