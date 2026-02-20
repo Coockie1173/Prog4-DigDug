@@ -27,7 +27,7 @@ namespace dae
 		bool m_needsUpdate{true};
 		std::string m_text{};
 		SDL_Color m_color{ 255,255,255,255 };
-		std::unique_ptr<dae::Texture2D> m_textTexture{};
+		//std::unique_ptr<dae::Texture2D> m_textTexture{};
 		std::shared_ptr<dae::Font> m_font{};
 	};
 }

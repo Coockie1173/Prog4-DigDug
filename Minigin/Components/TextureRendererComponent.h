@@ -18,7 +18,7 @@ namespace dae
 		void LateUpdate() override;
 		void Init() override;
 	private:
-		std::shared_ptr<dae::Texture2D> m_texture{};
+		//std::shared_ptr<dae::Texture2D> m_texture{};
 	};
 };
 

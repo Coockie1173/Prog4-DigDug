@@ -10,13 +10,12 @@ namespace dae
 {
 	TextureRenderComponent::TextureRenderComponent(dae::GameObject* Parent, const std::string& TextureName) : RenderComponent(Parent)
 	{
-		m_texture = dae::ResourceManager::GetInstance().LoadTexture(TextureName);
+		m_pTexture = dae::ResourceManager::GetInstance().LoadTexture(TextureName);
 	}
 
 	void TextureRenderComponent::Render() const
 	{
-		glm::vec2 pos =  GetParent()->GetPosition();
-		dae::Renderer::GetInstance().RenderTexture(*m_texture, pos.x, pos.y);
+		RenderAssignedTexture();
 	}
 
 	void TextureRenderComponent::Update() {}

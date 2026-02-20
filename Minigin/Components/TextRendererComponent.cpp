@@ -8,18 +8,14 @@
 namespace dae
 {
 	TextRenderComponent::TextRenderComponent(dae::GameObject* Parent, const std::string& Text, const SDL_Color& color, std::shared_ptr<dae::Font> font)
-		: RenderComponent(Parent), m_text(Text), m_color(color), m_textTexture(nullptr), m_font(std::move(font))
+		: RenderComponent(Parent), m_text(Text), m_color(color), m_font(std::move(font))
 	{
 
 	}
 
 	void TextRenderComponent::Render() const
 	{
-		if (m_textTexture != nullptr)
-		{
-			const auto& pos =  GetParent()->GetPosition();
-			dae::Renderer::GetInstance().RenderTexture(*m_textTexture, pos.x, pos.y);
-		}
+		RenderComponent::RenderAssignedTexture();
 	}
 
 	void TextRenderComponent::Update()
@@ -37,7 +33,7 @@ namespace dae
 				throw std::runtime_error(std::string("Create text texture from surface failed: ") + SDL_GetError());
 			}
 			SDL_DestroySurface(surf);
-			m_textTexture = std::make_unique<dae::Texture2D>(texture);
+			m_pTexture = std::make_shared<dae::Texture2D>(texture);
 			m_needsUpdate = false;
 		}
 	}
