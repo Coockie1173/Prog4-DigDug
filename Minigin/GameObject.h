@@ -29,6 +29,7 @@ namespace dae
 	public:
 		void Init();
 		void Update();
+		void LateUpdate();
 		void Render() const;
 
 		void SetPosition(float x, float y);

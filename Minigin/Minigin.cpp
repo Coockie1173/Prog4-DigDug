@@ -114,8 +114,9 @@ void dae::Minigin::RunOneFrame()
 
 	SceneManager::GetInstance().CheckScenesInited();
 	SceneManager::GetInstance().Update();
-	Renderer::GetInstance().Render();
+	SceneManager::GetInstance().LateUpdate();
 	SceneManager::GetInstance().Cleanup(); //get rid of anything marked for deletion
+	Renderer::GetInstance().Render();
 
 	auto frameEnd = std::chrono::high_resolution_clock::now();
 	std::chrono::duration<float> frameDuration = frameEnd - currentTime;

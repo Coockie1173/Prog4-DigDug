@@ -17,6 +17,7 @@ namespace dae
 
 		void Init();
 		void Update();
+		void LateUpdate();
 		void Render() const;
 
 		bool HasInitialised() { return m_SceneHasInitialised; };

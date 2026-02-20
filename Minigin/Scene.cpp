@@ -69,6 +69,14 @@ void Scene::Update()
 	}
 }
 
+void dae::Scene::LateUpdate()
+{
+	for (auto& object : m_objects)
+	{
+		object->LateUpdate();
+	}
+}
+
 void Scene::Render() const
 {
 	std::vector<int> DebugItems{};

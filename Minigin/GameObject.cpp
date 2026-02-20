@@ -48,6 +48,14 @@ void dae::GameObject::Update()
     }
 }
 
+void dae::GameObject::LateUpdate()
+{
+    for (auto& c : m_attachedComponents)
+    {
+        c->LateUpdate();
+    }
+}
+
 void dae::GameObject::Render() const
 {
     if (m_renderer != nullptr)

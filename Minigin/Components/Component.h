@@ -7,7 +7,6 @@ namespace dae
 	class Component
 	{
 	public:
-		Component(dae::GameObject* Parent);
 		virtual ~Component() = default;
 
 		Component(const Component&) = default;
@@ -21,6 +20,7 @@ namespace dae
 
 	protected:
 		GameObject* GetParent() const noexcept { return m_parent; };
+		Component(dae::GameObject* Parent);
 
 	private:
 		GameObject* m_parent;
