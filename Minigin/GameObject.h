@@ -18,13 +18,22 @@ namespace dae
 	{
 		//Transform m_transform{};
 		//std::shared_ptr<Texture2D> m_texture{};
-		TransformComponent* m_transform{};
 		RenderComponent* m_renderer{};
 		std::vector<std::unique_ptr<Component>> m_attachedComponents{};
+		std::vector<GameObject*> m_children{};
+		GameObject* m_parent;
 		std::string m_objectName{};
 		bool m_isDebugData{};
 		bool m_markedForRemoval{};
-		void AddBaseComponents();
+		glm::vec2 m_localPosition;
+		glm::vec2 m_worldPosition;
+
+		bool m_positionIsDirty{false};
+
+		void AddChild(GameObject* Child);
+		void RemoveChild(GameObject* Child);
+
+		bool IsChildOf(GameObject* Parent);
 
 	public:
 		void Init();
@@ -32,24 +41,27 @@ namespace dae
 		void LateUpdate();
 		void Render() const;
 
-		void SetPosition(float x, float y);
-		const glm::vec2& GetPosition() const noexcept;
 		bool IsDebug() const noexcept { return m_isDebugData; };
 		RenderComponent* GetAttachedRenderer() const noexcept { return m_renderer; };
-		TransformComponent* GetTransform() const noexcept { return m_transform; };
 
-		GameObject(std::string Name, bool IsDebugObject = false);
-		GameObject(std::string Name, float PosX, float PosY, bool IsDebugObject = false);
-		GameObject(std::string Name, glm::vec2 Position, bool IsDebugObject = false);
+		GameObject(std::string Name, GameObject* Parent = nullptr, bool IsDebugObject = false);
+		GameObject(std::string Name, float PosX, float PosY, GameObject* Parent = nullptr, bool IsDebugObject = false);
+		GameObject(std::string Name, glm::vec2 Position, GameObject* Parent = nullptr, bool IsDebugObject = false);
 		~GameObject();
 		GameObject(const GameObject& other) = delete;
 		GameObject(GameObject&& other) = delete;
 		GameObject& operator=(const GameObject& other) = delete;
 		GameObject& operator=(GameObject&& other) = delete;
 		const std::string& GetName() const noexcept { return m_objectName; };
+		GameObject* GetParent() const noexcept { return m_parent; };
+		void SetParent(GameObject* Parent, bool KeepWorldPos);
 
 		void MarkForDeletion() noexcept { m_markedForRemoval = true; };
 		bool IsMarkedForDelete() const noexcept { return m_markedForRemoval; };
+
+		void SetPosition(float x, float y);
+		void SetPosition(const glm::vec2& position);
+		const glm::vec2& GetPosition() const noexcept;
 
 		/// <summary>
 		/// Gets first of matching component
@@ -73,7 +85,11 @@ namespace dae
 		template <typename T>
 		bool RemoveComponent();
 
-		template <typename T>
+		/// <summary>
+		/// In case you have multiple of one type and need to remove a specific one.
+		/// </summary>
+		/// <typeparam name="T">Component Type</typeparam>
+		/// <param name="ID">The ID of the component. This will "reshuffle" all other IDs</param>
 		void RemoveComponentAtID(int ID);
 
 		template <typename T>
@@ -87,17 +103,7 @@ namespace dae
 			auto component = std::make_unique<T>(this, std::forward<Args>(args)...);
 			T* componentPtr = component.get();
 
-			if (auto t = dynamic_cast<TransformComponent*>(componentPtr))
-			{
-				if (m_transform)
-				{
-					std::cout << "\033Warning: an object cannot have multiple transforms. Ignoring addition of transform.\037\n";
-					Debugger::GetInstance().LogWarning(m_objectName + " cannot have multiple transforms. Ignoring extra transform.");
-					return;
-				}
-				m_transform = t;
-			}
-			else if (auto r = dynamic_cast<RenderComponent*>(componentPtr))
+			if (auto r = dynamic_cast<RenderComponent*>(componentPtr))
 			{
 				if (m_renderer)
 				{

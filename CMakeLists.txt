@@ -26,8 +26,7 @@ add_executable(${TARGET_NAME} ${TARGET_PARAM}
   Minigin/SceneManager.cpp
   Minigin/TextObject.cpp
   Minigin/Texture2D.cpp   
-  Minigin/Renderer.cpp   
-  "Minigin/Components/TransformComponent.cpp" 
+  Minigin/Renderer.cpp      
   "Minigin/Components/TextureRendererComponent.cpp" 
   "Minigin/Components/Component.cpp" 
   "Minigin/Components/TextRendererComponent.cpp" 

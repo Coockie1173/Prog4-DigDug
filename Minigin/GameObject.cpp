@@ -7,29 +7,87 @@
 #include "Components/RenderComponent.h"
 #include <iostream>
 
-dae::GameObject::GameObject(std::string Name, bool IsDebugObject) : m_objectName(Name), m_isDebugData(IsDebugObject)
+dae::GameObject::GameObject(std::string Name, GameObject* Parent, bool IsDebugObject) 
+    : m_parent(Parent), m_objectName(Name), m_isDebugData(IsDebugObject)
 {	
-    AddBaseComponents();
+    glm::vec2 Empty{ 0 };
+    m_localPosition = Empty;
+    m_worldPosition = Empty;
 }
 
-dae::GameObject::GameObject(std::string Name, float PosX, float PosY, bool IsDebugObject) : m_objectName(Name), m_isDebugData(IsDebugObject)
+dae::GameObject::GameObject(std::string Name, float PosX, float PosY, GameObject* Parent, bool IsDebugObject)
+    : m_parent(Parent), m_objectName(Name), m_isDebugData(IsDebugObject)
 {
-    AddBaseComponents();
-    m_transform->SetPosition(PosX, PosY);
+    SetPosition(PosX, PosY);
 }
 
-dae::GameObject::GameObject(std::string Name, glm::vec2 Position, bool IsDebugObject) : m_objectName(Name), m_isDebugData(IsDebugObject)
+dae::GameObject::GameObject(std::string Name, glm::vec2 Position, GameObject* Parent, bool IsDebugObject)
+    : m_parent(Parent), m_objectName(Name), m_isDebugData(IsDebugObject)
 {
-    AddBaseComponents();
-    m_transform->SetPosition(Position);
+    SetPosition(Position);
 }
 
 dae::GameObject::~GameObject() = default;
 
-//Used for adding the base components to a gameobject. DO NOT add more than needed future me.
-void dae::GameObject::AddBaseComponents()
+void dae::GameObject::SetPosition(float x, float y)
 {
-    AddComponent<TransformComponent>();
+    if (m_localPosition.x == x && m_localPosition.y == y)
+    {
+        return;
+    }
+
+    m_localPosition.x = x;
+    m_localPosition.y = y;
+    m_positionIsDirty = true;
+}
+
+void dae::GameObject::SetPosition(const glm::vec2& position)
+{
+    if (position == m_localPosition)
+    {
+        return;
+    }
+
+    m_localPosition = position;
+    m_positionIsDirty = true;
+}
+
+void dae::GameObject::SetParent(GameObject* Parent, [[maybe_unused]]bool KeepWorldPos)
+{
+    //TODO: add position stuff
+    if (IsChildOf(Parent) || Parent == this || m_parent == Parent)
+    {
+        return;
+    }
+    if (m_parent)
+    {
+        m_parent->RemoveChild(this);
+    }
+    m_parent = Parent;
+    if (m_parent)
+    {
+        m_parent->AddChild(this);
+    }
+}
+
+void dae::GameObject::AddChild(GameObject* Child)
+{
+    m_children.push_back(Child);
+}
+
+void dae::GameObject::RemoveChild(GameObject* Child)
+{
+    auto it = std::find(m_children.begin(), m_children.end(), Child);
+    if (it != m_children.end())
+    {
+        m_children.erase(it);
+    }
+}
+
+bool dae::GameObject::IsChildOf(GameObject* Parent)
+{
+    auto it = std::find(Parent->m_children.begin(), Parent->m_children.end(), this);
+    return it != m_children.end();
 }
 
 void dae::GameObject::Init()
@@ -64,14 +122,9 @@ void dae::GameObject::Render() const
     }
 }
 
-void dae::GameObject::SetPosition(float x, float y)
-{
-	m_transform->SetPosition(x, y);
-}
-
 const glm::vec2& dae::GameObject::GetPosition() const noexcept
 {
-    return m_transform->GetPosition();
+    return m_localPosition;
 }
 
 template<typename T>
@@ -137,7 +190,6 @@ bool dae::GameObject::RemoveComponent()
     return false;
 }
 
-template<typename T>
 void dae::GameObject::RemoveComponentAtID(int ID)
 {
     m_attachedComponents.erase(m_attachedComponents.begin() + ID);
