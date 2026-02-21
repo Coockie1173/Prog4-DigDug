@@ -22,7 +22,6 @@ namespace dae
 		void RenderAssignedTexture() const;
 		std::shared_ptr<Texture2D> m_pTexture{nullptr};
 		private:
-		bool LoggedWarning{ false };
 	};
 };
 
