@@ -30,6 +30,8 @@ namespace dae
 
 		void AddChild(GameObject* Child);
 		void RemoveChild(GameObject* Child);
+		void UpdateWorldPosition();
+		void SetLocalPosition(const glm::vec2& pos);
 
 		bool IsChildOf(GameObject* Parent);
 
@@ -59,7 +61,7 @@ namespace dae
 
 		void SetPosition(float x, float y);
 		void SetPosition(const glm::vec2& position);
-		const glm::vec2& GetPosition() const noexcept;
+		glm::vec2& GetWorldPosition();
 
 		/// <summary>
 		/// Gets first of matching component

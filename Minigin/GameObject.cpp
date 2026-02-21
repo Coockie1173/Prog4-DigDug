@@ -52,13 +52,25 @@ void dae::GameObject::SetPosition(const glm::vec2& position)
     m_positionIsDirty = true;
 }
 
-void dae::GameObject::SetParent(GameObject* Parent, [[maybe_unused]]bool KeepWorldPos)
+void dae::GameObject::SetParent(GameObject* Parent, bool KeepWorldPos)
 {
-    //TODO: add position stuff
     if (IsChildOf(Parent) || Parent == this || m_parent == Parent)
     {
         return;
     }
+    if (Parent == nullptr)
+    {
+        SetLocalPosition(GetWorldPosition());
+    }
+    else
+    {
+        if (KeepWorldPos)
+        {
+            SetLocalPosition(GetWorldPosition() - Parent->GetWorldPosition());
+        }
+        m_positionIsDirty = true;
+    }
+
     if (m_parent)
     {
         m_parent->RemoveChild(this);
@@ -122,9 +134,35 @@ void dae::GameObject::Render() const
     }
 }
 
-const glm::vec2& dae::GameObject::GetPosition() const noexcept
+glm::vec2& dae::GameObject::GetWorldPosition()
 {
-    return m_localPosition;
+    if (m_positionIsDirty)
+    {
+        UpdateWorldPosition();
+    }
+    return m_worldPosition;
+}
+
+void dae::GameObject::UpdateWorldPosition()
+{
+    if (m_positionIsDirty)
+    {
+        if (m_parent == nullptr)
+        {
+             m_worldPosition = m_localPosition;
+        }
+        else
+        {
+            m_worldPosition = m_parent->GetWorldPosition() + m_localPosition;
+        }
+    }
+    m_positionIsDirty = false;
+}
+
+void dae::GameObject::SetLocalPosition(const glm::vec2& pos)
+{
+    m_localPosition = pos;
+    m_positionIsDirty = true;
 }
 
 template<typename T>

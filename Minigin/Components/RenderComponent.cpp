@@ -14,7 +14,7 @@ namespace dae
 		{
 			return;
 		}
-		glm::vec2 pos = GetParent()->GetPosition();
+		glm::vec2 pos = GetParent()->GetWorldPosition();
 		Renderer::GetInstance().RenderTexture(*m_pTexture, pos.x, pos.y);
 	}
 };
