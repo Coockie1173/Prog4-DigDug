@@ -51,6 +51,34 @@ namespace dae
 		void MarkForDeletion() noexcept { m_markedForRemoval = true; };
 		bool IsMarkedForDelete() const noexcept { return m_markedForRemoval; };
 
+		/// <summary>
+		/// Gets first of matching component
+		/// </summary>
+		/// <typeparam name="T">Component type to find</typeparam>
+		/// <returns>The first matching component</returns>
+		template <typename T>
+		T* GetComponent();
+
+		template <typename T>
+		void GetComponentsOfType(std::vector<T*>& ReturnedComponents);
+
+		template <typename T>
+		void GetComponentIDsOfType(std::vector<int>& ReturnedComponentIDs);
+
+		/// <summary>
+		/// Removes first component of type
+		/// </summary>
+		/// <typeparam name="T">Component type to remove</typeparam>
+		/// <returns>Success</returns>
+		template <typename T>
+		bool RemoveComponent();
+
+		template <typename T>
+		void RemoveComponentAtID(int ID);
+
+		template <typename T>
+		bool HasComponent();
+
 		template <typename T, typename... Args>
 		void AddComponent(Args&&... args)
 		{

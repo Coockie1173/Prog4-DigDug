@@ -12,7 +12,6 @@ namespace dae
 	{
 		if (m_pTexture == nullptr)
 		{
-			Debugger::GetInstance().LogWarning("Warning: Renderer from " + GetParent()->GetName() + " has no texture!");
 			return;
 		}
 		glm::vec2 pos = GetParent()->GetPosition();
