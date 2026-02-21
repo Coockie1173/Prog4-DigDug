@@ -4,13 +4,11 @@
 #include <vector>
 #include <glm/glm.hpp>
 #include "Components/Component.h"
-#include "Components/TransformComponent.h"
 #include "Components/RenderComponent.h"
 #include <iostream>
 #include "Debugger.h"
 
 class Component;
-class TransformComponent;
 class RenderComponent;
 namespace dae
 {
