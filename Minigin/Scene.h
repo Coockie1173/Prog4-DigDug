@@ -20,6 +20,8 @@ namespace dae
 		void LateUpdate();
 		void Render() const;
 
+		GameObject* FindGameObject(const std::string ObjectName);
+
 		bool HasInitialised() { return m_SceneHasInitialised; };
 
 		~Scene() = default;

@@ -27,7 +27,10 @@ dae::GameObject::GameObject(std::string Name, glm::vec2 Position, GameObject* Pa
     SetPosition(Position);
 }
 
-dae::GameObject::~GameObject() = default;
+dae::GameObject::~GameObject()
+{
+    
+}
 
 void dae::GameObject::SetPosition(float x, float y)
 {
@@ -79,6 +82,15 @@ void dae::GameObject::SetParent(GameObject* Parent, bool KeepWorldPos)
     if (m_parent)
     {
         m_parent->AddChild(this);
+    }
+}
+
+void dae::GameObject::MarkForDeletion() noexcept
+{
+    m_markedForRemoval = true;
+    for (auto& child : m_children)
+    {
+        child->MarkForDeletion();
     }
 }
 

@@ -9,7 +9,7 @@ namespace dae
 	class FPSCounterComponent : public Component
 	{
 	public:
-		FPSCounterComponent(dae::GameObject* Parent);
+		FPSCounterComponent(GameObject* Parent);
 		void Update() override;
 		void LateUpdate() override;
 		void Init() override;

@@ -8,7 +8,7 @@
 
 namespace dae
 {
-	FPSCounterComponent::FPSCounterComponent(dae::GameObject* Parent) : Component(Parent)
+	FPSCounterComponent::FPSCounterComponent(GameObject* Parent) : Component(Parent)
 	{
 		m_parentRenderer = nullptr;
 	}

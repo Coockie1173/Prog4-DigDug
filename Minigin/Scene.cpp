@@ -99,3 +99,15 @@ void Scene::Render() const
 	}
 }
 
+GameObject* dae::Scene::FindGameObject(const std::string ObjectName)
+{
+	for (const auto& GO : m_objects)
+	{
+		if (GO->GetName() == ObjectName)
+		{
+			return GO.get();
+		}
+	}
+	return nullptr;
+}
+

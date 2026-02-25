@@ -16,6 +16,7 @@
 #include "Components/TextureRendererComponent.h"
 #include "Components/TextRendererComponent.h"
 #include "Components/FPSCounterComponent.h"
+#include "Components/SpinnerComponent.h"
 #include "ResourceManager.h"
 namespace fs = std::filesystem;
 
@@ -23,9 +24,9 @@ static void load()
 {
 	auto& scene = dae::SceneManager::GetInstance().CreateScene();
 	Debugger::GetInstance().AttachToScene(&scene);
-	Debugger::GetInstance().LogError("some arbitrary error!");
-	Debugger::GetInstance().LogWarning("this shouldn't happen - I'll take care of it");
-	Debugger::GetInstance().LogDebug("you've reached line 26! nice!!");
+	//Debugger::GetInstance().LogError("some arbitrary error!");
+	//Debugger::GetInstance().LogWarning("this shouldn't happen - I'll take care of it");
+	//Debugger::GetInstance().LogDebug("you've reached line 26! nice!!");
 
 	auto go = std::make_unique<dae::GameObject>("Background");
 	std::string BGName{ "background.png" };
@@ -50,6 +51,21 @@ static void load()
 	to->AddComponent<dae::FPSCounterComponent>();
 	to->SetPosition(10, 10);
 	scene.Add(std::move(to));
+
+	glm::vec2 Pos{ 200.0f, 200.0f};
+	glm::vec2 Zero{ 0, 0};
+
+	auto Spinner = std::make_unique<dae::GameObject>("Spinner_World");
+	Spinner->AddComponent<dae::TextureRenderComponent>("Pooka_Idle.png");
+	Spinner->AddComponent<dae::SpinnerComonent>(false, 10.0f, 10.0f, Pos);
+	Spinner->SetPosition(Pos);
+	scene.Add(std::move(Spinner));
+
+	auto SpinnerTwo = std::make_unique<dae::GameObject>("Spinner_Child", scene.FindGameObject("Spinner_World"));
+	SpinnerTwo->AddComponent<dae::TextureRenderComponent>("Fygar_Idle.png");
+	SpinnerTwo->AddComponent<dae::SpinnerComonent>(true, 50.0f, 10.0f, Zero);
+	SpinnerTwo->SetPosition(Zero);
+	scene.Add(std::move(SpinnerTwo));
 }
 
 int main(int, char*[]) {
