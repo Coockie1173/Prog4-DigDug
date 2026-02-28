@@ -41,7 +41,7 @@ void dae::GameObject::SetPosition(float x, float y)
 
     m_localPosition.x = x;
     m_localPosition.y = y;
-    m_positionIsDirty = true;
+    SetPositionDirty();
 }
 
 void dae::GameObject::SetPosition(const glm::vec2& position)
@@ -52,7 +52,7 @@ void dae::GameObject::SetPosition(const glm::vec2& position)
     }
 
     m_localPosition = position;
-    m_positionIsDirty = true;
+    SetPositionDirty();
 }
 
 void dae::GameObject::SetParent(GameObject* Parent, bool KeepWorldPos)
@@ -71,7 +71,7 @@ void dae::GameObject::SetParent(GameObject* Parent, bool KeepWorldPos)
         {
             SetLocalPosition(GetWorldPosition() - Parent->GetWorldPosition());
         }
-        m_positionIsDirty = true;
+        SetPositionDirty();
     }
 
     if (m_parent)
@@ -171,10 +171,19 @@ void dae::GameObject::UpdateWorldPosition()
     m_positionIsDirty = false;
 }
 
+void dae::GameObject::SetPositionDirty()
+{
+    m_positionIsDirty = true;
+    for (auto& c : m_children)
+    {
+        c->SetPositionDirty();
+    }
+}
+
 void dae::GameObject::SetLocalPosition(const glm::vec2& pos)
 {
     m_localPosition = pos;
-    m_positionIsDirty = true;
+    SetPositionDirty();
 }
 
 template<typename T>

@@ -31,6 +31,7 @@ namespace dae
 		void AddChild(GameObject* Child);
 		void RemoveChild(GameObject* Child);
 		void UpdateWorldPosition();
+		void SetPositionDirty();
 
 		bool IsChildOf(GameObject* Parent);
 
