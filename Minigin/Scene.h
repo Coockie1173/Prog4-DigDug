@@ -34,7 +34,7 @@ namespace dae
 		friend class SceneManager;
 		explicit Scene() = default;
 
-		std::vector < std::unique_ptr<GameObject>> m_objects{};
+		std::vector<std::unique_ptr<GameObject>> m_objects{};
 		bool m_SceneHasInitialised{false};
 	};
 
