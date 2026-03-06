@@ -31,7 +31,11 @@ add_executable(${TARGET_NAME} ${TARGET_PARAM}
   "Minigin/Components/Component.cpp" 
   "Minigin/Components/TextRendererComponent.cpp" 
   "Minigin/Debugger.cpp" 
-  "Minigin/Timing.cpp" "Minigin/Components/FPSCounterComponent.cpp" "Minigin/Components/SpinnerComponent.cpp")
+  "Minigin/Timing.cpp" 
+  "Minigin/Components/FPSCounterComponent.cpp" 
+  "Minigin/Components/SpinnerComponent.cpp"  
+  "Minigin/Components/ObjectMoveComponent.cpp"  
+  "Minigin/Commands/MovementInputCommand.cpp")
 
 # enable c++20 features
 target_compile_features(${TARGET_NAME} PUBLIC cxx_std_20)
@@ -158,6 +162,15 @@ target_link_libraries("${TARGET_NAME}" PUBLIC
   imgui
   ${VLD_LIBRARIES}
 )
+
+if(WIN32)
+  find_library(XINPUT_LIBRARY Xinput)
+  if(XINPUT_LIBRARY)
+    target_link_libraries(${TARGET_NAME} PUBLIC ${XINPUT_LIBRARY})
+  else()
+    message(WARNING "XInput library not found; controller support may be unavailable")
+  endif()
+endif()
 
 if(MSVC)
   # compile at warning level 4 + treat warnings as errors

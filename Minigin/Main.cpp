@@ -51,21 +51,6 @@ static void load()
 	to->AddComponent<dae::FPSCounterComponent>();
 	to->SetPosition(10, 10);
 	scene.Add(std::move(to));
-
-	glm::vec2 Pos{ 200.0f, 200.0f};
-	glm::vec2 Zero{ 0, 0};
-
-	auto Spinner = std::make_unique<dae::GameObject>("Spinner_World");
-	Spinner->AddComponent<dae::TextureRenderComponent>("Pooka_Idle.png");
-	Spinner->AddComponent<dae::SpinnerComonent>(false, 10.0f, 10.0f, Pos);
-	Spinner->SetPosition(Pos);
-	scene.Add(std::move(Spinner));
-
-	auto SpinnerTwo = std::make_unique<dae::GameObject>("Spinner_Child", scene.FindGameObject("Spinner_World"));
-	SpinnerTwo->AddComponent<dae::TextureRenderComponent>("Fygar_Idle.png");
-	SpinnerTwo->AddComponent<dae::SpinnerComonent>(true, 50.0f, 10.0f, Zero);
-	SpinnerTwo->SetPosition(Zero);
-	scene.Add(std::move(SpinnerTwo));
 }
 
 int main(int, char*[]) {
