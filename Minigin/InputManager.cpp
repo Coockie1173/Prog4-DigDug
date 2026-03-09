@@ -30,7 +30,6 @@ bool dae::InputManager::ProcessInput()
 		{
 			
 		}
-		// etc...
 
 		m_ControllerManager.Update();
 

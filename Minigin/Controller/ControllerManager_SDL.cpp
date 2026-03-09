@@ -13,8 +13,8 @@ namespace dae
         struct ControllerState
         {
             SDL_Gamepad* gamepad{};
-            std::array<bool, SDL_GAMEPAD_BUTTON_MAX> previous{};
-            std::array<bool, SDL_GAMEPAD_BUTTON_MAX> current{};
+            std::array<bool, SDL_GAMEPAD_BUTTON_COUNT> previous{};
+            std::array<bool, SDL_GAMEPAD_BUTTON_COUNT> current{};
         };
 
         std::array<ControllerState, 4> controllers{};
@@ -82,7 +82,7 @@ namespace dae
 
                 c.previous = c.current;
 
-                for (int b = 0; b < SDL_GAMEPAD_BUTTON_MAX; ++b)
+                for (int b = 0; b < SDL_GAMEPAD_BUTTON_COUNT; ++b)
                 {
                     c.current[b] =
                         SDL_GetGamepadButton(c.gamepad,
