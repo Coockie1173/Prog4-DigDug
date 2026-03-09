@@ -35,7 +35,7 @@ add_executable(${TARGET_NAME} ${TARGET_PARAM}
   "Minigin/Components/FPSCounterComponent.cpp" 
   "Minigin/Components/SpinnerComponent.cpp"  
   "Minigin/Components/ObjectMoveComponent.cpp"  
-  "Minigin/Commands/MovementInputCommand.cpp")
+  "Minigin/Commands/MovementInputCommand.cpp" "Minigin/Controller/ControllerManager.cpp")
 
 # enable c++20 features
 target_compile_features(${TARGET_NAME} PUBLIC cxx_std_20)

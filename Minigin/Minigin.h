@@ -3,6 +3,7 @@
 #include <functional>
 #include <filesystem>
 #include <thread>
+#include <memory>
 
 namespace dae
 {

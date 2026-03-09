@@ -32,6 +32,8 @@ bool dae::InputManager::ProcessInput()
 		}
 		// etc...
 
+		m_ControllerManager.Update();
+
 		ImGui_ImplSDL3_ProcessEvent(&e);
 	}
 
