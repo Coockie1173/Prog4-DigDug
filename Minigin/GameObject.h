@@ -98,7 +98,7 @@ namespace dae
 		bool HasComponent();
 
 		template <typename T, typename... Args>
-		void AddComponent(Args&&... args)
+		T* AddComponent(Args&&... args)
 		{
 			static_assert(std::is_base_of<Component, T>::value, "T must derive from Component");
 
@@ -111,12 +111,14 @@ namespace dae
 				{
 					std::cout << "\033Warning: an object cannot have multiple renderers. Ignoring addition of renderer.\037\n";
 					Debugger::GetInstance().LogWarning(m_objectName + " cannot have multiple renderers. Ignoring extra renderer.");
-					return;
+					return nullptr;
 				}
 				m_renderer = r;
 			}
 
 			m_attachedComponents.push_back(std::move(component));
+
+			return componentPtr;
 		}
 
 	};

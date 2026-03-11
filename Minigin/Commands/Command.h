@@ -13,6 +13,9 @@ namespace dae
         Command& operator=(const Command&) = delete;
         Command(Command&&) noexcept = delete;
         Command& operator=(Command&&) noexcept = delete;
+
+    protected:
+        Command() = default;
     };
 }
 

@@ -23,21 +23,21 @@ namespace dae
         {
             switch (button)
             {
-            case GamepadButton::A: return SDL_GAMEPAD_BUTTON_SOUTH;
-            case GamepadButton::B: return SDL_GAMEPAD_BUTTON_EAST;
-            case GamepadButton::X: return SDL_GAMEPAD_BUTTON_WEST;
-            case GamepadButton::Y: return SDL_GAMEPAD_BUTTON_NORTH;
+                case GamepadButton::A: return SDL_GAMEPAD_BUTTON_SOUTH;
+                case GamepadButton::B: return SDL_GAMEPAD_BUTTON_EAST;
+                case GamepadButton::X: return SDL_GAMEPAD_BUTTON_WEST;
+                case GamepadButton::Y: return SDL_GAMEPAD_BUTTON_NORTH;
 
-            case GamepadButton::DPadUp: return SDL_GAMEPAD_BUTTON_DPAD_UP;
-            case GamepadButton::DPadDown: return SDL_GAMEPAD_BUTTON_DPAD_DOWN;
-            case GamepadButton::DPadLeft: return SDL_GAMEPAD_BUTTON_DPAD_LEFT;
-            case GamepadButton::DPadRight: return SDL_GAMEPAD_BUTTON_DPAD_RIGHT;
+                case GamepadButton::DPadUp: return SDL_GAMEPAD_BUTTON_DPAD_UP;
+                case GamepadButton::DPadDown: return SDL_GAMEPAD_BUTTON_DPAD_DOWN;
+                case GamepadButton::DPadLeft: return SDL_GAMEPAD_BUTTON_DPAD_LEFT;
+                case GamepadButton::DPadRight: return SDL_GAMEPAD_BUTTON_DPAD_RIGHT;
 
-            case GamepadButton::Start: return SDL_GAMEPAD_BUTTON_START;
-            case GamepadButton::Back: return SDL_GAMEPAD_BUTTON_BACK;
+                case GamepadButton::Start: return SDL_GAMEPAD_BUTTON_START;
+                case GamepadButton::Back: return SDL_GAMEPAD_BUTTON_BACK;
 
-            case GamepadButton::LeftShoulder: return SDL_GAMEPAD_BUTTON_LEFT_SHOULDER;
-            case GamepadButton::RightShoulder: return SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER;
+                case GamepadButton::LeftShoulder: return SDL_GAMEPAD_BUTTON_LEFT_SHOULDER;
+                case GamepadButton::RightShoulder: return SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER;
             }
 
             return SDL_GAMEPAD_BUTTON_INVALID;

@@ -31,21 +31,21 @@ namespace dae
         {
             switch (button)
             {
-            case GamepadButton::A: return XINPUT_GAMEPAD_A;
-            case GamepadButton::B: return XINPUT_GAMEPAD_B;
-            case GamepadButton::X: return XINPUT_GAMEPAD_X;
-            case GamepadButton::Y: return XINPUT_GAMEPAD_Y;
+                case GamepadButton::A: return XINPUT_GAMEPAD_A;
+                case GamepadButton::B: return XINPUT_GAMEPAD_B;
+                case GamepadButton::X: return XINPUT_GAMEPAD_X;
+                case GamepadButton::Y: return XINPUT_GAMEPAD_Y;
 
-            case GamepadButton::DPadUp: return XINPUT_GAMEPAD_DPAD_UP;
-            case GamepadButton::DPadDown: return XINPUT_GAMEPAD_DPAD_DOWN;
-            case GamepadButton::DPadLeft: return XINPUT_GAMEPAD_DPAD_LEFT;
-            case GamepadButton::DPadRight: return XINPUT_GAMEPAD_DPAD_RIGHT;
+                case GamepadButton::DPadUp: return XINPUT_GAMEPAD_DPAD_UP;
+                case GamepadButton::DPadDown: return XINPUT_GAMEPAD_DPAD_DOWN;
+                case GamepadButton::DPadLeft: return XINPUT_GAMEPAD_DPAD_LEFT;
+                case GamepadButton::DPadRight: return XINPUT_GAMEPAD_DPAD_RIGHT;
 
-            case GamepadButton::Start: return XINPUT_GAMEPAD_START;
-            case GamepadButton::Back: return XINPUT_GAMEPAD_BACK;
+                case GamepadButton::Start: return XINPUT_GAMEPAD_START;
+                case GamepadButton::Back: return XINPUT_GAMEPAD_BACK;
 
-            case GamepadButton::LeftShoulder: return XINPUT_GAMEPAD_LEFT_SHOULDER;
-            case GamepadButton::RightShoulder: return XINPUT_GAMEPAD_RIGHT_SHOULDER;
+                case GamepadButton::LeftShoulder: return XINPUT_GAMEPAD_LEFT_SHOULDER;
+                case GamepadButton::RightShoulder: return XINPUT_GAMEPAD_RIGHT_SHOULDER;
             }
 
             return 0;

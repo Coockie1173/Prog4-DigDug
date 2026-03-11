@@ -18,6 +18,12 @@
 #include "Components/FPSCounterComponent.h"
 #include "Components/SpinnerComponent.h"
 #include "ResourceManager.h"
+#include <Components/ObjectMoveComponent.h>
+#include <Commands/MovementInputCommand.h>
+#include <InputManager.h>
+
+#include "Controller/GamepadButton.h"
+
 namespace fs = std::filesystem;
 
 static void load()
@@ -51,6 +57,72 @@ static void load()
 	to->AddComponent<dae::FPSCounterComponent>();
 	to->SetPosition(10, 10);
 	scene.Add(std::move(to));
+
+	auto ply1 = std::make_unique<dae::GameObject>("Player1");
+	ply1->AddComponent<dae::TextureRenderComponent>("Fygar_Idle.png");
+	ply1->SetPosition(200, 200);
+	auto move1 = ply1->AddComponent<dae::ObjectMoveComponent>();
+	auto CommandUp = std::make_unique<dae::MovementInputCommand>(move1);
+	CommandUp->SetDirection({ 0, -1 });
+	CommandUp->SetSpeed(100);
+	dae::InputManager::GetInstance().BindKey(SDLK_W, dae::InputManager::InputType::Down, "MoveUp_P1", std::move(CommandUp));
+
+	auto CommandDown = std::make_unique<dae::MovementInputCommand>(move1);
+	CommandDown->SetDirection({ 0, 1 });
+	CommandDown->SetSpeed(100);
+	dae::InputManager::GetInstance().BindKey(SDLK_S, dae::InputManager::InputType::Down, "MoveDown_P1", std::move(CommandDown));
+
+	auto CommandLeft = std::make_unique<dae::MovementInputCommand>(move1);
+	CommandLeft->SetDirection({ -1, 0 });
+	CommandLeft->SetSpeed(100);
+	dae::InputManager::GetInstance().BindKey(SDLK_A, dae::InputManager::InputType::Down, "MoveLeft_P1", std::move(CommandLeft));
+
+	auto CommandRight = std::make_unique<dae::MovementInputCommand>(move1);
+	CommandRight->SetDirection({ 1, 0 });
+	CommandRight->SetSpeed(100);
+	dae::InputManager::GetInstance().BindKey(SDLK_D, dae::InputManager::InputType::Down, "MoveRight_P1", std::move(CommandRight));
+
+	scene.Add(std::move(ply1));
+
+	auto ply2 = std::make_unique<dae::GameObject>("Player2");
+	ply2->AddComponent<dae::TextureRenderComponent>("Pooka_Idle.png");
+	ply2->SetPosition(200, 400);
+	auto move2 = ply2->AddComponent<dae::ObjectMoveComponent>();
+	
+	auto CommandUp2 = std::make_unique<dae::MovementInputCommand>(move2);
+	CommandUp2->SetDirection({ 0, -1 });
+	CommandUp2->SetSpeed(200);
+	dae::InputManager::GetInstance().BindButton(0, dae::GamepadButton::DPadUp, dae::InputManager::InputType::Down, "MoveUp_P2", std::move(CommandUp2));
+
+	auto CommandDown2 = std::make_unique<dae::MovementInputCommand>(move2);
+	CommandDown2->SetDirection({ 0, 1 });
+	CommandDown2->SetSpeed(200);
+	dae::InputManager::GetInstance().BindButton(0, dae::GamepadButton::DPadDown, dae::InputManager::InputType::Down, "MoveDown_P2", std::move(CommandDown2));
+
+	auto CommandLeft2 = std::make_unique<dae::MovementInputCommand>(move2);
+	CommandLeft2->SetDirection({ -1, 0 });
+	CommandLeft2->SetSpeed(200);
+	dae::InputManager::GetInstance().BindButton(0, dae::GamepadButton::DPadLeft, dae::InputManager::InputType::Down, "MoveLeft_P2", std::move(CommandLeft2));
+
+	auto CommandRight2 = std::make_unique<dae::MovementInputCommand>(move2);
+	CommandRight2->SetDirection({ 1, 0 });
+	CommandRight2->SetSpeed(200);
+	dae::InputManager::GetInstance().BindButton(0, dae::GamepadButton::DPadRight, dae::InputManager::InputType::Down, "MoveRight_P2", std::move(CommandRight2));
+
+	scene.Add(std::move(ply2));
+
+	auto smallFont = dae::ResourceManager::GetInstance().LoadFont("Lingua.otf", 18);
+	SDL_Color whiteCol{ 255,255,255,255 };
+
+	auto InstructionsText = std::make_unique<dae::GameObject>("InstructionsText");
+	InstructionsText->AddComponent<dae::TextRenderComponent>("Player 1: WASD", whiteCol, smallFont);
+	InstructionsText->SetPosition(10, 50);
+	scene.Add(std::move(InstructionsText));
+
+	auto InstructionsText2 = std::make_unique<dae::GameObject>("InstructionsText2");
+	InstructionsText2->AddComponent<dae::TextRenderComponent>("Player 2: dpad", whiteCol, smallFont);
+	InstructionsText2->SetPosition(10, 70);
+	scene.Add(std::move(InstructionsText2));
 }
 
 int main(int, char*[]) {
