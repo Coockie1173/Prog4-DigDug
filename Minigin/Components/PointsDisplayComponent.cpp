@@ -5,7 +5,7 @@
 #include <any>
 
 dae::PointsDisplayComponent::PointsDisplayComponent(GameObject* Parent, const std::string& playerName)
-	: Component(Parent), m_playerName(playerName), m_currentScore(0)
+	: Component(Parent), m_currentScore(0), m_playerName(playerName)
 {
 	auto callback = [this](unsigned int, const std::any& data)
 	{
