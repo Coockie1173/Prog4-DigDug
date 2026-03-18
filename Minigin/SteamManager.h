@@ -1,9 +1,8 @@
 #pragma once
-#include "Singleton.h"
 
 #ifdef USE_STEAMWORKS
+#include "Singleton.h"
 #include <steam_api.h>
-#endif
 
 namespace dae
 {
@@ -23,3 +22,4 @@ namespace dae
 		SteamManager& operator=(SteamManager&& other) = delete;
 	};
 }
+#endif

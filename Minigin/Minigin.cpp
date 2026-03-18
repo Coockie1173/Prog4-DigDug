@@ -16,7 +16,9 @@
 #include "SceneManager.h"
 #include "Renderer.h"
 #include "ResourceManager.h"
+#ifdef USE_STEAMWORKS
 #include "SteamManager.h"
+#endif
 #include "Timing.h"
 
 SDL_Window* g_window{};
@@ -81,7 +83,9 @@ dae::Minigin::Minigin(const std::filesystem::path& dataPath)
 	Renderer::GetInstance().Init(g_window);
 	ResourceManager::GetInstance().Init(dataPath);
 
+#ifdef USE_STEAMWORKS
 	SteamManager::GetInstance().Init();
+#endif
 }
 
 dae::Minigin::~Minigin()
@@ -113,7 +117,9 @@ void dae::Minigin::RunOneFrame()
 	m_lastTime = currentTime;
 	Timing::GetInstance().SetTimings(deltaTime);
 
+#ifdef USE_STEAMWORKS
 	SteamManager::GetInstance().ProcessEvents();
+#endif
 
 	m_quit = !InputManager::GetInstance().ProcessInput();
 
