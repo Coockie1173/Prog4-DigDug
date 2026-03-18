@@ -16,6 +16,7 @@
 #include "SceneManager.h"
 #include "Renderer.h"
 #include "ResourceManager.h"
+#include "SteamManager.h"
 #include "Timing.h"
 
 SDL_Window* g_window{};
@@ -59,8 +60,8 @@ void PrintSDLVersion()
 dae::Minigin::Minigin(const std::filesystem::path& dataPath)
 {
 	PrintSDLVersion();
-	
-	if (!SDL_InitSubSystem(SDL_INIT_VIDEO))
+
+	if (!SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD | SDL_INIT_JOYSTICK))
 	{
 		SDL_Log("Renderer error: %s", SDL_GetError());
 		throw std::runtime_error(std::string("SDL_Init Error: ") + SDL_GetError());
@@ -79,6 +80,8 @@ dae::Minigin::Minigin(const std::filesystem::path& dataPath)
 
 	Renderer::GetInstance().Init(g_window);
 	ResourceManager::GetInstance().Init(dataPath);
+
+	SteamManager::GetInstance().Init();
 }
 
 dae::Minigin::~Minigin()
@@ -109,6 +112,8 @@ void dae::Minigin::RunOneFrame()
 	const float deltaTime = std::chrono::duration<float>(currentTime - m_lastTime).count();
 	m_lastTime = currentTime;
 	Timing::GetInstance().SetTimings(deltaTime);
+
+	SteamManager::GetInstance().ProcessEvents();
 
 	m_quit = !InputManager::GetInstance().ProcessInput();
 

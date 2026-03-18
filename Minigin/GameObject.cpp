@@ -193,7 +193,7 @@ inline T* dae::GameObject::GetComponent()
 
     for (auto& C : m_attachedComponents)
     {
-        if (auto CastC = dynamic_cast<T*>(C))
+        if (auto CastC = dynamic_cast<T*>(C.get()))
         {
             return CastC;
         }
@@ -263,3 +263,8 @@ bool dae::GameObject::HasComponent()
 
     return GC != nullptr;
 }
+
+// Explicit template instantiations for components that need to be retrieved
+#include "Components/TextRendererComponent.h"
+template dae::TextRenderComponent* dae::GameObject::GetComponent<dae::TextRenderComponent>();
+

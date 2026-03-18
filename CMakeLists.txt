@@ -35,7 +35,16 @@ add_executable(${TARGET_NAME} ${TARGET_PARAM}
   "Minigin/Components/FPSCounterComponent.cpp" 
   "Minigin/Components/SpinnerComponent.cpp"  
   "Minigin/Components/ObjectMoveComponent.cpp"  
-  "Minigin/Commands/MovementInputCommand.cpp" "Minigin/Controller/ControllerManager.cpp")
+  "Minigin/Commands/MovementInputCommand.cpp"
+  "Minigin/EventManager.cpp"
+  "Minigin/Components/HealthComponent.cpp"
+  "Minigin/Components/ScoreComponent.cpp"
+  "Minigin/Components/LivesDisplayComponent.cpp"
+  "Minigin/Components/PointsDisplayComponent.cpp"
+  "Minigin/Commands/PlayerDeathCommand.cpp"
+  "Minigin/Commands/AddScoreCommand.cpp"
+  "Minigin/Controller/ControllerManager.cpp"
+  "Minigin/SteamManager.cpp")
 
 # enable c++20 features
 target_compile_features(${TARGET_NAME} PUBLIC cxx_std_20)
@@ -153,6 +162,7 @@ target_include_directories("${TARGET_NAME}" PUBLIC
   ${sdl3_ttf_SOURCE_DIR}/include
   ${imgui_SOURCE_DIR}
   ${VLD_INCLUDE_DIR}
+  ${Steamworks_INCLUDE_DIRS}
 )
 
 target_link_libraries("${TARGET_NAME}" PUBLIC
@@ -161,6 +171,7 @@ target_link_libraries("${TARGET_NAME}" PUBLIC
   glm::glm
   imgui
   ${VLD_LIBRARIES}
+  ${Steamworks_LIBRARIES}
 )
 
 if(WIN32)
