@@ -1,7 +1,9 @@
 #include "ScoreComponent.h"
 #include "GameObject.h"
 #include "../EventManager.h"
+#ifdef USE_STEAMWORKS
 #include "../SteamManager.h"
+#endif
 #include "../Hash.h"
 
 dae::ScoreComponent::ScoreComponent(GameObject* Parent)
@@ -35,9 +37,10 @@ void dae::ScoreComponent::AddScore(int points)
 	std::any scoreData = m_score;
 	EventManager::GetInstance().Publish(eventHash, scoreData);
 
-	// Unlock achievement when score reaches 100
+#ifdef USE_STEAMWORKS
 	if (m_score >= 100)
 	{
 		SteamManager::GetInstance().UnlockAchievement("ACH_WIN_ONE_GAME");
 	}
+#endif
 }
