@@ -18,16 +18,11 @@
 #include "Components/TextRendererComponent.h"
 #include "Components/FPSCounterComponent.h"
 #include "Components/SpinnerComponent.h"
-#include "Components/HealthComponent.h"
 #include "Components/ScoreComponent.h"
-#include "Components/LivesDisplayComponent.h"
-#include "Components/PointsDisplayComponent.h"
 #include "ResourceManager.h"
-#include <Components/ObjectMoveComponent.h>
-#include <Commands/MovementInputCommand.h>
-#include <Commands/PlayerDeathCommand.h>
-#include <Commands/AddScoreCommand.h>
-#include <InputManager.h>
+#include "Components/ObjectMoveComponent.h"
+#include "Commands/MovementInputCommand.h"
+#include "InputManager.h"
 
 #include "Controller/GamepadButton.h"
 
@@ -41,7 +36,7 @@ static void load()
 	//Debugger::GetInstance().LogWarning("this shouldn't happen - I'll take care of it");
 	//Debugger::GetInstance().LogDebug("you've reached line 26! nice!!");
 
-	auto go = std::make_unique<dae::GameObject>("Background");
+	/*auto go = std::make_unique<dae::GameObject>("Background");
 	std::string BGName{ "background.png" };
 	go->AddComponent<dae::TextureRenderComponent>(BGName);
 	scene.Add(std::move(go));
@@ -177,7 +172,7 @@ static void load()
 	auto InstructionsText2 = std::make_unique<dae::GameObject>("InstructionsText2");
 	InstructionsText2->AddComponent<dae::TextRenderComponent>("Player 2: DPad | Die: X | Score: A", whiteCol, smallFont);
 	InstructionsText2->SetPosition(10, 70);
-	scene.Add(std::move(InstructionsText2));
+	scene.Add(std::move(InstructionsText2));*/
 }
 
 int main(int, char*[]) {

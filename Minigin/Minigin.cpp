@@ -16,9 +16,6 @@
 #include "SceneManager.h"
 #include "Renderer.h"
 #include "ResourceManager.h"
-#ifdef USE_STEAMWORKS
-#include "SteamManager.h"
-#endif
 #include "Timing.h"
 
 SDL_Window* g_window{};
@@ -70,7 +67,7 @@ dae::Minigin::Minigin(const std::filesystem::path& dataPath)
 	}
 
 	g_window = SDL_CreateWindow(
-		"Programming 4 assignment",
+		"Dig Dug",
 		1024,
 		576,
 		SDL_WINDOW_OPENGL
@@ -82,10 +79,6 @@ dae::Minigin::Minigin(const std::filesystem::path& dataPath)
 
 	Renderer::GetInstance().Init(g_window);
 	ResourceManager::GetInstance().Init(dataPath);
-
-#ifdef USE_STEAMWORKS
-	SteamManager::GetInstance().Init();
-#endif
 }
 
 dae::Minigin::~Minigin()
@@ -116,10 +109,6 @@ void dae::Minigin::RunOneFrame()
 	const float deltaTime = std::chrono::duration<float>(currentTime - m_lastTime).count();
 	m_lastTime = currentTime;
 	Timing::GetInstance().SetTimings(deltaTime);
-
-#ifdef USE_STEAMWORKS
-	SteamManager::GetInstance().ProcessEvents();
-#endif
 
 	m_quit = !InputManager::GetInstance().ProcessInput();
 
