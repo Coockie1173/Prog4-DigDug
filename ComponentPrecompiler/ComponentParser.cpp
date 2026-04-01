@@ -433,10 +433,11 @@ bool ComponentParser::GenerateBarebonesGameObject(const std::string& gameObjectP
     headerFile << "    class GameObject_Barebones\n";
     headerFile << "    {\n";
     headerFile << "    public:\n";
-    headerFile << "        GameObject_Barebones() = default;\n";
+    headerFile << "        static inline int s_nextId = 0;\n";
+    headerFile << "        \n";
+    headerFile << "        GameObject_Barebones() : m_id(s_nextId++) {}\n";
     headerFile << "        ~GameObject_Barebones() = default;\n\n";
-    headerFile << "        GameObject_Barebones() = default;\n";
-    headerFile << "        ~GameObject_Barebones() = default;\n\n";
+    headerFile << "        int GetId() const noexcept { return m_id; }\n\n";
 
     for (const auto& prop : exposedProps)
     {
@@ -450,14 +451,39 @@ bool ComponentParser::GenerateBarebonesGameObject(const std::string& gameObjectP
         headerFile << "\n";
     }
 
+    headerFile << "        GameObject_Barebones* GetParent() const noexcept { return m_parent; }\n";
+    headerFile << "        void SetParent(GameObject_Barebones* parent) { m_parent = parent; }\n\n";
+    headerFile << "        const std::vector<GameObject_Barebones*>& GetChildren() const noexcept { return m_children; }\n";
+    headerFile << "        std::vector<GameObject_Barebones*>& GetChildren() noexcept { return m_children; }\n\n";
+    headerFile << "        void AddChild(GameObject_Barebones* child)\n";
+    headerFile << "        {\n";
+    headerFile << "            if (!child) return;\n";
+    headerFile << "            if (child->m_parent) child->m_parent->RemoveChild(child);\n";
+    headerFile << "            m_children.push_back(child);\n";
+    headerFile << "            child->m_parent = this;\n";
+    headerFile << "        }\n\n";
+    headerFile << "        void RemoveChild(GameObject_Barebones* child)\n";
+    headerFile << "        {\n";
+    headerFile << "            auto it = std::find(m_children.begin(), m_children.end(), child);\n";
+    headerFile << "            if (it != m_children.end())\n";
+    headerFile << "            {\n";
+    headerFile << "                m_children.erase(it);\n";
+    headerFile << "                child->m_parent = nullptr;\n";
+    headerFile << "            }\n";
+    headerFile << "        }\n\n";
+
     headerFile << "    private:\n";
     headerFile << "        GameObject_Barebones(const GameObject_Barebones&) = delete;\n";
     headerFile << "        GameObject_Barebones& operator=(const GameObject_Barebones&) = delete;\n\n";
+    headerFile << "        int m_id;\n";
 
     for (const auto& prop : exposedProps)
     {
         headerFile << "        " << prop.type << " m_" << prop.name << "{};\n";
     }
+
+    headerFile << "        GameObject_Barebones* m_parent = nullptr;\n";
+    headerFile << "        std::vector<GameObject_Barebones*> m_children;\n";
 
     headerFile << "    };\n";
     headerFile << "}\n\n";

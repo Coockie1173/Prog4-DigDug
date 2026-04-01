@@ -2,6 +2,9 @@
 #include <imgui.h>
 #include <backends/imgui_impl_sdl3.h>
 #include <backends/imgui_impl_sdlrenderer3.h>
+#include "EditorScene.h"
+#include "SceneViewport.h"
+#include "EditorUI.h"
 
 constexpr int WINDOW_WIDTH = 1024;
 constexpr int WINDOW_HEIGHT = 576;
@@ -51,8 +54,16 @@ int main()
     ImGui_ImplSDL3_InitForSDLRenderer(window, renderer);
     ImGui_ImplSDLRenderer3_Init(renderer);
 
+    EditorScene scene;
+    SceneViewport viewport(renderer, WINDOW_WIDTH, WINDOW_HEIGHT);
+    EditorUI ui;
+
     bool running = true;
     SDL_Event event;
+
+    char newGameObjectName[256] = "GameObject";
+    dae::GameObject_Barebones* selectedObject = nullptr;
+    dae::GameObject_Barebones* deleteTarget = nullptr;
 
     while (running)
     {
@@ -64,37 +75,43 @@ int main()
             {
                 running = false;
             }
+            else if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN && event.button.button == SDL_BUTTON_LEFT)
+            {
+                int mouseX = static_cast<int>(event.button.x);
+                int mouseY = static_cast<int>(event.button.y);
+
+                if (!ImGui::GetIO().WantCaptureMouse)
+                {
+                    dae::GameObject_Barebones* clickedObject = viewport.GetGameObjectAtScreenPos(
+                        scene.GetAllObjects(), mouseX, mouseY);
+                    if (clickedObject)
+                    {
+                        selectedObject = clickedObject;
+                    }
+                }
+            }
         }
 
         ImGui_ImplSDLRenderer3_NewFrame();
         ImGui_ImplSDL3_NewFrame();
         ImGui::NewFrame();
 
-        ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
-        ImGui::SetNextWindowSize(ImVec2(WINDOW_WIDTH, WINDOW_HEIGHT), ImGuiCond_FirstUseEver);
-
-        ImGuiViewport* viewport = ImGui::GetMainViewport();
-        ImGui::DockSpaceOverViewport(0, viewport, ImGuiDockNodeFlags_PassthruCentralNode);
-
-        if (ImGui::BeginMainMenuBar())
+        if (ImGui::IsKeyPressed(ImGuiKey_Escape))
         {
-            if (ImGui::BeginMenu("File"))
-            {
-                if (ImGui::MenuItem("Exit", "Ctrl+Q"))
-                {
-                    running = false;
-                }
-                ImGui::EndMenu();
-            }
-            ImGui::EndMainMenuBar();
+            running = false;
         }
 
-        ImGui::ShowDemoWindow();
+        ui.RenderSceneGraphPanel(scene, selectedObject, deleteTarget);
+        ui.RenderPropertiesPanel(selectedObject);
+        ui.RenderDialogs(scene, selectedObject, deleteTarget);
 
         ImGui::Render();
 
         SDL_SetRenderDrawColor(renderer, 45, 45, 48, 255);
         SDL_RenderClear(renderer);
+
+        viewport.Render(scene.GetAllObjects(), selectedObject);
+
         ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), renderer);
 
         SDL_RenderPresent(renderer);

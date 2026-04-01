@@ -204,14 +204,28 @@ if(BUILD_EDITOR AND NOT EMSCRIPTEN)
     COMMENT "Generating barebones components..."
   )
 
+  # Glob all .cpp files from generated components directory
+  file(GLOB GENERATED_CPP_FILES "${EDITOR_OUTPUT_DIR}/*.cpp")
+
   add_executable(minigin_editor
     editor/Main.cpp
-    ${EDITOR_OUTPUT_DIR}/ComponentRegisterMaster.cpp
+    editor/EditorScene.cpp
+    editor/SceneViewport.cpp
+    editor/EditorUI.cpp
+    ${GENERATED_CPP_FILES}
     ${COMMON_SOURCES}
   )
 
   # Ensure precompiler runs before building editor
   add_dependencies(minigin_editor GenerateBarebonesComponents)
+
+  # Mark all generated .cpp files as generated to tell CMake not to check for them upfront
+  if(GENERATED_CPP_FILES)
+    set_source_files_properties(
+      ${GENERATED_CPP_FILES}
+      PROPERTIES GENERATED TRUE
+    )
+  endif()
 
   target_compile_features(minigin_editor PUBLIC cxx_std_20)
 
