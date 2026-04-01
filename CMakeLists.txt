@@ -320,7 +320,7 @@ else()
 endif()
 
 # Editor-specific post-build commands (Windows)
-if(NOT EMSCRIPTEN AND WIN32)
+if(BUILD_EDITOR AND NOT EMSCRIPTEN AND WIN32)
   set(EDITOR_SDL_DLLS
     SDL3::SDL3
     SDL3_ttf::SDL3_ttf
@@ -339,11 +339,11 @@ if(NOT EMSCRIPTEN AND WIN32)
   add_custom_command(TARGET minigin_editor POST_BUILD
     COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/Data" "$<TARGET_FILE_DIR:minigin_editor>/Data"
   )
-elseif(NOT EMSCRIPTEN AND APPLE)
+elseif(BUILD_EDITOR AND NOT EMSCRIPTEN AND APPLE)
   add_custom_command(TARGET minigin_editor POST_BUILD
     COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/Data" "$<TARGET_FILE_DIR:minigin_editor>/Data"
   )
-elseif(NOT EMSCRIPTEN)
+elseif(BUILD_EDITOR AND NOT EMSCRIPTEN)
   add_custom_command(TARGET minigin_editor POST_BUILD
     COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/Data" "$<TARGET_FILE_DIR:minigin_editor>/Data"
   )
