@@ -5,8 +5,12 @@ if(EMSCRIPTEN)
   message("Using Emscripten!")
 endif()
 
-# Add precompiler as a subdirectory for editor builds
-add_subdirectory(ComponentPrecompiler)
+set(BUILD_EDITOR ON CACHE BOOL "Build the editor executable")
+
+# Only add precompiler as a subdirectory if building editor
+if(BUILD_EDITOR)
+  add_subdirectory(ComponentPrecompiler)
+endif()
 
 if(EMSCRIPTEN)
   set(TARGET_NAME minigin_web)
@@ -188,12 +192,12 @@ else()
 endif()
 
 # Editor executable (desktop only, not for Emscripten)
-if(NOT EMSCRIPTEN)
+if(BUILD_EDITOR AND NOT EMSCRIPTEN)
   set(EDITOR_OUTPUT_DIR "${CMAKE_SOURCE_DIR}/editor/gencomponents")
 
   # Run precompiler to generate barebones components before building editor
   add_custom_target(GenerateBarebonesComponents ALL
-    COMMAND $<TARGET_FILE:ComponentPrecompiler> 
+    COMMAND $<TARGET_FILE:ComponentPrecompiler>
       "${CMAKE_SOURCE_DIR}/Minigin/Components"
       "${CMAKE_SOURCE_DIR}/Minigin/GameObject.h"
       "${EDITOR_OUTPUT_DIR}"
