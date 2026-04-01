@@ -20,10 +20,14 @@ namespace dae
 		std::vector<std::unique_ptr<Component>> m_attachedComponents{};
 		std::vector<GameObject*> m_children{};
 		GameObject* m_parent;
+		// EXPOSE_TO_EDITOR("Name", "Name of the game object")
 		std::string m_objectName{};
+		// EXPOSE_TO_EDITOR("Is Debug", "Whether this is a debug object")
 		bool m_isDebugData{};
 		bool m_markedForRemoval{};
+		// EXPOSE_TO_EDITOR("Local Position", "Position relative to parent")
 		glm::vec2 m_localPosition;
+		// EXPOSE_TO_EDITOR("World Position", "Absolute position in world space")
 		glm::vec2 m_worldPosition;
 
 		bool m_positionIsDirty{false};

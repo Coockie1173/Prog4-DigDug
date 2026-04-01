@@ -1,0 +1,7 @@
+# Generated barebones components
+Component_Barebones.h
+*_Barebones.h
+*_Barebones.cpp
+ComponentRegisterMaster.h
+ComponentRegisterMaster.cpp
+GameObject_Barebones.h

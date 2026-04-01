@@ -1,0 +1,468 @@
+#include "ComponentParser.h"
+#include <iostream>
+#include <filesystem>
+#include <fstream>
+#include <sstream>
+#include <regex>
+#include <unordered_set>
+
+namespace fs = std::filesystem;
+
+bool ComponentParser::ParseComponentDirectory(const std::string& componentDir, const std::string& gameObjectPath, const std::string& outputDir)
+{
+    if (!fs::exists(componentDir))
+    {
+        std::cerr << "Component directory not found: " << componentDir << std::endl;
+        return false;
+    }
+
+    fs::create_directories(outputDir);
+    std::vector<ComponentInfo> components;
+    std::unordered_set<std::string> seenClassNames;
+
+    for (const auto& entry : fs::recursive_directory_iterator(componentDir))
+    {
+        if (entry.path().extension() == ".h" && entry.path().filename().string().find("Component") != std::string::npos)
+        {
+            ComponentInfo info;
+            if (ParseComponentFile(entry.path().string(), info))
+            {
+                if (seenClassNames.find(info.className) == seenClassNames.end())
+                {
+                    seenClassNames.insert(info.className);
+                    std::string outputFilename = (fs::path(outputDir) / (info.className + "_Barebones.h")).string();
+                    if (GenerateBarebonesComponent(info, outputFilename))
+                    {
+                        components.push_back(info);
+                    }
+                }
+            }
+        }
+    }
+
+    // Generate the base Component_Barebones class first
+    GenerateBaseComponentBarebones(outputDir);
+
+    // Generate the master registration file
+    if (!components.empty())
+    {
+        GenerateRegisterMaster(components, outputDir);
+    }
+
+    GenerateBarebonesGameObject(gameObjectPath, outputDir);
+
+    return true;
+}
+
+bool ComponentParser::ParseComponentFile(const std::string& filepath, ComponentInfo& info)
+{
+    info.filename = fs::path(filepath).filename().string();
+
+    std::ifstream file(filepath);
+    if (!file.is_open())
+    {
+        std::cerr << "Failed to open: " << filepath << std::endl;
+        return false;
+    }
+
+    std::string line;
+    std::string prevLine;
+    bool foundClass = false;
+
+    while (std::getline(file, line))
+    {
+        // Look for class definition
+        if (!foundClass && line.find("class ") != std::string::npos && line.find("Component") != std::string::npos)
+        {
+            size_t classPos = line.find("class ");
+            if (classPos != std::string::npos)
+            {
+                size_t start = classPos + 6;
+                size_t end = line.find_first_of(" \t:;", start);
+                if (end == std::string::npos)
+                    end = line.length();
+
+                info.className = line.substr(start, end - start);
+
+                // Trim whitespace
+                info.className.erase(0, info.className.find_first_not_of(" \t"));
+                info.className.erase(info.className.find_last_not_of(" \t") + 1);
+
+                if (info.className != "final")
+                {
+                    foundClass = true;
+                }
+            }
+        }
+
+        // Look for EXPOSE_TO_EDITOR annotations
+        if (prevLine.find("EXPOSE_TO_EDITOR") != std::string::npos && foundClass)
+        {
+            Property prop;
+            if (ExtractPropertyFromLine(line, prop))
+            {
+                // Extract metadata from annotation if present
+                size_t openParen = prevLine.find("(");
+                size_t closeParen = prevLine.find(")");
+                if (openParen != std::string::npos && closeParen != std::string::npos)
+                {
+                    std::string metadata = prevLine.substr(openParen + 1, closeParen - openParen - 1);
+
+                    // Extract display name (first string)
+                    size_t firstQuote = metadata.find("\"");
+                    if (firstQuote != std::string::npos)
+                    {
+                        size_t secondQuote = metadata.find("\"", firstQuote + 1);
+                        if (secondQuote != std::string::npos)
+                        {
+                            prop.displayName = metadata.substr(firstQuote + 1, secondQuote - firstQuote - 1);
+                        }
+                    }
+
+                    // Extract tooltip (second string)
+                    size_t thirdQuote = metadata.find("\"", firstQuote + 1);
+                    if (thirdQuote != std::string::npos)
+                    {
+                        thirdQuote = metadata.find("\"", thirdQuote + 1);
+                        if (thirdQuote != std::string::npos)
+                        {
+                            size_t fourthQuote = metadata.find("\"", thirdQuote + 1);
+                            if (fourthQuote != std::string::npos)
+                            {
+                                prop.tooltip = metadata.substr(thirdQuote + 1, fourthQuote - thirdQuote - 1);
+                            }
+                        }
+                    }
+                }
+
+                // If no display name was provided, use the property name
+                if (prop.displayName.empty())
+                {
+                    prop.displayName = prop.name;
+                }
+
+                info.exposedProperties.push_back(prop);
+            }
+        }
+
+        prevLine = line;
+    }
+
+    file.close();
+    return !info.className.empty();
+}
+
+bool ComponentParser::ExtractPropertyFromLine(const std::string& line, Property& prop)
+{
+    std::string trimmed = line;
+    trimmed.erase(0, trimmed.find_first_not_of(" \t"));
+
+    if (trimmed.empty() || trimmed[0] == '/' || trimmed[0] == '*')
+        return false;
+
+    std::regex propRegex(R"(^\s*([a-zA-Z_][a-zA-Z0-9_:<>*&,\s]*?)\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*(?:\{[^}]*\})?.*?;)");
+    std::smatch match;
+
+    if (std::regex_search(line, match, propRegex))
+    {
+        prop.type = match[1].str();
+        prop.name = match[2].str();
+
+        prop.type.erase(0, prop.type.find_first_not_of(" \t"));
+        prop.type.erase(prop.type.find_last_not_of(" \t") + 1);
+
+        if (prop.name.length() > 2 && prop.name[0] == 'm' && prop.name[1] == '_')
+        {
+            prop.name = prop.name.substr(2);
+        }
+
+        return !prop.type.empty() && !prop.name.empty();
+    }
+
+    return false;
+}
+
+void ComponentParser::WriteBarebonesHeader(std::ofstream& file, const std::string& guardName, 
+                                           const std::string& baseClass, const std::vector<Property>& properties, 
+                                           bool isBaseClass)
+{
+    file << "#ifndef " << guardName << "\n";
+    file << "#define " << guardName << "\n\n";
+    file << "#include <glm/glm.hpp>\n";
+    file << "#include <string>\n";
+
+    if (!baseClass.empty() && !isBaseClass)
+    {
+        file << "#include \"Component_Barebones.h\"\n";
+    }
+    file << "\n";
+    file << "namespace dae\n";
+    file << "{\n";
+}
+
+bool ComponentParser::GenerateBaseComponentBarebones(const std::string& outputDir)
+{
+    std::string headerPath = (fs::path(outputDir) / "Component_Barebones.h").string();
+    std::ofstream headerFile(headerPath);
+    if (!headerFile.is_open())
+    {
+        std::cerr << "Failed to create Component_Barebones.h" << std::endl;
+        return false;
+    }
+
+    std::string guardName = "COMPONENT_BAREBONES_H";
+
+    headerFile << "#ifndef " << guardName << "\n";
+    headerFile << "#define " << guardName << "\n\n";
+    headerFile << "namespace dae\n";
+    headerFile << "{\n";
+    headerFile << "    class Component_Barebones\n";
+    headerFile << "    {\n";
+    headerFile << "    public:\n";
+    headerFile << "        Component_Barebones() = default;\n";
+    headerFile << "        virtual ~Component_Barebones() = default;\n\n";
+    headerFile << "        virtual void RegisterComponentStatic() = 0;\n\n";
+    headerFile << "    private:\n";
+    headerFile << "        Component_Barebones(const Component_Barebones&) = delete;\n";
+    headerFile << "        Component_Barebones& operator=(const Component_Barebones&) = delete;\n";
+    headerFile << "    };\n";
+    headerFile << "}\n\n";
+    headerFile << "#endif // " << guardName << "\n";
+
+    headerFile.close();
+    return true;
+}
+
+bool ComponentParser::GenerateBarebonesComponent(const ComponentInfo& info, const std::string& outputPath)
+{
+    std::ofstream outFile(outputPath);
+    if (!outFile.is_open())
+    {
+        std::cerr << "Failed to create output file: " << outputPath << std::endl;
+        return false;
+    }
+
+    std::string guardName = info.className + "_BAREBONES_H";
+
+    outFile << "#ifndef " << guardName << "\n";
+    outFile << "#define " << guardName << "\n\n";
+    outFile << "#include <glm/glm.hpp>\n";
+    outFile << "#include <string>\n";
+    outFile << "#include \"Component_Barebones.h\"\n\n";
+    outFile << "namespace dae\n";
+    outFile << "{\n";
+    outFile << "    class " << info.className << "_Barebones : public Component_Barebones\n";
+    outFile << "    {\n";
+    outFile << "    public:\n";
+    outFile << "        " << info.className << "_Barebones() = default;\n";
+    outFile << "        virtual ~" << info.className << "_Barebones() = default;\n";
+    outFile << "\n";
+
+    for (const auto& prop : info.exposedProperties)
+    {
+        std::string accessorName = prop.name;
+        if (!accessorName.empty())
+        {
+            accessorName[0] = static_cast<char>(std::toupper(accessorName[0]));
+        }
+        outFile << "        const " << prop.type << "& Get" << accessorName << "() const { return m_" << prop.name << "; }\n";
+        outFile << "        void Set" << accessorName << "(const " << prop.type << "& value) { m_" << prop.name << " = value; }\n";
+        outFile << "\n";
+    }
+
+    outFile << "        void RegisterComponentStatic() override;\n";
+    outFile << "\n";
+    outFile << "    private:\n";
+    outFile << "        " << info.className << "_Barebones(const " << info.className << "_Barebones&) = delete;\n";
+    outFile << "        " << info.className << "_Barebones& operator=(const " << info.className << "_Barebones&) = delete;\n";
+    outFile << "\n";
+
+    // Generate member variables
+    for (const auto& prop : info.exposedProperties)
+    {
+        outFile << "        " << prop.type << " m_" << prop.name << "{};\n";
+    }
+
+    outFile << "    };\n";
+    outFile << "}\n\n";
+    outFile << "#endif // " << guardName << "\n";
+
+    outFile.close();
+    return true;
+}
+
+bool ComponentParser::GenerateRegisterMaster(const std::vector<ComponentInfo>& components, const std::string& outputDir)
+{
+    // Generate header file
+    std::string headerPath = (fs::path(outputDir) / "ComponentRegisterMaster.h").string();
+    std::ofstream headerFile(headerPath);
+    if (!headerFile.is_open())
+    {
+        std::cerr << "Failed to create ComponentRegisterMaster.h" << std::endl;
+        return false;
+    }
+
+    headerFile << "#ifndef COMPONENT_REGISTER_MASTER_H\n";
+    headerFile << "#define COMPONENT_REGISTER_MASTER_H\n\n";
+    headerFile << "namespace dae\n";
+    headerFile << "{\n";
+    headerFile << "    // Register all barebones components\n";
+    headerFile << "    void RegisterAllComponents();\n";
+    headerFile << "}\n\n";
+    headerFile << "#endif // COMPONENT_REGISTER_MASTER_H\n";
+    headerFile.close();
+
+    // Generate implementation file
+    std::string implPath = (fs::path(outputDir) / "ComponentRegisterMaster.cpp").string();
+    std::ofstream implFile(implPath);
+    if (!implFile.is_open())
+    {
+        std::cerr << "Failed to create ComponentRegisterMaster.cpp" << std::endl;
+        return false;
+    }
+
+    implFile << "#include \"ComponentRegisterMaster.h\"\n";
+    for (const auto& comp : components)
+    {
+        implFile << "#include \"" << comp.className << "_Barebones.h\"\n";
+    }
+    implFile << "\n";
+    implFile << "namespace dae\n";
+    implFile << "{\n";
+
+    for (const auto& comp : components)
+    {
+        implFile << "    void " << comp.className << "_Barebones::RegisterComponentStatic()\n";
+        implFile << "    {\n";
+        implFile << "    }\n\n";
+    }
+
+    implFile << "    void RegisterAllComponents()\n";
+    implFile << "    {\n";
+    for (const auto& comp : components)
+    {
+        if (comp.className != "Component")
+        {
+            implFile << "        {\n";
+            implFile << "            " << comp.className << "_Barebones instance;\n";
+            implFile << "            instance.RegisterComponentStatic();\n";
+            implFile << "        }\n";
+        }
+    }
+    implFile << "    }\n";
+    implFile << "}\n";
+    implFile.close();
+    return true;
+}
+
+bool ComponentParser::GenerateBarebonesGameObject(const std::string& gameObjectPath, const std::string& outputDir)
+{
+    std::vector<Property> exposedProps;
+
+    std::ifstream file(gameObjectPath);
+    if (!file.is_open())
+    {
+        std::cerr << "Failed to open GameObject.h: " << gameObjectPath << std::endl;
+        return false;
+    }
+
+    std::string line;
+    std::string prevLine;
+    while (std::getline(file, line))
+    {
+        if (prevLine.find("EXPOSE_TO_EDITOR") != std::string::npos)
+        {
+            Property prop;
+            if (ExtractPropertyFromLine(line, prop))
+            {
+                size_t openParen = prevLine.find("(");
+                size_t closeParen = prevLine.find(")");
+                if (openParen != std::string::npos && closeParen != std::string::npos)
+                {
+                    std::string metadata = prevLine.substr(openParen + 1, closeParen - openParen - 1);
+                    size_t firstQuote = metadata.find("\"");
+                    if (firstQuote != std::string::npos)
+                    {
+                        size_t secondQuote = metadata.find("\"", firstQuote + 1);
+                        if (secondQuote != std::string::npos)
+                        {
+                            prop.displayName = metadata.substr(firstQuote + 1, secondQuote - firstQuote - 1);
+                        }
+                    }
+                    size_t thirdQuote = metadata.find("\"", firstQuote + 1);
+                    if (thirdQuote != std::string::npos)
+                    {
+                        thirdQuote = metadata.find("\"", thirdQuote + 1);
+                        if (thirdQuote != std::string::npos)
+                        {
+                            size_t fourthQuote = metadata.find("\"", thirdQuote + 1);
+                            if (fourthQuote != std::string::npos)
+                            {
+                                prop.tooltip = metadata.substr(thirdQuote + 1, fourthQuote - thirdQuote - 1);
+                            }
+                        }
+                    }
+                }
+                if (prop.displayName.empty())
+                {
+                    prop.displayName = prop.name;
+                }
+                exposedProps.push_back(prop);
+            }
+        }
+        prevLine = line;
+    }
+    file.close();
+
+    std::string headerPath = (fs::path(outputDir) / "GameObject_Barebones.h").string();
+    std::ofstream headerFile(headerPath);
+    if (!headerFile.is_open())
+    {
+        std::cerr << "Failed to create GameObject_Barebones.h" << std::endl;
+        return false;
+    }
+
+    headerFile << "#ifndef GAMEOBJECT_BAREBONES_H\n";
+    headerFile << "#define GAMEOBJECT_BAREBONES_H\n\n";
+    headerFile << "#include <glm/glm.hpp>\n";
+    headerFile << "#include <string>\n";
+    headerFile << "#include <vector>\n";
+    headerFile << "#include <algorithm>\n\n";
+    headerFile << "namespace dae\n";
+    headerFile << "{\n";
+    headerFile << "    class GameObject_Barebones\n";
+    headerFile << "    {\n";
+    headerFile << "    public:\n";
+    headerFile << "        GameObject_Barebones() = default;\n";
+    headerFile << "        ~GameObject_Barebones() = default;\n\n";
+    headerFile << "        GameObject_Barebones() = default;\n";
+    headerFile << "        ~GameObject_Barebones() = default;\n\n";
+
+    for (const auto& prop : exposedProps)
+    {
+        std::string accessorName = prop.name;
+        if (!accessorName.empty())
+        {
+            accessorName[0] = static_cast<char>(std::toupper(accessorName[0]));
+        }
+        headerFile << "        const " << prop.type << "& Get" << accessorName << "() const noexcept { return m_" << prop.name << "; }\n";
+        headerFile << "        void Set" << accessorName << "(const " << prop.type << "& value) { m_" << prop.name << " = value; }\n";
+        headerFile << "\n";
+    }
+
+    headerFile << "    private:\n";
+    headerFile << "        GameObject_Barebones(const GameObject_Barebones&) = delete;\n";
+    headerFile << "        GameObject_Barebones& operator=(const GameObject_Barebones&) = delete;\n\n";
+
+    for (const auto& prop : exposedProps)
+    {
+        headerFile << "        " << prop.type << " m_" << prop.name << "{};\n";
+    }
+
+    headerFile << "    };\n";
+    headerFile << "}\n\n";
+    headerFile << "#endif // GAMEOBJECT_BAREBONES_H\n";
+
+    headerFile.close();
+    return true;
+}

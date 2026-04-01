@@ -5,6 +5,9 @@ if(EMSCRIPTEN)
   message("Using Emscripten!")
 endif()
 
+# Add precompiler as a subdirectory for editor builds
+add_subdirectory(ComponentPrecompiler)
+
 if(EMSCRIPTEN)
   set(TARGET_NAME minigin_web)
   set(TARGET_PARAM )
@@ -13,12 +16,11 @@ else()
   set(TARGET_PARAM WIN32)
 endif()
 
-# list source files here
-add_executable(${TARGET_NAME} ${TARGET_PARAM}
+# Common source files (shared between game and editor)
+set(COMMON_SOURCES
   Minigin/Font.cpp
   Minigin/GameObject.cpp
   Minigin/InputManager.cpp
-  Minigin/Main.cpp
   Minigin/Minigin.cpp
   "Minigin/Components/RenderComponent.cpp"
   Minigin/ResourceManager.cpp
@@ -38,7 +40,14 @@ add_executable(${TARGET_NAME} ${TARGET_PARAM}
   "Minigin/Commands/MovementInputCommand.cpp"
   "Minigin/EventManager.cpp"
   "Minigin/Components/ScoreComponent.cpp" 
-  "Minigin/Controller/ControllerManager.cpp")
+  "Minigin/Controller/ControllerManager.cpp"
+)
+
+# Game executable
+add_executable(${TARGET_NAME} ${TARGET_PARAM}
+  Minigin/Main.cpp
+  ${COMMON_SOURCES}
+)
 
 # enable c++20 features
 target_compile_features(${TARGET_NAME} PUBLIC cxx_std_20)
@@ -178,6 +187,64 @@ else()
   target_compile_options(${TARGET_NAME} PRIVATE -Wall -Wextra -Werror)
 endif()
 
+# Editor executable (desktop only, not for Emscripten)
+if(NOT EMSCRIPTEN)
+  set(EDITOR_OUTPUT_DIR "${CMAKE_SOURCE_DIR}/editor/gencomponents")
+
+  # Run precompiler to generate barebones components before building editor
+  add_custom_target(GenerateBarebonesComponents ALL
+    COMMAND $<TARGET_FILE:ComponentPrecompiler> 
+      "${CMAKE_SOURCE_DIR}/Minigin/Components"
+      "${CMAKE_SOURCE_DIR}/Minigin/GameObject.h"
+      "${EDITOR_OUTPUT_DIR}"
+    COMMENT "Generating barebones components..."
+  )
+
+  add_executable(minigin_editor
+    editor/Main.cpp
+    ${EDITOR_OUTPUT_DIR}/ComponentRegisterMaster.cpp
+    ${COMMON_SOURCES}
+  )
+
+  # Ensure precompiler runs before building editor
+  add_dependencies(minigin_editor GenerateBarebonesComponents)
+
+  target_compile_features(minigin_editor PUBLIC cxx_std_20)
+
+  # Add generated components directory to include paths
+  target_include_directories(minigin_editor PUBLIC
+    "${EDITOR_OUTPUT_DIR}"
+    ${CMAKE_SOURCE_DIR}/Minigin/
+    ${glm_SOURCE_DIR}
+    ${sdl3_SOURCE_DIR}/include
+    ${sdl3_image_SOURCE_DIR}/include
+    ${sdl3_ttf_SOURCE_DIR}/include
+    ${imgui_SOURCE_DIR}
+    ${VLD_INCLUDE_DIR}
+  )
+
+  target_link_libraries(minigin_editor PUBLIC
+    SDL3::SDL3
+    SDL3_ttf::SDL3_ttf
+    glm::glm
+    imgui
+    ${VLD_LIBRARIES}
+  )
+
+  if(WIN32)
+    find_library(XINPUT_LIBRARY Xinput)
+    if(XINPUT_LIBRARY)
+      target_link_libraries(minigin_editor PUBLIC ${XINPUT_LIBRARY})
+    endif()
+  endif()
+
+  if(MSVC)
+    target_compile_options(minigin_editor PRIVATE /W4 /WX)
+  else()
+    target_compile_options(minigin_editor PRIVATE -Wall -Wextra -Werror)
+  endif()
+endif()
+
 if(EMSCRIPTEN)
   set(EMSCRIPTEN_COMPILE_FLAGS "${EMSCRIPTEN_LINK_FLAGS} -g")
   set(EMSCRIPTEN_LINK_FLAGS "${EMSCRIPTEN_LINK_FLAGS} -sUSE_FREETYPE=1 -sUSE_HARFBUZZ=1 -g -sALLOW_MEMORY_GROWTH --preload-file \"${CMAKE_SOURCE_DIR}/Data@/\"")
@@ -245,5 +312,35 @@ else()
   # Copy Data folder to output directory after build
   add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
     COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/Data" "$<TARGET_FILE_DIR:${TARGET_NAME}>/Data"
+  )
+endif()
+
+# Editor-specific post-build commands (Windows)
+if(NOT EMSCRIPTEN AND WIN32)
+  set(EDITOR_SDL_DLLS
+    SDL3::SDL3
+    SDL3_ttf::SDL3_ttf
+  )
+
+  foreach(dllTarget IN LISTS EDITOR_SDL_DLLS)
+    add_custom_command(
+      TARGET minigin_editor POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different
+          "$<TARGET_FILE:${dllTarget}>"
+          "$<TARGET_FILE_DIR:minigin_editor>"
+      VERBATIM
+    )
+  endforeach()
+
+  add_custom_command(TARGET minigin_editor POST_BUILD
+    COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/Data" "$<TARGET_FILE_DIR:minigin_editor>/Data"
+  )
+elseif(NOT EMSCRIPTEN AND APPLE)
+  add_custom_command(TARGET minigin_editor POST_BUILD
+    COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/Data" "$<TARGET_FILE_DIR:minigin_editor>/Data"
+  )
+elseif(NOT EMSCRIPTEN)
+  add_custom_command(TARGET minigin_editor POST_BUILD
+    COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/Data" "$<TARGET_FILE_DIR:minigin_editor>/Data"
   )
 endif()
