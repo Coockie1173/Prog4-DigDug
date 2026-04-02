@@ -506,9 +506,12 @@ bool ComponentParser::GenerateBarebonesGameObject(const std::string& gameObjectP
     headerFile << "#include <glm/glm.hpp>\n";
     headerFile << "#include <string>\n";
     headerFile << "#include <vector>\n";
-    headerFile << "#include <algorithm>\n\n";
-    headerFile << "namespace dae\n";
-    headerFile << "{\n";
+    headerFile << "#include <algorithm>\n";
+    headerFile << "#include <memory>\n";
+    headerFile << "#include \"../EditorComponentData.h\"\n\n";
+     headerFile << "namespace dae\n";
+     headerFile << "{\n";
+     headerFile << "    using ComponentHandle = std::unique_ptr<ComponentInstance>;\n\n";
     headerFile << "    class GameObject_Barebones\n";
     headerFile << "    {\n";
     headerFile << "    public:\n";
@@ -550,48 +553,41 @@ bool ComponentParser::GenerateBarebonesGameObject(const std::string& gameObjectP
     headerFile << "                child->m_parent = nullptr;\n";
     headerFile << "            }\n";
     headerFile << "        }\n\n";
-    headerFile << "        const std::vector<void*>& GetComponents() const noexcept { return m_components; }\n";
-    headerFile << "        void AddComponent(void* component)\n";
+    headerFile << "        const std::vector<ComponentHandle>& GetComponents() const noexcept { return m_components; }\n";
+    headerFile << "        void AddComponent(ComponentHandle component)\n";
     headerFile << "        {\n";
     headerFile << "            if (!component) return;\n";
-    headerFile << "            m_components.push_back(component);\n";
+    headerFile << "            m_components.push_back(std::move(component));\n";
     headerFile << "        }\n\n";
-    headerFile << "        void RemoveComponent(void* component)\n";
+    headerFile << "        void RemoveComponent(const ComponentInstance* component)\n";
     headerFile << "        {\n";
-    headerFile << "            auto it = std::find(m_components.begin(), m_components.end(), component);\n";
-    headerFile << "            if (it != m_components.end())\n";
-    headerFile << "            {\n";
-    headerFile << "                m_components.erase(it);\n";
-    headerFile << "                delete component;\n";
-    headerFile << "            }\n";
+    headerFile << "            std::erase_if(m_components, [component](const ComponentHandle& handle) {\n";
+    headerFile << "                return handle.get() == component;\n";
+    headerFile << "            });\n";
     headerFile << "        }\n\n";
     headerFile << "        void ClearComponents()\n";
     headerFile << "        {\n";
-    headerFile << "            for (auto comp : m_components)\n";
-    headerFile << "            {\n";
-    headerFile << "                delete comp;\n";
-    headerFile << "            }\n";
     headerFile << "            m_components.clear();\n";
     headerFile << "        }\n\n";
 
-    headerFile << "    private:\n";
-    headerFile << "        GameObject_Barebones(const GameObject_Barebones&) = delete;\n";
-    headerFile << "        GameObject_Barebones& operator=(const GameObject_Barebones&) = delete;\n\n";
-    headerFile << "        int m_id;\n";
+        headerFile << "    private:\n";
+        headerFile << "        GameObject_Barebones(const GameObject_Barebones&) = delete;\n";
+        headerFile << "        GameObject_Barebones& operator=(const GameObject_Barebones&) = delete;\n\n";
+        headerFile << "        int m_id;\n";
 
-    for (const auto& prop : exposedProps)
-    {
-        headerFile << "        " << prop.type << " m_" << prop.name << "{};\n";
+        for (const auto& prop : exposedProps)
+        {
+            headerFile << "        " << prop.type << " m_" << prop.name << "{};\n";
+        }
+
+        headerFile << "        GameObject_Barebones* m_parent = nullptr;\n";
+        headerFile << "        std::vector<GameObject_Barebones*> m_children;\n";
+        headerFile << "        std::vector<ComponentHandle> m_components;\n";
+
+        headerFile << "    };\n";
+        headerFile << "}\n\n";
+        headerFile << "#endif // GAMEOBJECT_BAREBONES_H\n";
+
+        headerFile.close();
+        return true;
     }
-
-    headerFile << "        GameObject_Barebones* m_parent = nullptr;\n";
-    headerFile << "        std::vector<GameObject_Barebones*> m_children;\n";
-    headerFile << "        std::vector<void*> m_components;\n";
-
-    headerFile << "    };\n";
-    headerFile << "}\n\n";
-    headerFile << "#endif // GAMEOBJECT_BAREBONES_H\n";
-
-    headerFile.close();
-    return true;
-}

@@ -16,11 +16,11 @@ public:
     std::vector<std::unique_ptr<dae::GameObject_Barebones>>& GetAllObjects() { return m_objects; }
     const std::vector<std::unique_ptr<dae::GameObject_Barebones>>& GetAllObjects() const { return m_objects; }
 
-    void RegisterComponentType(dae::GameObject_Barebones* gameObject, void* componentPtr, const std::string& typeName);
-    void UnregisterComponentType(dae::GameObject_Barebones* gameObject, void* componentPtr);
-    std::string GetComponentType(dae::GameObject_Barebones* gameObject, void* componentPtr) const;
+    void RegisterComponentType(dae::GameObject_Barebones* gameObject, const dae::ComponentInstance* componentPtr, const std::string& typeName);
+     void UnregisterComponentType(dae::GameObject_Barebones* gameObject, const dae::ComponentInstance* componentPtr);
+     std::string GetComponentType(dae::GameObject_Barebones* gameObject, const dae::ComponentInstance* componentPtr) const;
 
 private:
     std::vector<std::unique_ptr<dae::GameObject_Barebones>> m_objects;
-    std::map<dae::GameObject_Barebones*, std::map<void*, std::string>> m_componentTypes;
+    std::map<dae::GameObject_Barebones*, std::map<const dae::ComponentInstance*, std::string>> m_componentTypes;
 };

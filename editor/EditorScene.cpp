@@ -1,4 +1,5 @@
 #include "EditorScene.h"
+#include "EditorUI.h"
 #include <algorithm>
 
 dae::GameObject_Barebones* EditorScene::CreateGameObject(const std::string& name, dae::GameObject_Barebones* parent)
@@ -38,15 +39,16 @@ std::vector<dae::GameObject_Barebones*> EditorScene::GetRootObjects() const
     return roots;
 }
 
-void EditorScene::RegisterComponentType(dae::GameObject_Barebones* gameObject, void* componentPtr, const std::string& typeName)
+void EditorScene::RegisterComponentType(dae::GameObject_Barebones* gameObject, const dae::ComponentInstance* componentPtr, const std::string& typeName)
 {
     if (!gameObject || !componentPtr) return;
     m_componentTypes[gameObject][componentPtr] = typeName;
 }
 
-void EditorScene::UnregisterComponentType(dae::GameObject_Barebones* gameObject, void* componentPtr)
+void EditorScene::UnregisterComponentType(dae::GameObject_Barebones* gameObject, const dae::ComponentInstance* componentPtr)
 {
-    if (!gameObject) return;
+    if (!gameObject || !componentPtr) return;
+
     auto it = m_componentTypes.find(gameObject);
     if (it != m_componentTypes.end())
     {
@@ -56,9 +58,10 @@ void EditorScene::UnregisterComponentType(dae::GameObject_Barebones* gameObject,
     }
 }
 
-std::string EditorScene::GetComponentType(dae::GameObject_Barebones* gameObject, void* componentPtr) const
+std::string EditorScene::GetComponentType(dae::GameObject_Barebones* gameObject, const dae::ComponentInstance* componentPtr) const
 {
-    if (!gameObject) return "";
+    if (!gameObject || !componentPtr) return "";
+
     auto it = m_componentTypes.find(gameObject);
     if (it != m_componentTypes.end())
     {
@@ -66,5 +69,6 @@ std::string EditorScene::GetComponentType(dae::GameObject_Barebones* gameObject,
         if (compIt != it->second.end())
             return compIt->second;
     }
+
     return "";
 }

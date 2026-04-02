@@ -2,17 +2,11 @@
 
 #include <imgui.h>
 #include "../gencomponents/GameObject_Barebones.h"
+#include "EditorComponentData.h"
 #include "EditorScene.h"
 #include <memory>
 #include <string>
 #include <map>
-
-struct ComponentInstance
-{
-    std::string componentType;
-    std::string componentName;
-    std::map<std::string, std::string> properties;
-};
 
 class EditorUI
 {

@@ -171,7 +171,7 @@ void EditorUI::RenderDialogs(EditorScene& scene, dae::GameObject_Barebones*& sel
 
             if (ImGui::Button("Add", ImVec2(120, 0)) && selectedObject && !m_selectedComponentType.empty())
             {
-                ComponentInstance newComponent;
+                dae::ComponentInstance newComponent;
                 newComponent.componentType = m_selectedComponentType;
                 newComponent.componentName = m_selectedComponentType + "_0";
 
@@ -188,9 +188,10 @@ void EditorUI::RenderDialogs(EditorScene& scene, dae::GameObject_Barebones*& sel
                     }
                 }
 
-                void* componentPtr = new ComponentInstance(newComponent);
-                selectedObject->AddComponent(componentPtr);
-                scene.RegisterComponentType(selectedObject, componentPtr, m_selectedComponentType);
+                auto handle = std::make_unique<dae::ComponentInstance>(std::move(newComponent));
+                 const auto* handlePtr = handle.get();
+                 selectedObject->AddComponent(std::move(handle));
+                 scene.RegisterComponentType(selectedObject, handlePtr, m_selectedComponentType);
                 m_selectedComponentType = "";
                 m_selectedComponentIndex = -1;
                 ImGui::CloseCurrentPopup();
@@ -326,8 +327,12 @@ void EditorUI::RenderComponentsPanel(EditorScene& scene, dae::GameObject_Barebon
 
             for (size_t i = 0; i < components.size(); ++i)
             {
-                void* compPtr = components[i];
-                ComponentInstance* comp = static_cast<ComponentInstance*>(compPtr);
+                const dae::ComponentHandle& compHandle = components[i];
+                const auto& comp = compHandle;
+                if (!comp)
+                {
+                    continue;
+                }
 
                 ImGui::PushID(static_cast<int>(i));
 
@@ -407,11 +412,14 @@ void EditorUI::RenderComponentsPanel(EditorScene& scene, dae::GameObject_Barebon
                     }
 
                     ImGui::Spacing();
-                    if (ImGui::Button("Remove Component##remove", ImVec2(ImGui::GetContentRegionAvail().x, 0)))
-                    {
-                        scene.UnregisterComponentType(selectedObject, compPtr);
-                        selectedObject->RemoveComponent(compPtr);
-                    }
+                     if (ImGui::Button("Remove Component##remove", ImVec2(ImGui::GetContentRegionAvail().x, 0)))
+                     {
+                         scene.UnregisterComponentType(selectedObject, comp.get());
+                         selectedObject->RemoveComponent(comp.get());
+                         // Break out of the loop since we modified the vector
+                         ImGui::PopID();
+                         break;
+                     }
                 }
 
                 ImGui::PopID();

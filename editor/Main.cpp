@@ -3,6 +3,7 @@
 #include <backends/imgui_impl_sdl3.h>
 #include <backends/imgui_impl_sdlrenderer3.h>
 #include <filesystem>
+#include <memory>
 #include "EditorScene.h"
 #include "SceneViewport.h"
 #include "EditorUI.h"
@@ -14,36 +15,41 @@ constexpr int WINDOW_HEIGHT = 576;
 
 int main()
 {
+    using WindowPtr = std::unique_ptr<SDL_Window, decltype(&SDL_DestroyWindow)>;
+    using RendererPtr = std::unique_ptr<SDL_Renderer, decltype(&SDL_DestroyRenderer)>;
+
     if (!SDL_InitSubSystem(SDL_INIT_VIDEO))
     {
         SDL_Log("SDL_Init failed: %s", SDL_GetError());
         return -1;
     }
 
-    SDL_Window* window = SDL_CreateWindow(
+    struct SDLShutdownGuard
+    {
+        ~SDLShutdownGuard() { SDL_QuitSubSystem(SDL_INIT_VIDEO); }
+    } sdlGuard;
+
+    WindowPtr window(SDL_CreateWindow(
         "Minigin Editor",
         WINDOW_WIDTH,
         WINDOW_HEIGHT,
         SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN
-    );
+    ), SDL_DestroyWindow);
 
     if (!window)
     {
         SDL_Log("SDL_CreateWindow failed: %s", SDL_GetError());
-        SDL_QuitSubSystem(SDL_INIT_VIDEO);
         return -1;
     }
 
-    SDL_Renderer* renderer = SDL_CreateRenderer(window, nullptr);
+    RendererPtr renderer(SDL_CreateRenderer(window.get(), nullptr), SDL_DestroyRenderer);
     if (!renderer)
     {
         SDL_Log("SDL_CreateRenderer failed: %s", SDL_GetError());
-        SDL_DestroyWindow(window);
-        SDL_QuitSubSystem(SDL_INIT_VIDEO);
         return -1;
     }
 
-    SDL_ShowWindow(window);
+    SDL_ShowWindow(window.get());
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -54,8 +60,18 @@ int main()
 
     ImGui::StyleColorsDark();
 
-    ImGui_ImplSDL3_InitForSDLRenderer(window, renderer);
-    ImGui_ImplSDLRenderer3_Init(renderer);
+    struct ImGuiShutdownGuard
+    {
+        ~ImGuiShutdownGuard()
+        {
+            ImGui_ImplSDLRenderer3_Shutdown();
+            ImGui_ImplSDL3_Shutdown();
+            ImGui::DestroyContext();
+        }
+    } imguiGuard;
+
+    ImGui_ImplSDL3_InitForSDLRenderer(window.get(), renderer.get());
+    ImGui_ImplSDLRenderer3_Init(renderer.get());
 
     std::filesystem::path dataPath = std::filesystem::path(__FILE__).parent_path() / "Data";
     if (!std::filesystem::exists(dataPath))
@@ -68,14 +84,13 @@ int main()
     TTF_Font* ttfFont = font->GetFont();
 
     EditorScene scene;
-    SceneViewport viewport(renderer, WINDOW_WIDTH, WINDOW_HEIGHT);
+    SceneViewport viewport(renderer.get(), WINDOW_WIDTH, WINDOW_HEIGHT);
     viewport.SetFont(ttfFont);
     EditorUI ui;
 
     bool running = true;
     SDL_Event event;
 
-    char newGameObjectName[256] = "GameObject";
     dae::GameObject_Barebones* selectedObject = nullptr;
     dae::GameObject_Barebones* deleteTarget = nullptr;
 
@@ -122,23 +137,15 @@ int main()
 
         ImGui::Render();
 
-        SDL_SetRenderDrawColor(renderer, 45, 45, 48, 255);
-        SDL_RenderClear(renderer);
+        SDL_SetRenderDrawColor(renderer.get(), 45, 45, 48, 255);
+        SDL_RenderClear(renderer.get());
 
         viewport.Render(scene, scene.GetAllObjects(), selectedObject);
 
-        ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), renderer);
+        ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), renderer.get());
 
-        SDL_RenderPresent(renderer);
+        SDL_RenderPresent(renderer.get());
     }
-
-    ImGui_ImplSDLRenderer3_Shutdown();
-    ImGui_ImplSDL3_Shutdown();
-    ImGui::DestroyContext();
-
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
-    SDL_QuitSubSystem(SDL_INIT_VIDEO);
 
     return 0;
 }

@@ -7,6 +7,7 @@
 #include <string>
 #include <glm/glm.hpp>
 #include "../gencomponents/GameObject_Barebones.h"
+#include "EditorComponentData.h"
 #include <SDL3_ttf/SDL_ttf.h>
 
 class EditorScene;
@@ -14,6 +15,8 @@ class EditorScene;
 class SceneViewport
 {
 public:
+    using TexturePtr = std::unique_ptr<SDL_Texture, decltype(&SDL_DestroyTexture)>;
+
     SceneViewport(SDL_Renderer* renderer, int width, int height);
     ~SceneViewport();
 
@@ -31,7 +34,7 @@ private:
     int m_width;
     int m_height;
     TTF_Font* m_font = nullptr;
-    std::unordered_map<std::string, SDL_Texture*> m_textureCache;
+    std::unordered_map<std::string, TexturePtr> m_textureCache;
 
     glm::vec2 ScreenToWorld(glm::vec2 screenPos) const;
     glm::vec2 WorldToScreen(glm::vec2 worldPos) const;

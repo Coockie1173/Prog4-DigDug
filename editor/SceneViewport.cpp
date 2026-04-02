@@ -1,6 +1,5 @@
 #include "SceneViewport.h"
 #include "EditorScene.h"
-#include "EditorUI.h"
 #include <cmath>
 #include <filesystem>
 #include "gencomponents/ComponentRegisterMaster.h"
@@ -13,17 +12,7 @@ SceneViewport::SceneViewport(SDL_Renderer* renderer, int width, int height)
 {
 }
 
-SceneViewport::~SceneViewport()
-{
-    for (auto& [_, texture] : m_textureCache)
-    {
-        if (texture)
-        {
-            SDL_DestroyTexture(texture);
-        }
-    }
-    m_textureCache.clear();
-}
+SceneViewport::~SceneViewport() = default;
 
 void SceneViewport::SetSize(int width, int height)
 {
@@ -162,16 +151,15 @@ void SceneViewport::RenderComponentsForObject(EditorScene& scene, dae::GameObjec
 
     const auto& components = obj->GetComponents();
 
-    for (const auto& compPtr : components)
+    for (const auto& compHandle : components)
     {
         // Get component type from EditorScene
-        std::string componentType = scene.GetComponentType(obj, const_cast<void*>(compPtr));
+        std::string componentType = scene.GetComponentType(obj, compHandle.get());
 
         if (componentType.empty())
             continue;
 
-        // Cast the component pointer to ComponentInstance
-        ComponentInstance* comp = static_cast<ComponentInstance*>(const_cast<void*>(compPtr));
+        const auto& comp = compHandle;
         if (!comp)
             continue;
 
@@ -218,10 +206,13 @@ void SceneViewport::RenderComponentsForObject(EditorScene& scene, dae::GameObjec
                 }
 
                 // Create text texture
-                SDL_Surface* textSurface = TTF_RenderText_Blended(renderFont, textIt->second.c_str(), 0, textColor);
+                using SurfacePtr = std::unique_ptr<SDL_Surface, decltype(&SDL_DestroySurface)>;
+                using TempTexturePtr = std::unique_ptr<SDL_Texture, decltype(&SDL_DestroyTexture)>;
+
+                SurfacePtr textSurface(TTF_RenderText_Blended(renderFont, textIt->second.c_str(), 0, textColor), SDL_DestroySurface);
                 if (textSurface)
                 {
-                    SDL_Texture* textTexture = SDL_CreateTextureFromSurface(m_renderer, textSurface);
+                    TempTexturePtr textTexture(SDL_CreateTextureFromSurface(m_renderer, textSurface.get()), SDL_DestroyTexture);
                     if (textTexture)
                     {
                         // Get world position and convert to screen
@@ -233,11 +224,9 @@ void SceneViewport::RenderComponentsForObject(EditorScene& scene, dae::GameObjec
 
                         SDL_FRect dstRect{ static_cast<float>(textX), static_cast<float>(textY),
                                          static_cast<float>(textSurface->w), static_cast<float>(textSurface->h) };
-                        SDL_RenderTexture(m_renderer, textTexture, nullptr, &dstRect);
+                        SDL_RenderTexture(m_renderer, textTexture.get(), nullptr, &dstRect);
 
-                        SDL_DestroyTexture(textTexture);
                     }
-                    SDL_DestroySurface(textSurface);
                 }
             }
         }
@@ -260,19 +249,20 @@ void SceneViewport::RenderComponentsForObject(EditorScene& scene, dae::GameObjec
                 }
                 else if (m_font)
                 {
+                    using SurfacePtr = std::unique_ptr<SDL_Surface, decltype(&SDL_DestroySurface)>;
+                    using TempTexturePtr = std::unique_ptr<SDL_Texture, decltype(&SDL_DestroyTexture)>;
+
                     std::string displayText = "[Tex: " + textureIt->second + "]";
-                    SDL_Surface* textSurface = TTF_RenderText_Blended(m_font, displayText.c_str(), 0, SDL_Color{ 200, 200, 200, 255 });
+                    SurfacePtr textSurface(TTF_RenderText_Blended(m_font, displayText.c_str(), 0, SDL_Color{ 200, 200, 200, 255 }), SDL_DestroySurface);
                     if (textSurface)
                     {
-                        SDL_Texture* textTexture = SDL_CreateTextureFromSurface(m_renderer, textSurface);
+                        TempTexturePtr textTexture(SDL_CreateTextureFromSurface(m_renderer, textSurface.get()), SDL_DestroyTexture);
                         if (textTexture)
                         {
                             SDL_FRect dstRect{ screenPos.x, screenPos.y,
                                              static_cast<float>(textSurface->w), static_cast<float>(textSurface->h) };
-                            SDL_RenderTexture(m_renderer, textTexture, nullptr, &dstRect);
-                            SDL_DestroyTexture(textTexture);
+                            SDL_RenderTexture(m_renderer, textTexture.get(), nullptr, &dstRect);
                         }
-                        SDL_DestroySurface(textSurface);
                     }
                 }
             }
@@ -285,26 +275,26 @@ SDL_Texture* SceneViewport::GetOrLoadEditorTexture(const std::string& textureNam
     auto it = m_textureCache.find(textureName);
     if (it != m_textureCache.end())
     {
-        return it->second;
+        return it->second.get();
     }
 
     const auto dataPath = dae::ResourceManager::GetInstance().GetDataPath();
     const auto fullPath = (dataPath / textureName).string();
 
-    SDL_Surface* surface = SDL_LoadPNG(fullPath.c_str());
+    using SurfacePtr = std::unique_ptr<SDL_Surface, decltype(&SDL_DestroySurface)>;
+    SurfacePtr surface(SDL_LoadPNG(fullPath.c_str()), SDL_DestroySurface);
     if (!surface)
     {
         return nullptr;
     }
 
-    SDL_Texture* texture = SDL_CreateTextureFromSurface(m_renderer, surface);
-    SDL_DestroySurface(surface);
+    TexturePtr texture(SDL_CreateTextureFromSurface(m_renderer, surface.get()), SDL_DestroyTexture);
 
     if (!texture)
     {
         return nullptr;
     }
 
-    m_textureCache.emplace(textureName, texture);
-    return texture;
+    auto [insertedIt, _] = m_textureCache.emplace(textureName, std::move(texture));
+    return insertedIt->second.get();
 }
