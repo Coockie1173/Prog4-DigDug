@@ -15,6 +15,7 @@ namespace dae
 		void Init() override;
 	private:
 		TextRenderComponent* m_parentRenderer;
+		// EXPOSE_TO_EDITOR("Update Timer", "Time interval for FPS updates")
 		float m_UpdateTimer{};
 	};
 };

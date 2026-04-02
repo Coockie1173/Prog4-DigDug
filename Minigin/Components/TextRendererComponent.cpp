@@ -1,6 +1,7 @@
 #include "TextRendererComponent.h"
 #include "Font.h"
 #include "Renderer.h"
+#include "ResourceManager.h"
 #include <stdexcept>
 #include "GameObject.h"
 #include "Texture2D.h"
@@ -22,7 +23,14 @@ namespace dae
 	{
 		if (m_needsUpdate)
 		{
-			const auto surf = TTF_RenderText_Blended(m_font->GetFont(), m_text.c_str(), m_text.length(), m_color);
+			// Load font with the specified size
+			std::shared_ptr<dae::Font> sizedFont = m_font;
+			if (m_fontSize != 24)  // If size is not the default
+			{
+				sizedFont = dae::ResourceManager::GetInstance().LoadFont("Lingua.otf", m_fontSize);
+			}
+
+			const auto surf = TTF_RenderText_Blended(sizedFont->GetFont(), m_text.c_str(), m_text.length(), m_color);
 			if (surf == nullptr)
 			{
 				throw std::runtime_error(std::string("Render text failed: ") + SDL_GetError());

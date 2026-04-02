@@ -8,7 +8,7 @@
 
 namespace dae
 {
-	TextureRenderComponent::TextureRenderComponent(dae::GameObject* Parent, const std::string& TextureName) : RenderComponent(Parent)
+	TextureRenderComponent::TextureRenderComponent(dae::GameObject* Parent, const std::string& TextureName) : RenderComponent(Parent), m_textureName(TextureName)
 	{
 		m_pTexture = dae::ResourceManager::GetInstance().LoadTexture(TextureName);
 	}

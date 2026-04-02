@@ -212,6 +212,7 @@ if(BUILD_EDITOR AND NOT EMSCRIPTEN)
     editor/EditorScene.cpp
     editor/SceneViewport.cpp
     editor/EditorUI.cpp
+    editor/PropertyEditor.cpp
     ${GENERATED_CPP_FILES}
     ${COMMON_SOURCES}
   )
@@ -261,6 +262,14 @@ if(BUILD_EDITOR AND NOT EMSCRIPTEN)
   else()
     target_compile_options(minigin_editor PRIVATE -Wall -Wextra -Werror)
   endif()
+
+  # Copy Data folder to editor build directory
+  add_custom_command(TARGET minigin_editor POST_BUILD
+    COMMAND "${CMAKE_COMMAND}" -E copy_directory
+      "${CMAKE_SOURCE_DIR}/Data"
+      "$<TARGET_FILE_DIR:minigin_editor>/Data"
+    COMMENT "Copying Data folder to editor build directory..."
+  )
 endif()
 
 if(EMSCRIPTEN)

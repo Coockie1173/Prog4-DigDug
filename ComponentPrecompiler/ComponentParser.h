@@ -25,6 +25,7 @@ private:
         std::vector<Property> exposedProperties;
         std::vector<Property> constructorParams;
         std::vector<Property> properties;
+        std::string bareBonesClassName;
     };
 
     bool ParseComponentFile(const std::string& filepath, ComponentInfo& info);

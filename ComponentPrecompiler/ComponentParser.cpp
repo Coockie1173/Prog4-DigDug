@@ -68,29 +68,44 @@ bool ComponentParser::ParseComponentFile(const std::string& filepath, ComponentI
     std::string line;
     std::string prevLine;
     bool foundClass = false;
+    bool skipComponent = false;
 
     while (std::getline(file, line))
     {
-        // Look for class definition
+        // Check for NOEXPOSE directive
+        if (line.find("// NOEXPOSE") != std::string::npos)
+        {
+            skipComponent = true;
+        }
+
+        // Look for class definition (not forward declarations)
         if (!foundClass && line.find("class ") != std::string::npos && line.find("Component") != std::string::npos)
         {
-            size_t classPos = line.find("class ");
-            if (classPos != std::string::npos)
+            // Skip forward declarations (those ending with ;)
+            if (line.find(";") != std::string::npos && line.find("{") == std::string::npos && line.find(":") == std::string::npos)
             {
-                size_t start = classPos + 6;
-                size_t end = line.find_first_of(" \t:;", start);
-                if (end == std::string::npos)
-                    end = line.length();
-
-                info.className = line.substr(start, end - start);
-
-                // Trim whitespace
-                info.className.erase(0, info.className.find_first_not_of(" \t"));
-                info.className.erase(info.className.find_last_not_of(" \t") + 1);
-
-                if (info.className != "final")
+                // This is a forward declaration, skip it
+            }
+            else
+            {
+                size_t classPos = line.find("class ");
+                if (classPos != std::string::npos)
                 {
-                    foundClass = true;
+                    size_t start = classPos + 6;
+                    size_t end = line.find_first_of(" \t:;{", start);
+                    if (end == std::string::npos)
+                        end = line.length();
+
+                    info.className = line.substr(start, end - start);
+
+                    // Trim whitespace
+                    info.className.erase(0, info.className.find_first_not_of(" \t"));
+                    info.className.erase(info.className.find_last_not_of(" \t") + 1);
+
+                    if (info.className != "final")
+                    {
+                        foundClass = true;
+                    }
                 }
             }
         }
@@ -149,7 +164,7 @@ bool ComponentParser::ParseComponentFile(const std::string& filepath, ComponentI
     }
 
     file.close();
-    return !info.className.empty();
+    return !info.className.empty() && !skipComponent;
 }
 
 bool ComponentParser::ExtractPropertyFromLine(const std::string& line, Property& prop)
@@ -248,6 +263,23 @@ bool ComponentParser::GenerateBarebonesComponent(const ComponentInfo& info, cons
     outFile << "#define " << guardName << "\n\n";
     outFile << "#include <glm/glm.hpp>\n";
     outFile << "#include <string>\n";
+
+    // Check if any properties use SDL types
+    bool hasSDLColor = false;
+    for (const auto& prop : info.exposedProperties)
+    {
+        if (prop.type.find("SDL_Color") != std::string::npos)
+        {
+            hasSDLColor = true;
+            break;
+        }
+    }
+
+    if (hasSDLColor)
+    {
+        outFile << "#include <SDL3_ttf/SDL_ttf.h>\n";
+    }
+
     outFile << "#include \"Component_Barebones.h\"\n\n";
     outFile << "namespace dae\n";
     outFile << "{\n";
@@ -304,9 +336,25 @@ bool ComponentParser::GenerateRegisterMaster(const std::vector<ComponentInfo>& c
 
     headerFile << "#ifndef COMPONENT_REGISTER_MASTER_H\n";
     headerFile << "#define COMPONENT_REGISTER_MASTER_H\n\n";
+    headerFile << "#include <string>\n";
+    headerFile << "#include <vector>\n";
+    headerFile << "#include <functional>\n\n";
     headerFile << "namespace dae\n";
     headerFile << "{\n";
-    headerFile << "    // Register all barebones components\n";
+    headerFile << "    struct PropertyMetadata\n";
+    headerFile << "    {\n";
+    headerFile << "        std::string type;\n";
+    headerFile << "        std::string name;\n";
+    headerFile << "        std::string displayName;\n";
+    headerFile << "        std::string tooltip;\n";
+    headerFile << "    };\n\n";
+    headerFile << "    struct ComponentMetadata\n";
+    headerFile << "    {\n";
+    headerFile << "        std::string componentName;\n";
+    headerFile << "        std::string bareBonesClassName;\n";
+    headerFile << "        std::vector<PropertyMetadata> properties;\n";
+    headerFile << "    };\n\n";
+    headerFile << "    const std::vector<ComponentMetadata>& GetAllComponentMetadata();\n";
     headerFile << "    void RegisterAllComponents();\n";
     headerFile << "}\n\n";
     headerFile << "#endif // COMPONENT_REGISTER_MASTER_H\n";
@@ -336,6 +384,37 @@ bool ComponentParser::GenerateRegisterMaster(const std::vector<ComponentInfo>& c
         implFile << "    {\n";
         implFile << "    }\n\n";
     }
+
+    implFile << "    const std::vector<ComponentMetadata>& GetAllComponentMetadata()\n";
+    implFile << "    {\n";
+    implFile << "        static const std::vector<ComponentMetadata> metadata = {\n";
+
+    for (size_t i = 0; i < components.size(); ++i)
+    {
+        const auto& comp = components[i];
+        implFile << "            ComponentMetadata{\n";
+        implFile << "                \"" << comp.className << "\",\n";
+        implFile << "                \"" << comp.className << "_Barebones\",\n";
+        implFile << "                {\n";
+
+        for (size_t j = 0; j < comp.exposedProperties.size(); ++j)
+        {
+            const auto& prop = comp.exposedProperties[j];
+            implFile << "                    PropertyMetadata{\n";
+            implFile << "                        \"" << prop.type << "\",\n";
+            implFile << "                        \"" << prop.name << "\",\n";
+            implFile << "                        \"" << prop.displayName << "\",\n";
+            implFile << "                        \"" << prop.tooltip << "\"\n";
+            implFile << "                    }" << (j < comp.exposedProperties.size() - 1 ? "," : "") << "\n";
+        }
+
+        implFile << "                }\n";
+        implFile << "            }" << (i < components.size() - 1 ? "," : "") << "\n";
+    }
+
+    implFile << "        };\n";
+    implFile << "        return metadata;\n";
+    implFile << "    }\n\n";
 
     implFile << "    void RegisterAllComponents()\n";
     implFile << "    {\n";
@@ -471,6 +550,29 @@ bool ComponentParser::GenerateBarebonesGameObject(const std::string& gameObjectP
     headerFile << "                child->m_parent = nullptr;\n";
     headerFile << "            }\n";
     headerFile << "        }\n\n";
+    headerFile << "        const std::vector<void*>& GetComponents() const noexcept { return m_components; }\n";
+    headerFile << "        void AddComponent(void* component)\n";
+    headerFile << "        {\n";
+    headerFile << "            if (!component) return;\n";
+    headerFile << "            m_components.push_back(component);\n";
+    headerFile << "        }\n\n";
+    headerFile << "        void RemoveComponent(void* component)\n";
+    headerFile << "        {\n";
+    headerFile << "            auto it = std::find(m_components.begin(), m_components.end(), component);\n";
+    headerFile << "            if (it != m_components.end())\n";
+    headerFile << "            {\n";
+    headerFile << "                m_components.erase(it);\n";
+    headerFile << "                delete component;\n";
+    headerFile << "            }\n";
+    headerFile << "        }\n\n";
+    headerFile << "        void ClearComponents()\n";
+    headerFile << "        {\n";
+    headerFile << "            for (auto comp : m_components)\n";
+    headerFile << "            {\n";
+    headerFile << "                delete comp;\n";
+    headerFile << "            }\n";
+    headerFile << "            m_components.clear();\n";
+    headerFile << "        }\n\n";
 
     headerFile << "    private:\n";
     headerFile << "        GameObject_Barebones(const GameObject_Barebones&) = delete;\n";
@@ -484,6 +586,7 @@ bool ComponentParser::GenerateBarebonesGameObject(const std::string& gameObjectP
 
     headerFile << "        GameObject_Barebones* m_parent = nullptr;\n";
     headerFile << "        std::vector<GameObject_Barebones*> m_children;\n";
+    headerFile << "        std::vector<void*> m_components;\n";
 
     headerFile << "    };\n";
     headerFile << "}\n\n";

@@ -1,10 +1,25 @@
 #include "EditorUI.h"
 #include <string>
 #include <vector>
+#include "gencomponents/ComponentRegisterMaster.h"
+#include "PropertyEditor.h"
 
 char EditorUI::m_nameBuffer[256] = "GameObject";
 bool EditorUI::m_openAddDialog = false;
 bool EditorUI::m_openDeleteDialog = false;
+bool EditorUI::m_openAddComponentDialog = false;
+std::string EditorUI::m_selectedComponentType = "";
+int EditorUI::m_selectedComponentIndex = -1;
+
+// Initialize the property editor registry on first use
+namespace {
+    struct PropertyEditorInitializer {
+        PropertyEditorInitializer() {
+            dae::PropertyEditor::InitializeTypeRegistry();
+        }
+    };
+    static PropertyEditorInitializer s_initPropertyEditor;
+}
 
 void EditorUI::RenderSceneGraphPanel(EditorScene& scene, dae::GameObject_Barebones*& selectedObject,
                                      dae::GameObject_Barebones*& deleteTarget)
@@ -105,6 +120,93 @@ void EditorUI::RenderDialogs(EditorScene& scene, dae::GameObject_Barebones*& sel
 
         ImGui::EndPopup();
     }
+
+    // Add Component Dialog
+    if (m_openAddComponentDialog)
+    {
+        ImGui::OpenPopup("Add Component##dialog");
+        m_openAddComponentDialog = false;
+    }
+
+    if (ImGui::BeginPopupModal("Add Component##dialog", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+        const auto& allMetadata = dae::GetAllComponentMetadata();
+
+        if (allMetadata.empty())
+        {
+            ImGui::TextDisabled("No components available");
+        }
+        else
+        {
+            ImGui::Text("Select Component Type:");
+            ImGui::Separator();
+
+            std::vector<std::string> validComponents;
+            for (size_t i = 0; i < allMetadata.size(); ++i)
+            {
+                if (allMetadata[i].componentName != "Component")
+                {
+                    validComponents.push_back(allMetadata[i].componentName);
+                }
+            }
+
+            const char* previewValue = m_selectedComponentType.empty() ? "Select a component" : m_selectedComponentType.c_str();
+            if (ImGui::BeginCombo("##component_combo", previewValue))
+            {
+                for (size_t i = 0; i < validComponents.size(); ++i)
+                {
+                    bool isSelected = m_selectedComponentType == validComponents[i];
+                    if (ImGui::Selectable(validComponents[i].c_str(), isSelected))
+                    {
+                        m_selectedComponentType = validComponents[i];
+                        m_selectedComponentIndex = static_cast<int>(i);
+                    }
+                    if (isSelected)
+                        ImGui::SetItemDefaultFocus();
+                }
+                ImGui::EndCombo();
+            }
+
+            ImGui::Separator();
+
+            if (ImGui::Button("Add", ImVec2(120, 0)) && selectedObject && !m_selectedComponentType.empty())
+            {
+                ComponentInstance newComponent;
+                newComponent.componentType = m_selectedComponentType;
+                newComponent.componentName = m_selectedComponentType + "_0";
+
+                // Find metadata for this component and initialize properties
+                for (const auto& meta : allMetadata)
+                {
+                    if (meta.componentName == m_selectedComponentType)
+                    {
+                        for (const auto& prop : meta.properties)
+                        {
+                            newComponent.properties[prop.name] = "";
+                        }
+                        break;
+                    }
+                }
+
+                void* componentPtr = new ComponentInstance(newComponent);
+                selectedObject->AddComponent(componentPtr);
+                scene.RegisterComponentType(selectedObject, componentPtr, m_selectedComponentType);
+                m_selectedComponentType = "";
+                m_selectedComponentIndex = -1;
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::SameLine();
+            if (ImGui::Button("Cancel##comp", ImVec2(120, 0)))
+            {
+                m_selectedComponentType = "";
+                m_selectedComponentIndex = -1;
+                ImGui::CloseCurrentPopup();
+            }
+        }
+
+        ImGui::EndPopup();
+    }
 }
 
 void EditorUI::RenderPropertiesPanel(dae::GameObject_Barebones* selectedObject)
@@ -186,6 +288,134 @@ void EditorUI::RenderPropertiesPanel(dae::GameObject_Barebones* selectedObject)
         for (auto child : selectedObject->GetChildren())
         {
             ImGui::BulletText("%s (ID: %d)", child->GetObjectName().c_str(), child->GetId());
+        }
+    }
+    else
+    {
+        ImGui::TextDisabled("No GameObject selected");
+    }
+
+    ImGui::End();
+}
+
+void EditorUI::RenderComponentsPanel(EditorScene& scene, dae::GameObject_Barebones* selectedObject)
+{
+    ImGui::Begin("Components");
+    if (selectedObject)
+    {
+        if (ImGui::Button("Add Component", ImVec2(ImGui::GetContentRegionAvail().x, 0)))
+        {
+            m_openAddComponentDialog = true;
+            m_selectedComponentType = "";
+            m_selectedComponentIndex = -1;
+        }
+
+        ImGui::Separator();
+
+        const auto& components = selectedObject->GetComponents();
+        const auto& allMetadata = dae::GetAllComponentMetadata();
+
+        if (components.empty())
+        {
+            ImGui::TextDisabled("No components attached");
+        }
+        else
+        {
+            ImGui::Text("Attached Components (%zu):", components.size());
+            ImGui::Separator();
+
+            for (size_t i = 0; i < components.size(); ++i)
+            {
+                void* compPtr = components[i];
+                ComponentInstance* comp = static_cast<ComponentInstance*>(compPtr);
+
+                ImGui::PushID(static_cast<int>(i));
+
+                if (ImGui::CollapsingHeader(comp->componentType.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
+                {
+                    // Find metadata for this component type
+                    const dae::ComponentMetadata* metadata = nullptr;
+                    for (const auto& meta : allMetadata)
+                    {
+                        if (meta.componentName == comp->componentType)
+                        {
+                            metadata = &meta;
+                            break;
+                        }
+                    }
+
+                    // Display and edit properties
+                    if (metadata)
+                    {
+                        for (const auto& propMeta : metadata->properties)
+                        {
+                            auto it = comp->properties.find(propMeta.name);
+                            if (it == comp->properties.end())
+                            {
+                                comp->properties[propMeta.name] = "";
+                            }
+
+                            std::string propertyKey = comp->componentType + "_" + propMeta.name + "_" + std::to_string(i);
+
+                            // Use PropertyEditor to render type-specific input fields
+                            dae::PropertyEditor::RenderPropertyField(propMeta, comp->properties[propMeta.name], propertyKey);
+                        }
+
+                        // Display preview for TextRenderComponent
+                        if (comp->componentType == "TextRenderComponent")
+                        {
+                            ImGui::Separator();
+                            ImGui::TextUnformatted("Preview:");
+
+                            auto textIt = comp->properties.find("text");
+                            auto colorIt = comp->properties.find("color");
+
+                            if (textIt != comp->properties.end() && !textIt->second.empty())
+                            {
+                                ImVec4 previewColor(1.0f, 1.0f, 1.0f, 1.0f);
+                                if (colorIt != comp->properties.end() && !colorIt->second.empty())
+                                {
+                                    int r = 255, g = 255, b = 255, a = 255;
+                                    sscanf_s(colorIt->second.c_str(), "%d,%d,%d,%d", &r, &g, &b, &a);
+                                    previewColor = ImVec4(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
+                                }
+                                ImGui::TextColored(previewColor, "%s", textIt->second.c_str());
+                            }
+                            else
+                            {
+                                ImGui::TextDisabled("(No text set)");
+                            }
+                        }
+
+                        // Display preview for TextureRenderComponent
+                        if (comp->componentType == "TextureRenderComponent")
+                        {
+                            ImGui::Separator();
+                            ImGui::TextUnformatted("Preview:");
+
+                            auto textureIt = comp->properties.find("textureName");
+                            if (textureIt != comp->properties.end() && !textureIt->second.empty())
+                            {
+                                ImGui::Text("Texture: %s", textureIt->second.c_str());
+                                ImGui::TextDisabled("(Texture preview not available in editor)");
+                            }
+                            else
+                            {
+                                ImGui::TextDisabled("(No texture set)");
+                            }
+                        }
+                    }
+
+                    ImGui::Spacing();
+                    if (ImGui::Button("Remove Component##remove", ImVec2(ImGui::GetContentRegionAvail().x, 0)))
+                    {
+                        scene.UnregisterComponentType(selectedObject, compPtr);
+                        selectedObject->RemoveComponent(compPtr);
+                    }
+                }
+
+                ImGui::PopID();
+            }
         }
     }
     else

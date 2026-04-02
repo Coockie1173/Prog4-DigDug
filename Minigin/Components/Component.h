@@ -4,6 +4,7 @@
 namespace dae
 {
 	class GameObject;
+	// NOEXPOSE
 	class Component
 	{
 	public:

@@ -17,8 +17,11 @@ namespace dae
 		void Update() override;
 		void LateUpdate() override;
 		void Init() override;
+
+		const std::string& GetTextureName() const { return m_textureName; }
 	private:
-		//std::shared_ptr<dae::Texture2D> m_texture{};
+		// EXPOSE_TO_EDITOR("Texture Name", "Name of the texture to render")
+		std::string m_textureName{};
 	};
 };
 

@@ -17,6 +17,7 @@ namespace dae
 		void AddScore(int points);
 
 	private:
+		// EXPOSE_TO_EDITOR("Score", "Current score value")
 		int m_score{0};
 	};
 }

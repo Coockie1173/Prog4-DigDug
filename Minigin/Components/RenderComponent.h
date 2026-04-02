@@ -7,6 +7,7 @@
 namespace dae
 {
 	class Texture2D;
+	// NOEXPOSE
 	class RenderComponent : public Component
 	{
 	public:

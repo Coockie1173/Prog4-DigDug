@@ -2,9 +2,12 @@
 #include <imgui.h>
 #include <backends/imgui_impl_sdl3.h>
 #include <backends/imgui_impl_sdlrenderer3.h>
+#include <filesystem>
 #include "EditorScene.h"
 #include "SceneViewport.h"
 #include "EditorUI.h"
+#include "../Minigin/ResourceManager.h"
+#include "../Minigin/Font.h"
 
 constexpr int WINDOW_WIDTH = 1024;
 constexpr int WINDOW_HEIGHT = 576;
@@ -54,8 +57,19 @@ int main()
     ImGui_ImplSDL3_InitForSDLRenderer(window, renderer);
     ImGui_ImplSDLRenderer3_Init(renderer);
 
+    std::filesystem::path dataPath = std::filesystem::path(__FILE__).parent_path() / "Data";
+    if (!std::filesystem::exists(dataPath))
+    {
+        dataPath = std::filesystem::path(__FILE__).parent_path().parent_path() / "Data";
+    }
+    dae::ResourceManager::GetInstance().Init(dataPath);
+
+    auto font = dae::ResourceManager::GetInstance().LoadFont("Lingua.otf", 16);
+    TTF_Font* ttfFont = font->GetFont();
+
     EditorScene scene;
     SceneViewport viewport(renderer, WINDOW_WIDTH, WINDOW_HEIGHT);
+    viewport.SetFont(ttfFont);
     EditorUI ui;
 
     bool running = true;
@@ -103,6 +117,7 @@ int main()
 
         ui.RenderSceneGraphPanel(scene, selectedObject, deleteTarget);
         ui.RenderPropertiesPanel(selectedObject);
+        ui.RenderComponentsPanel(scene, selectedObject);
         ui.RenderDialogs(scene, selectedObject, deleteTarget);
 
         ImGui::Render();
@@ -110,7 +125,7 @@ int main()
         SDL_SetRenderDrawColor(renderer, 45, 45, 48, 255);
         SDL_RenderClear(renderer);
 
-        viewport.Render(scene.GetAllObjects(), selectedObject);
+        viewport.Render(scene, scene.GetAllObjects(), selectedObject);
 
         ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), renderer);
 
