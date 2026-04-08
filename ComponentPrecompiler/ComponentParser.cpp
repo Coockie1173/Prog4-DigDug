@@ -338,7 +338,8 @@ bool ComponentParser::GenerateRegisterMaster(const std::vector<ComponentInfo>& c
     headerFile << "#define COMPONENT_REGISTER_MASTER_H\n\n";
     headerFile << "#include <string>\n";
     headerFile << "#include <vector>\n";
-    headerFile << "#include <functional>\n\n";
+    headerFile << "#include <functional>\n";
+    headerFile << "#include \"../Minigin/Hash.h\"\n\n";
     headerFile << "namespace dae\n";
     headerFile << "{\n";
     headerFile << "    struct PropertyMetadata\n";
@@ -352,6 +353,7 @@ bool ComponentParser::GenerateRegisterMaster(const std::vector<ComponentInfo>& c
     headerFile << "    {\n";
     headerFile << "        std::string componentName;\n";
     headerFile << "        std::string bareBonesClassName;\n";
+    headerFile << "        unsigned int componentNameHash;\n";
     headerFile << "        std::vector<PropertyMetadata> properties;\n";
     headerFile << "    };\n\n";
     headerFile << "    const std::vector<ComponentMetadata>& GetAllComponentMetadata();\n";
@@ -395,6 +397,7 @@ bool ComponentParser::GenerateRegisterMaster(const std::vector<ComponentInfo>& c
         implFile << "            ComponentMetadata{\n";
         implFile << "                \"" << comp.className << "\",\n";
         implFile << "                \"" << comp.className << "_Barebones\",\n";
+        implFile << "                make_sdbm_hash(\"" << comp.className << "\"),\n";
         implFile << "                {\n";
 
         for (size_t j = 0; j < comp.exposedProperties.size(); ++j)

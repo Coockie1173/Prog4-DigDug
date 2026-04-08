@@ -39,10 +39,10 @@ std::vector<dae::GameObject_Barebones*> EditorScene::GetRootObjects() const
     return roots;
 }
 
-void EditorScene::RegisterComponentType(dae::GameObject_Barebones* gameObject, const dae::ComponentInstance* componentPtr, const std::string& typeName)
+void EditorScene::RegisterComponentType(dae::GameObject_Barebones* gameObject, const dae::ComponentInstance* componentPtr, unsigned int typeHash)
 {
     if (!gameObject || !componentPtr) return;
-    m_componentTypes[gameObject][componentPtr] = typeName;
+    m_componentTypes[gameObject][componentPtr] = typeHash;
 }
 
 void EditorScene::UnregisterComponentType(dae::GameObject_Barebones* gameObject, const dae::ComponentInstance* componentPtr)
@@ -58,9 +58,9 @@ void EditorScene::UnregisterComponentType(dae::GameObject_Barebones* gameObject,
     }
 }
 
-std::string EditorScene::GetComponentType(dae::GameObject_Barebones* gameObject, const dae::ComponentInstance* componentPtr) const
+unsigned int EditorScene::GetComponentTypeHash(dae::GameObject_Barebones* gameObject, const dae::ComponentInstance* componentPtr) const
 {
-    if (!gameObject || !componentPtr) return "";
+    if (!gameObject || !componentPtr) return 0;
 
     auto it = m_componentTypes.find(gameObject);
     if (it != m_componentTypes.end())
@@ -70,5 +70,5 @@ std::string EditorScene::GetComponentType(dae::GameObject_Barebones* gameObject,
             return compIt->second;
     }
 
-    return "";
+    return 0;
 }

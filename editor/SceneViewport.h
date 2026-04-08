@@ -21,7 +21,7 @@ public:
     ~SceneViewport();
 
     void SetSize(int width, int height);
-    void Render(EditorScene& scene, const std::vector<std::unique_ptr<dae::GameObject_Barebones>>& objects,
+    void Render(const std::vector<std::unique_ptr<dae::GameObject_Barebones>>& objects,
                 dae::GameObject_Barebones* selectedObject);
 
     dae::GameObject_Barebones* GetGameObjectAtScreenPos(const std::vector<std::unique_ptr<dae::GameObject_Barebones>>& objects,
@@ -38,7 +38,7 @@ private:
 
     glm::vec2 ScreenToWorld(glm::vec2 screenPos) const;
     glm::vec2 WorldToScreen(glm::vec2 worldPos) const;
-    void RenderComponentsForObject(EditorScene& scene, dae::GameObject_Barebones* obj);
+    void RenderComponentsForObject(dae::GameObject_Barebones* obj);
     SDL_Texture* GetOrLoadEditorTexture(const std::string& textureName);
 
     const float DOT_RADIUS = 5.0f;

@@ -30,7 +30,7 @@ glm::vec2 SceneViewport::WorldToScreen(glm::vec2 worldPos) const
     return glm::vec2(worldPos.x * SCALE, worldPos.y * SCALE);
 }
 
-void SceneViewport::Render(EditorScene& scene, const std::vector<std::unique_ptr<dae::GameObject_Barebones>>& objects,
+void SceneViewport::Render(const std::vector<std::unique_ptr<dae::GameObject_Barebones>>& objects,
                           dae::GameObject_Barebones* selectedObject)
 {
     // Draw background
@@ -116,7 +116,7 @@ void SceneViewport::Render(EditorScene& scene, const std::vector<std::unique_ptr
         }
 
         // Render components on this object
-        RenderComponentsForObject(scene, obj.get());
+        RenderComponentsForObject(obj.get());
     }
 }
 
@@ -144,7 +144,7 @@ dae::GameObject_Barebones* SceneViewport::GetGameObjectAtScreenPos(
     return nullptr;
 }
 
-void SceneViewport::RenderComponentsForObject(EditorScene& scene, dae::GameObject_Barebones* obj)
+void SceneViewport::RenderComponentsForObject(dae::GameObject_Barebones* obj)
 {
     if (!obj)
         return;
@@ -153,29 +153,28 @@ void SceneViewport::RenderComponentsForObject(EditorScene& scene, dae::GameObjec
 
     for (const auto& compHandle : components)
     {
-        // Get component type from EditorScene
-        std::string componentType = scene.GetComponentType(obj, compHandle.get());
-
-        if (componentType.empty())
+        if (!compHandle)
             continue;
 
-        const auto& comp = compHandle;
-        if (!comp)
+        // Use component type directly from the component instance
+        std::string componentType = compHandle->componentType;
+
+        if (componentType.empty())
             continue;
 
         // Render based on component type
         if (componentType == "TextRenderComponent")
         {
             // Render text with color
-            auto textIt = comp->properties.find("text");
-            auto colorIt = comp->properties.find("color");
-            auto sizeIt = comp->properties.find("fontSize");
+            auto textIt = compHandle->properties.find("text");
+            auto colorIt = compHandle->properties.find("color");
+            auto sizeIt = compHandle->properties.find("fontSize");
 
-            if (textIt != comp->properties.end() && !textIt->second.empty() && m_font)
+            if (textIt != compHandle->properties.end() && !textIt->second.empty() && m_font)
             {
                 // Parse color
                 SDL_Color textColor{ 255, 255, 255, 255 };
-                if (colorIt != comp->properties.end() && !colorIt->second.empty())
+                if (colorIt != compHandle->properties.end() && !colorIt->second.empty())
                 {
                     int r = 255, g = 255, b = 255, a = 255;
                     sscanf_s(colorIt->second.c_str(), "%d,%d,%d,%d", &r, &g, &b, &a);
@@ -184,7 +183,7 @@ void SceneViewport::RenderComponentsForObject(EditorScene& scene, dae::GameObjec
 
                 // Parse font size
                 uint8_t fontSize = 16;
-                if (sizeIt != comp->properties.end() && !sizeIt->second.empty())
+                if (sizeIt != compHandle->properties.end() && !sizeIt->second.empty())
                 {
                     fontSize = static_cast<uint8_t>(std::stoi(sizeIt->second));
                 }
@@ -232,8 +231,8 @@ void SceneViewport::RenderComponentsForObject(EditorScene& scene, dae::GameObjec
         }
         else if (componentType == "TextureRenderComponent")
         {
-            auto textureIt = comp->properties.find("textureName");
-            if (textureIt != comp->properties.end() && !textureIt->second.empty())
+            auto textureIt = compHandle->properties.find("textureName");
+            if (textureIt != compHandle->properties.end() && !textureIt->second.empty())
             {
                 glm::vec2 worldPos = obj->GetWorldPosition();
                 glm::vec2 screenPos = WorldToScreen(worldPos);

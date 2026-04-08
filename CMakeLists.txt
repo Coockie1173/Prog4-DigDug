@@ -213,6 +213,8 @@ if(BUILD_EDITOR AND NOT EMSCRIPTEN)
     editor/SceneViewport.cpp
     editor/EditorUI.cpp
     editor/PropertyEditor.cpp
+    editor/InputBindingEditor.cpp
+    editor/EditorSerialization.cpp
     ${GENERATED_CPP_FILES}
     ${COMMON_SOURCES}
   )

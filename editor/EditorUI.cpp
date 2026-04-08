@@ -11,6 +11,10 @@ bool EditorUI::m_openAddComponentDialog = false;
 std::string EditorUI::m_selectedComponentType = "";
 int EditorUI::m_selectedComponentIndex = -1;
 
+EditorUI::EditorUI()
+{
+}
+
 // Initialize the property editor registry on first use
 namespace {
     struct PropertyEditorInitializer {
@@ -21,10 +25,42 @@ namespace {
     static PropertyEditorInitializer s_initPropertyEditor;
 }
 
+void EditorUI::RenderMenuBar(EditorScene& scene)
+{
+    if (!m_showMenuBar) return;
+
+    if (ImGui::BeginMainMenuBar())
+    {
+        if (ImGui::BeginMenu("File"))
+        {
+            if (ImGui::MenuItem("Save"))
+            {
+                m_serialization.OpenSaveDialog(&scene, &m_inputBindingEditor);
+            }
+            if (ImGui::MenuItem("Load"))
+            {
+                m_serialization.OpenLoadDialog(&scene, &m_inputBindingEditor);
+            }
+            ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("View"))
+        {
+            ImGui::MenuItem("Scene Graph", nullptr, &m_showSceneGraph);
+            ImGui::MenuItem("Properties", nullptr, &m_showProperties);
+            ImGui::MenuItem("Components", nullptr, &m_showComponents);
+            ImGui::MenuItem("Input Binding Editor", nullptr, &m_showInputBindingEditor);
+            ImGui::EndMenu();
+        }
+        ImGui::EndMainMenuBar();
+    }
+}
+
 void EditorUI::RenderSceneGraphPanel(EditorScene& scene, dae::GameObject_Barebones*& selectedObject,
                                      dae::GameObject_Barebones*& deleteTarget)
 {
-    ImGui::Begin("Scene Graph");
+    if (!m_showSceneGraph) return;
+
+    ImGui::Begin("Scene Graph", &m_showSceneGraph);
     if (ImGui::Button("Add GameObject"))
     {
         m_openAddDialog = true;
@@ -180,6 +216,7 @@ void EditorUI::RenderDialogs(EditorScene& scene, dae::GameObject_Barebones*& sel
                 {
                     if (meta.componentName == m_selectedComponentType)
                     {
+                        newComponent.componentTypeHash = meta.componentNameHash;
                         for (const auto& prop : meta.properties)
                         {
                             newComponent.properties[prop.name] = "";
@@ -191,7 +228,7 @@ void EditorUI::RenderDialogs(EditorScene& scene, dae::GameObject_Barebones*& sel
                 auto handle = std::make_unique<dae::ComponentInstance>(std::move(newComponent));
                  const auto* handlePtr = handle.get();
                  selectedObject->AddComponent(std::move(handle));
-                 scene.RegisterComponentType(selectedObject, handlePtr, m_selectedComponentType);
+                 scene.RegisterComponentType(selectedObject, handlePtr, newComponent.componentTypeHash);
                 m_selectedComponentType = "";
                 m_selectedComponentIndex = -1;
                 ImGui::CloseCurrentPopup();
@@ -212,7 +249,9 @@ void EditorUI::RenderDialogs(EditorScene& scene, dae::GameObject_Barebones*& sel
 
 void EditorUI::RenderPropertiesPanel(dae::GameObject_Barebones* selectedObject)
 {
-    ImGui::Begin("Properties");
+    if (!m_showProperties) return;
+
+    ImGui::Begin("Properties", &m_showProperties);
     if (selectedObject)
     {
         ImGui::Text("GameObject ID: %d", selectedObject->GetId());
@@ -301,7 +340,9 @@ void EditorUI::RenderPropertiesPanel(dae::GameObject_Barebones* selectedObject)
 
 void EditorUI::RenderComponentsPanel(EditorScene& scene, dae::GameObject_Barebones* selectedObject)
 {
-    ImGui::Begin("Components");
+    if (!m_showComponents) return;
+
+    ImGui::Begin("Components", &m_showComponents);
     if (selectedObject)
     {
         if (ImGui::Button("Add Component", ImVec2(ImGui::GetContentRegionAvail().x, 0)))

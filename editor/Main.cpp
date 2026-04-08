@@ -104,6 +104,10 @@ int main()
             {
                 running = false;
             }
+            else if (event.type == SDL_EVENT_KEY_DOWN && ui.GetInputBindingEditor().IsListeningForKey())
+            {
+                ui.GetInputBindingEditor().SetCapturedKey(event.key.key);
+            }
             else if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN && event.button.button == SDL_BUTTON_LEFT)
             {
                 int mouseX = static_cast<int>(event.button.x);
@@ -130,17 +134,39 @@ int main()
             running = false;
         }
 
+        if (ImGui::IsKeyPressed(ImGuiKey_F2))
+        {
+            ui.ToggleMenuBar();
+        }
+
+        ui.RenderMenuBar(scene);
         ui.RenderSceneGraphPanel(scene, selectedObject, deleteTarget);
         ui.RenderPropertiesPanel(selectedObject);
         ui.RenderComponentsPanel(scene, selectedObject);
         ui.RenderDialogs(scene, selectedObject, deleteTarget);
+
+        if (ui.IsInputBindingEditorVisible())
+        {
+            ui.GetInputBindingEditor().Render();
+        }
+
+        if (!ui.IsMenuBarVisible())
+        {
+            ImGuiViewport* viewport_hint = ImGui::GetMainViewport();
+            ImVec2 topRightPos = ImVec2(viewport_hint->Pos.x + viewport_hint->Size.x - 10.0f, viewport_hint->Pos.y + 10.0f);
+            ImGui::SetNextWindowPos(topRightPos, ImGuiCond_Always, ImVec2(1.0f, 0.0f));
+            ImGui::SetNextWindowBgAlpha(0.7f);
+            ImGui::Begin("##MenuBarHint", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize);
+            ImGui::TextColored(ImVec4(0.2f, 1.0f, 0.8f, 1.0f), "Press F2 to show menu bar");
+            ImGui::End();
+        }
 
         ImGui::Render();
 
         SDL_SetRenderDrawColor(renderer.get(), 45, 45, 48, 255);
         SDL_RenderClear(renderer.get());
 
-        viewport.Render(scene, scene.GetAllObjects(), selectedObject);
+        viewport.Render(scene.GetAllObjects(), selectedObject);
 
         ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), renderer.get());
 

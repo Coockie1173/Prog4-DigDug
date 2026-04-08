@@ -36,11 +36,4 @@ void dae::ScoreComponent::AddScore(int points)
 
 	std::any scoreData = m_score;
 	EventManager::GetInstance().Publish(eventHash, scoreData);
-
-#ifdef USE_STEAMWORKS
-	if (m_score >= 100)
-	{
-		SteamManager::GetInstance().UnlockAchievement("ACH_WIN_ONE_GAME");
-	}
-#endif
 }
