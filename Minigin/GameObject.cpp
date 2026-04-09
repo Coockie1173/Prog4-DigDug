@@ -111,7 +111,7 @@ void dae::GameObject::RemoveChild(GameObject* Child)
 bool dae::GameObject::IsChildOf(GameObject* Parent)
 {
     auto it = std::find(Parent->m_children.begin(), Parent->m_children.end(), this);
-    return it != m_children.end();
+    return it != Parent->m_children.end();
 }
 
 void dae::GameObject::Init()

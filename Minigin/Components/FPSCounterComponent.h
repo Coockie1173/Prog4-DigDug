@@ -13,6 +13,7 @@ namespace dae
 		void Update() override;
 		void LateUpdate() override;
 		void Init() override;
+		bool Deserialize(const std::map<std::string, std::string>& properties, std::string& errorMessage) override;
 	private:
 		TextRenderComponent* m_parentRenderer;
 		// EXPOSE_TO_EDITOR("Update Timer", "Time interval for FPS updates")

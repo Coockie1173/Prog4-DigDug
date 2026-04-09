@@ -42,5 +42,5 @@ private:
     SDL_Texture* GetOrLoadEditorTexture(const std::string& textureName);
 
     const float DOT_RADIUS = 5.0f;
-    const float SCALE = 0.5f;
+    const float SCALE = 1.0f;
 };

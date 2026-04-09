@@ -17,6 +17,7 @@ namespace dae
 		void Update() override;
 		void LateUpdate() override;
 		void Init() override;
+		bool Deserialize(const std::map<std::string, std::string>& properties, std::string& errorMessage) override;
 
 		const std::string& GetTextureName() const { return m_textureName; }
 	private:

@@ -23,11 +23,7 @@ namespace dae
         /// <param name="scene">The scene to populate with game objects</param>
         /// <param name="errorMessage">Out parameter for error message if loading fails</param>
         /// <returns>True if successful, false otherwise</returns>
-        static bool LoadSceneFromFile(
-            const std::string& sceneFilePath,
-            Scene& scene,
-            std::string& errorMessage
-        );
+        static bool LoadSceneFromFile(const std::string& sceneFilePath, Scene& scene, std::string& errorMessage);
 
     private:
         SceneLoader() = delete;
@@ -42,13 +38,7 @@ namespace dae
         /// <summary>
         /// Create and add a component to a game object based on component type hash
         /// </summary>
-        static bool CreateAndAddComponent(
-            GameObject* gameObject,
-            uint32_t componentTypeHash,
-            const std::string& componentType,
-            const std::map<std::string, std::string>& properties,
-            std::string& errorMessage
-        );
+        static bool CreateAndAddComponent(GameObject* gameObject, uint32_t componentTypeHash, const std::string& componentType, const std::map<std::string, std::string>& properties, std::string& errorMessage);
     };
 }
 

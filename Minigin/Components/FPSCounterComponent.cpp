@@ -5,6 +5,7 @@
 #include "Debugger.h"
 #include "Timing.h"
 #include <string>
+#include <map>
 
 namespace dae
 {
@@ -57,5 +58,10 @@ namespace dae
 		}
 
 		m_UpdateTimer = 1;
+	}
+
+	bool FPSCounterComponent::Deserialize(const std::map<std::string, std::string>&, std::string&)
+	{
+		return true;
 	}
 };

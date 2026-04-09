@@ -5,6 +5,7 @@
 #include "../SteamManager.h"
 #endif
 #include "../Hash.h"
+#include <map>
 
 dae::ScoreComponent::ScoreComponent(GameObject* Parent)
 	: Component(Parent), m_score(0)
@@ -21,6 +22,13 @@ void dae::ScoreComponent::LateUpdate()
 
 void dae::ScoreComponent::Init()
 {
+}
+
+bool dae::ScoreComponent::Deserialize(const std::map<std::string, std::string>& properties, std::string& errorMessage)
+{
+	(void)properties;
+	(void)errorMessage;
+	return true;
 }
 
 void dae::ScoreComponent::AddScore(int points)

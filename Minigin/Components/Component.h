@@ -1,9 +1,14 @@
 #ifndef _COMPONENT_H_
 #define _COMPONENT_H_
 
+#include <map>
+#include <string>
+
 namespace dae
 {
 	class GameObject;
+	class SceneLoader;
+
 	// NOEXPOSE
 	class Component
 	{
@@ -24,6 +29,13 @@ namespace dae
 		Component(dae::GameObject* Parent);
 
 	private:
+		friend class SceneLoader;
+
+		// Deserialize is private and only SceneLoader can call it.
+		// This enforces that component deserialization only happens during scene loading,
+		// preventing accidental deserialization outside the controlled scene loading context.
+		virtual bool Deserialize(const std::map<std::string, std::string>& properties, std::string& errorMessage) = 0;
+
 		GameObject* m_parent;
 	};
 }
