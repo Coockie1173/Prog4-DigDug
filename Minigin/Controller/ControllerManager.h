@@ -2,7 +2,7 @@
 #define _CONTROLLERMANAGER_H_
 
 #include <memory>
-#include "GamepadButton.h"
+#include <GamepadButton.h>
 
 namespace dae
 {

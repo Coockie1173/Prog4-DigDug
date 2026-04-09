@@ -3,30 +3,11 @@
 #include <string>
 #include <map>
 #include <SDL3/SDL.h>
-#include "../Minigin/Controller/GamepadButton.h"
+#include "../Shared/include/InputBindingData.h"
 
-enum class InputDeviceType
-{
-	Keyboard,
-	Gamepad
-};
-
-struct InputBinding
-{
-	InputDeviceType deviceType;
-	std::string actionName;
-	SDL_Keycode keyCode;
-	int gamepadIndex;
-	dae::GamepadButton gamepadButton;
-
-	InputBinding()
-		: deviceType(InputDeviceType::Keyboard)
-		, keyCode(0)
-		, gamepadIndex(0)
-		, gamepadButton(dae::GamepadButton::A)
-	{
-	}
-};
+// Use the shared InputDeviceType and InputBinding from dae namespace
+using InputBinding = dae::InputBinding;
+using InputDeviceType = dae::InputDeviceType;
 
 class InputBindingEditor
 {

@@ -7,56 +7,8 @@ endif()
 
 set(BUILD_EDITOR ON CACHE BOOL "Build the editor executable")
 
-# Only add precompiler as a subdirectory if building editor
-if(BUILD_EDITOR)
-  add_subdirectory(ComponentPrecompiler)
-endif()
-
-if(EMSCRIPTEN)
-  set(TARGET_NAME minigin_web)
-  set(TARGET_PARAM )
-else()
-  set(TARGET_NAME minigin)
-  set(TARGET_PARAM WIN32)
-endif()
-
-# Common source files (shared between game and editor)
-set(COMMON_SOURCES
-  Minigin/Font.cpp
-  Minigin/GameObject.cpp
-  Minigin/InputManager.cpp
-  Minigin/Minigin.cpp
-  "Minigin/Components/RenderComponent.cpp"
-  Minigin/ResourceManager.cpp
-  Minigin/Scene.cpp
-  Minigin/SceneManager.cpp
-  Minigin/TextObject.cpp
-  Minigin/Texture2D.cpp   
-  Minigin/Renderer.cpp      
-  "Minigin/Components/TextureRendererComponent.cpp" 
-  "Minigin/Components/Component.cpp" 
-  "Minigin/Components/TextRendererComponent.cpp" 
-  "Minigin/Debugger.cpp" 
-  "Minigin/Timing.cpp" 
-  "Minigin/Components/FPSCounterComponent.cpp" 
-  "Minigin/Components/SpinnerComponent.cpp"  
-  "Minigin/Components/ObjectMoveComponent.cpp"  
-  "Minigin/Commands/MovementInputCommand.cpp"
-  "Minigin/EventManager.cpp"
-  "Minigin/Components/ScoreComponent.cpp" 
-  "Minigin/Controller/ControllerManager.cpp"
-)
-
-# Game executable
-add_executable(${TARGET_NAME} ${TARGET_PARAM}
-  Minigin/Main.cpp
-  ${COMMON_SOURCES}
-)
-
-# enable c++20 features
-target_compile_features(${TARGET_NAME} PUBLIC cxx_std_20)
-
 include(FetchContent)
+
 # add glm
 find_package(glm CONFIG QUIET)
 if(NOT glm_FOUND)
@@ -93,6 +45,60 @@ if(NOT SDL3_FOUND)
     FetchContent_MakeAvailable(SDL3)
   endif()
 endif()
+
+# Add Shared library subdirectory (must be after SDL3 and GLM are available)
+add_subdirectory(Shared)
+
+# Only add precompiler as a subdirectory if building editor
+if(BUILD_EDITOR)
+  add_subdirectory(ComponentPrecompiler)
+endif()
+
+if(EMSCRIPTEN)
+  set(TARGET_NAME minigin_web)
+  set(TARGET_PARAM )
+else()
+  set(TARGET_NAME minigin)
+  set(TARGET_PARAM WIN32)
+endif()
+
+# Common source files (shared between game and editor)
+set(COMMON_SOURCES
+  Minigin/Font.cpp
+  Minigin/GameObject.cpp
+  Minigin/InputManager.cpp
+  Minigin/Minigin.cpp
+  "Minigin/Components/RenderComponent.cpp"
+  Minigin/ResourceManager.cpp
+  Minigin/Scene.cpp
+  Minigin/SceneManager.cpp
+  Minigin/SceneLoader.cpp
+  Minigin/TextObject.cpp
+  Minigin/Texture2D.cpp   
+  Minigin/Renderer.cpp      
+  "Minigin/Components/TextureRendererComponent.cpp" 
+  "Minigin/Components/Component.cpp" 
+  "Minigin/Components/TextRendererComponent.cpp" 
+  "Minigin/Debugger.cpp" 
+  "Minigin/Timing.cpp" 
+  "Minigin/Components/FPSCounterComponent.cpp" 
+  "Minigin/Components/SpinnerComponent.cpp"  
+  "Minigin/Components/ObjectMoveComponent.cpp"  
+  "Minigin/Commands/MovementInputCommand.cpp"
+  "Minigin/EventManager.cpp"
+  "Minigin/Components/ScoreComponent.cpp" 
+  "Minigin/Controller/ControllerManager.cpp"
+)
+
+# Game executable
+add_executable(${TARGET_NAME} ${TARGET_PARAM}
+  Minigin/Main.cpp
+  ${COMMON_SOURCES}
+)
+
+# enable c++20 features
+# enable c++20 features
+target_compile_features(${TARGET_NAME} PUBLIC cxx_std_20)
 
 # Dear ImGui
 FetchContent_Declare(
@@ -172,6 +178,7 @@ target_link_libraries("${TARGET_NAME}" PUBLIC
   SDL3_ttf::SDL3_ttf
   glm::glm
   imgui
+  minigin_shared
   ${VLD_LIBRARIES}
 )
 
@@ -204,8 +211,10 @@ if(BUILD_EDITOR AND NOT EMSCRIPTEN)
     COMMENT "Generating barebones components..."
   )
 
-  # Glob all .cpp files from generated components directory
-  file(GLOB GENERATED_CPP_FILES "${EDITOR_OUTPUT_DIR}/*.cpp")
+  # Explicitly list the generated ComponentRegisterMaster.cpp file
+  set(GENERATED_CPP_FILES
+    "${EDITOR_OUTPUT_DIR}/ComponentRegisterMaster.cpp"
+  )
 
   add_executable(minigin_editor
     editor/Main.cpp
@@ -223,12 +232,10 @@ if(BUILD_EDITOR AND NOT EMSCRIPTEN)
   add_dependencies(minigin_editor GenerateBarebonesComponents)
 
   # Mark all generated .cpp files as generated to tell CMake not to check for them upfront
-  if(GENERATED_CPP_FILES)
-    set_source_files_properties(
-      ${GENERATED_CPP_FILES}
-      PROPERTIES GENERATED TRUE
-    )
-  endif()
+  set_source_files_properties(
+    ${GENERATED_CPP_FILES}
+    PROPERTIES GENERATED TRUE
+  )
 
   target_compile_features(minigin_editor PUBLIC cxx_std_20)
 
@@ -249,6 +256,7 @@ if(BUILD_EDITOR AND NOT EMSCRIPTEN)
     SDL3_ttf::SDL3_ttf
     glm::glm
     imgui
+    minigin_shared
     ${VLD_LIBRARIES}
   )
 

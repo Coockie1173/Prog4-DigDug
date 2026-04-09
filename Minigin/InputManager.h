@@ -1,7 +1,8 @@
-#pragma once
+#ifndef _INPUTMANAGER_H_
+#define _INPUTMANAGER_H_
 #include "Singleton.h"
 #include "Controller/ControllerManager.h"
-#include "Controller/GamepadButton.h"
+#include <GamepadButton.h>
 #include <vector>
 #include <memory>
 #include <string>
@@ -51,3 +52,5 @@ namespace dae
 	};
 
 }
+
+#endif

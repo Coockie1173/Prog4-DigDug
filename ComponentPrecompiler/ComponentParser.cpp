@@ -47,6 +47,7 @@ bool ComponentParser::ParseComponentDirectory(const std::string& componentDir, c
     if (!components.empty())
     {
         GenerateRegisterMaster(components, outputDir);
+        GenerateComponentTypeMap(components, outputDir);
     }
 
     GenerateBarebonesGameObject(gameObjectPath, outputDir);
@@ -198,7 +199,7 @@ bool ComponentParser::ExtractPropertyFromLine(const std::string& line, Property&
 }
 
 void ComponentParser::WriteBarebonesHeader(std::ofstream& file, const std::string& guardName, 
-                                           const std::string& baseClass, const std::vector<Property>& properties, 
+                                           const std::string& baseClass, const std::vector<Property>&, 
                                            bool isBaseClass)
 {
     file << "#ifndef " << guardName << "\n";
@@ -372,6 +373,7 @@ bool ComponentParser::GenerateRegisterMaster(const std::vector<ComponentInfo>& c
     }
 
     implFile << "#include \"ComponentRegisterMaster.h\"\n";
+    implFile << "#include \"Hash.h\"\n";
     for (const auto& comp : components)
     {
         implFile << "#include \"" << comp.className << "_Barebones.h\"\n";
@@ -434,6 +436,61 @@ bool ComponentParser::GenerateRegisterMaster(const std::vector<ComponentInfo>& c
     implFile << "    }\n";
     implFile << "}\n";
     implFile.close();
+    return true;
+}
+
+bool ComponentParser::GenerateComponentTypeMap(const std::vector<ComponentInfo>& components, const std::string& outputDir)
+{
+    std::string headerPath = (fs::path(outputDir) / "../../../Shared/include/ComponentTypeMap.h").string();
+    std::ofstream headerFile(headerPath);
+    if (!headerFile.is_open())
+    {
+        std::cerr << "Failed to create ComponentTypeMap.h" << std::endl;
+        return false;
+    }
+
+    headerFile << "#ifndef _COMPONENT_TYPE_MAP_H_\n";
+    headerFile << "#define _COMPONENT_TYPE_MAP_H_\n\n";
+    headerFile << "#include <Hash.h>\n";
+    headerFile << "#include <map>\n";
+    headerFile << "#include <string>\n\n";
+    headerFile << "namespace dae\n";
+    headerFile << "{\n";
+
+    // Generate hash constants for each component
+    headerFile << "    // Component type hashes\n";
+    for (const auto& comp : components)
+    {
+        headerFile << "    inline constexpr auto HASH_" << comp.className << " = make_sdbm_hash(\"" << comp.className << "\");\n";
+    }
+
+    // Generate hash-to-string map
+    headerFile << "\n    // Maps component type hash to string name\n";
+    headerFile << "    inline const std::map<uint32_t, std::string> COMPONENT_TYPE_MAP{\n";
+    for (size_t i = 0; i < components.size(); ++i)
+    {
+        const auto& comp = components[i];
+        headerFile << "        { HASH_" << comp.className << ", \"" << comp.className << "\" }";
+        if (i < components.size() - 1)
+            headerFile << ",";
+        headerFile << "\n";
+    }
+    headerFile << "    };\n\n";
+
+    // Generate hash-to-string lookup function
+    headerFile << "    inline std::string GetComponentTypeFromHash(uint32_t hash)\n";
+    headerFile << "    {\n";
+    headerFile << "        auto it = COMPONENT_TYPE_MAP.find(hash);\n";
+    headerFile << "        if (it != COMPONENT_TYPE_MAP.end())\n";
+    headerFile << "        {\n";
+    headerFile << "            return it->second;\n";
+    headerFile << "        }\n";
+    headerFile << "        return \"Unknown\";\n";
+    headerFile << "    }\n";
+    headerFile << "}\n\n";
+    headerFile << "#endif\n";
+
+    headerFile.close();
     return true;
 }
 

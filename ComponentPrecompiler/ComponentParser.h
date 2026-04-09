@@ -38,6 +38,7 @@ private:
                               const std::vector<Property>& properties, bool isBaseClass = false);
 
     bool ExtractPropertyFromLine(const std::string& line, Property& prop);
+    bool GenerateComponentTypeMap(const std::vector<ComponentInfo>& components, const std::string& outputDir);
 };
 
 #endif // COMPONENT_PARSER_H

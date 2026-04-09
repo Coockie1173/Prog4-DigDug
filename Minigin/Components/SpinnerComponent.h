@@ -6,10 +6,10 @@
 
 namespace dae
 {
-	class SpinnerComonent : public Component
+	class SpinnerComponent : public Component
 	{
 	public:
-		SpinnerComonent(GameObject* Parent, bool SpinClockwise, float SpinRadius, float SpinSpeed, glm::vec2 SpinPoint);
+		SpinnerComponent(GameObject* Parent, bool SpinClockwise, float SpinRadius, float SpinSpeed, glm::vec2 SpinPoint);
 
 		void Update() override;
 		void LateUpdate() override;

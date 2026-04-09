@@ -1,26 +1,9 @@
 #ifndef _GAMEPADBUTTON_H_
 #define _GAMEPADBUTTON_H_
 
-namespace dae
-{
-	enum class GamepadButton
-	{
-		A,
-		B,
-		X,
-		Y,
+// GamepadButton enum is now defined in Shared/include/GamepadButton.h
+// If you see this file, use #include <GamepadButton.h> instead of #include "Controller/GamepadButton.h"
 
-		DPadUp,
-		DPadDown,
-		DPadLeft,
-		DPadRight,
-
-		Start,
-		Back,
-
-		LeftShoulder,
-		RightShoulder
-	};
-}
+#error "Include <GamepadButton.h> from Shared library instead of Controller/GamepadButton.h"
 
 #endif

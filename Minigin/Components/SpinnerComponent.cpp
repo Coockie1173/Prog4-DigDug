@@ -2,13 +2,13 @@
 #include "Timing.h"
 #include "GameObject.h"
 
-dae::SpinnerComonent::SpinnerComonent(GameObject* Parent, bool SpinClockwise, float SpinRadius, float SpinSpeed, glm::vec2 SpinPoint) : Component(Parent),
+dae::SpinnerComponent::SpinnerComponent(GameObject* Parent, bool SpinClockwise, float SpinRadius, float SpinSpeed, glm::vec2 SpinPoint) : Component(Parent),
 m_spinClockwise(SpinClockwise), m_spinRadius(SpinRadius), m_spinSpeed(SpinSpeed), m_spinPoint(SpinPoint)
 {
 
 }
 
-void dae::SpinnerComonent::Update()
+void dae::SpinnerComponent::Update()
 {
 	float DT = Timing::GetInstance().GetDeltaTime();
 	float direction = m_spinClockwise ? -1.0f : 1.0f;
@@ -20,10 +20,10 @@ void dae::SpinnerComonent::Update()
 	GetParent()->SetLocalPosition(LocalPos);
 }
 
-void dae::SpinnerComonent::LateUpdate()
+void dae::SpinnerComponent::LateUpdate()
 {
 }
 
-void dae::SpinnerComonent::Init()
+void dae::SpinnerComponent::Init()
 {
 }
