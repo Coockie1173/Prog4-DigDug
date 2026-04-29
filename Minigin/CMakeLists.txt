@@ -24,6 +24,7 @@ add_library(minigin_engine STATIC
   ${CMAKE_SOURCE_DIR}/Minigin/Controller/ControllerManager.cpp
   ${CMAKE_SOURCE_DIR}/Minigin/Sound/SoundSerivceLocator.cpp
   ${CMAKE_SOURCE_DIR}/Minigin/Sound/SoundSystem_SDL.cpp
+  "Sound/SoundSystem_Debug.cpp"
 )
 
 target_compile_features(minigin_engine PUBLIC cxx_std_20)
@@ -51,6 +52,10 @@ target_link_libraries(minigin_engine PUBLIC
   imgui
   minigin_shared
   ${VLD_LIBRARIES}
+)
+
+target_compile_definitions(minigin_engine PUBLIC
+  $<$<CONFIG:Debug>:DEBUG>
 )
 
 if(WIN32)

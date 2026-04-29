@@ -19,6 +19,9 @@
 #include "Timing.h"
 #include <SDL3_mixer/SDL_mixer.h>
 #include "Sound/SoundSerivceLocator.h"
+#ifdef DEBUG
+#include <Sound/SoundSystem_Debug.h>
+#endif
 #include <Sound/SoundSystem_SDL.h>
 #include <memory>
 
@@ -88,7 +91,12 @@ dae::Minigin::Minigin(const std::filesystem::path& dataPath)
 		SDL_Log("SDL_mixer is ready!");
 	}
 
+#ifdef DEBUG
+	SoundServiceLocator::RegisterSoundSystem(std::make_unique<SoundSystem_Debug>(std::make_unique<sound_system_SDL>()));
+#else
 	SoundServiceLocator::RegisterSoundSystem(std::make_unique<sound_system_SDL>());
+#endif // DEBUG
+
 
 	Renderer::GetInstance().Init(g_window);
 	ResourceManager::GetInstance().Init(dataPath);
