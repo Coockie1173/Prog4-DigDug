@@ -17,6 +17,10 @@
 #include "Renderer.h"
 #include "ResourceManager.h"
 #include "Timing.h"
+#include <SDL3_mixer/SDL_mixer.h>
+#include "Sound/SoundSerivceLocator.h"
+#include <Sound/SoundSystem_SDL.h>
+#include <memory>
 
 SDL_Window* g_window{};
 
@@ -60,7 +64,7 @@ dae::Minigin::Minigin(const std::filesystem::path& dataPath)
 {
 	PrintSDLVersion();
 
-	if (!SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD | SDL_INIT_JOYSTICK))
+	if (!SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD | SDL_INIT_JOYSTICK | SDL_INIT_AUDIO))
 	{
 		SDL_Log("Renderer error: %s", SDL_GetError());
 		throw std::runtime_error(std::string("SDL_Init Error: ") + SDL_GetError());
@@ -76,6 +80,15 @@ dae::Minigin::Minigin(const std::filesystem::path& dataPath)
 	{
 		throw std::runtime_error(std::string("SDL_CreateWindow Error: ") + SDL_GetError());
 	}
+
+	if (!MIX_Init()) {
+		SDL_Log("MIX_Init failed: %s", SDL_GetError());
+	}
+	else {
+		SDL_Log("SDL_mixer is ready!");
+	}
+
+	SoundServiceLocator::RegisterSoundSystem(std::make_unique<sound_system_SDL>());
 
 	Renderer::GetInstance().Init(g_window);
 	ResourceManager::GetInstance().Init(dataPath);

@@ -18,6 +18,9 @@ if(NOT glm_FOUND)
     DOWNLOAD_NO_PROGRESS ON
     DOWNLOAD_DIR ${CMAKE_BINARY_DIR}/downloads
   )
+  set(GLM_BUILD_LIBRARY OFF CACHE BOOL "" FORCE)
+  set(GLM_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+  set(GLM_BUILD_INSTALL OFF CACHE BOOL "" FORCE)
   FetchContent_MakeAvailable(glm)
 endif()
 
@@ -62,20 +65,27 @@ else()
   set(TARGET_PARAM WIN32)
 endif()
 
-# Common source files (shared between game and editor)
+# Common source files
 set(COMMON_SOURCES
   Minigin/Font.cpp
+  Minigin/ResourceManager.cpp
+  Minigin/Texture2D.cpp   
+  Minigin/Renderer.cpp      
+)
+
+# Game executable
+add_executable(${TARGET_NAME} ${TARGET_PARAM}
+  Minigin/Main.cpp
+  ${COMMON_SOURCES} 
+  "Minigin/Sound/SoundSerivceLocator.cpp"
   Minigin/GameObject.cpp
   Minigin/InputManager.cpp
   Minigin/Minigin.cpp
   "Minigin/Components/RenderComponent.cpp"
-  Minigin/ResourceManager.cpp
   Minigin/Scene.cpp
   Minigin/SceneManager.cpp
   Minigin/SceneLoader.cpp
   Minigin/TextObject.cpp
-  Minigin/Texture2D.cpp   
-  Minigin/Renderer.cpp      
   "Minigin/Components/TextureRendererComponent.cpp" 
   "Minigin/Components/Component.cpp" 
   "Minigin/Components/TextRendererComponent.cpp" 
@@ -88,12 +98,7 @@ set(COMMON_SOURCES
   "Minigin/EventManager.cpp"
   "Minigin/Components/ScoreComponent.cpp" 
   "Minigin/Controller/ControllerManager.cpp"
-)
-
-# Game executable
-add_executable(${TARGET_NAME} ${TARGET_PARAM}
-  Minigin/Main.cpp
-  ${COMMON_SOURCES}
+  "Minigin/Sound/SoundSystem_SDL.cpp"
 )
 
 # enable c++20 features
@@ -158,6 +163,21 @@ if(NOT SDL3_ttf_FOUND)
   endif()
 endif()
 
+find_package(SDL3_mixer CONFIG QUIET)
+
+if(NOT SDL3_mixer_FOUND)
+  include(FetchContent)
+
+  FetchContent_Declare(
+      SDL3_mixer
+      GIT_REPOSITORY https://github.com/libsdl-org/SDL_mixer.git
+      GIT_TAG main
+      GIT_SHALLOW TRUE
+      GIT_PROGRESS TRUE
+  )
+  FetchContent_MakeAvailable(SDL3_mixer)
+endif()
+
 if (WIN32)
   # Add VLD (Visual Leak Detector) for memory leak detection on Windows
   find_package(VLD CONFIG)
@@ -171,11 +191,13 @@ target_include_directories("${TARGET_NAME}" PUBLIC
   ${sdl3_ttf_SOURCE_DIR}/include
   ${imgui_SOURCE_DIR}
   ${VLD_INCLUDE_DIR}
+  ${sdl3_mixer_SOURCE_DIR}/include
 )
 
 target_link_libraries("${TARGET_NAME}" PUBLIC
   SDL3::SDL3
   SDL3_ttf::SDL3_ttf
+  SDL3_mixer::SDL3_mixer
   glm::glm
   imgui
   minigin_shared
@@ -260,6 +282,8 @@ if(BUILD_EDITOR AND NOT EMSCRIPTEN)
     ${VLD_LIBRARIES}
   )
 
+  target_compile_definitions(minigin_editor PRIVATE M_EDITOR)
+
   if(WIN32)
     find_library(XINPUT_LIBRARY Xinput)
     if(XINPUT_LIBRARY)
@@ -311,7 +335,8 @@ elseif(WIN32)
   # Copy SDL dlls to output folder
   set(SDL_RUNTIME_DLLS
     SDL3::SDL3
-    SDL3_ttf::SDL3_ttf
+    SDL3_ttf::SDL3_ttf    
+    SDL3_mixer::SDL3_mixer
   )
 
   foreach(dllTarget IN LISTS SDL_RUNTIME_DLLS)

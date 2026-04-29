@@ -2,7 +2,9 @@
 #include <cstring>
 #include <iostream>
 #include "Renderer.h"
+#ifndef M_EDITOR
 #include "SceneManager.h"
+#endif
 #include "Texture2D.h"
 
 #include <imgui.h>
@@ -49,7 +51,9 @@ void dae::Renderer::Render() const
 	SDL_SetRenderDrawColor(m_renderer, color.r, color.g, color.b, color.a);
 	SDL_RenderClear(m_renderer);
 
+#ifndef M_EDITOR
 	SceneManager::GetInstance().Render();
+#endif
 
 	ImGui_ImplSDLRenderer3_NewFrame();
 	ImGui_ImplSDL3_NewFrame();
