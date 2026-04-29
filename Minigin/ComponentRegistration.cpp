@@ -8,7 +8,6 @@
 
 #include "Components/FPSCounterComponent.h"
 #include "Components/ObjectMoveComponent.h"
-#include "Components/ScoreComponent.h"
 #include "Components/SpinnerComponent.h"
 #include "Components/SwappableRenderComponent.h"
 #include "Components/TextRendererComponent.h"
@@ -39,10 +38,6 @@ namespace dae
 		RegisterComponentFactory(
 			HASH_SpinnerComponent,
 			[](GameObject* obj) { return obj->AddComponent<SpinnerComponent>(true, 50.0f, 1.0f, glm::vec2(400.0f, 300.0f)); }
-		);
-		RegisterComponentFactory(
-			HASH_ScoreComponent,
-			[](GameObject* obj) { return obj->AddComponent<ScoreComponent>(); }
 		);
 		RegisterComponentFactory(
 			HASH_ObjectMoveComponent,

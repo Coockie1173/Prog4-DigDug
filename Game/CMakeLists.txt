@@ -6,12 +6,12 @@ endif()
 
 add_executable(${TARGET_NAME}
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Main.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/ComponentRegistration.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/GameComponentRegistration.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Commands/MovementInputCommand.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/ObjectMoveComponent.cpp
   
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/SpinnerComponent.cpp
- "src/Components/PlayerControllerComponent.cpp")
+ "src/Components/PlayerControllerComponent.cpp" "src/Commands/FrameCounterCommand.cpp")
 
 target_compile_features(${TARGET_NAME} PUBLIC cxx_std_20)
 

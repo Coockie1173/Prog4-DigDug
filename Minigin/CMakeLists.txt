@@ -13,6 +13,7 @@ add_library(minigin_engine STATIC
   ${CMAKE_SOURCE_DIR}/Minigin/TextObject.cpp
   ${CMAKE_SOURCE_DIR}/Minigin/Texture2D.cpp
   ${CMAKE_SOURCE_DIR}/Minigin/Timing.cpp
+  ${CMAKE_SOURCE_DIR}/Minigin/ComponentRegistration.cpp
   ${CMAKE_SOURCE_DIR}/Minigin/ComponentFactoryRegistry.cpp
   ${CMAKE_SOURCE_DIR}/Minigin/Components/Component.cpp
   ${CMAKE_SOURCE_DIR}/Minigin/Components/FPSCounterComponent.cpp

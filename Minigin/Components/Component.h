@@ -24,9 +24,13 @@ namespace dae
 		virtual void LateUpdate() = 0;
 		virtual void Init() = 0;
 
+		bool GetIsDisabled() const { return ComponentDisabled; }
+		void SetIsDisabled(bool isDisabled) { ComponentDisabled = isDisabled; }
+
 	protected:
 		GameObject* GetParent() const noexcept { return m_parent; };
 		Component(dae::GameObject* Parent);
+		bool ComponentDisabled{false};
 
 	private:
 		friend class SceneLoader;

@@ -14,7 +14,8 @@ namespace dae
 		void LateUpdate() override;
 		void Init() override;
 		bool Deserialize(const std::map<std::string, std::string>& properties, std::string& errorMessage) override;
-		void SetTexture(std::shared_ptr<Texture2D> newTexture) { m_pTexture = newTexture; }
+		void SetTexture(std::shared_ptr<dae::Texture2D> newTexture) { m_pTexture = newTexture; }
+		std::shared_ptr<dae::Texture2D> GetTexture() const { return m_pTexture; }
 	private:
 		std::string m_textureName{};
 	};

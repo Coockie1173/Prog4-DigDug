@@ -69,37 +69,83 @@ namespace dae
 		glm::vec2 GetLocalPosition() const noexcept { return m_localPosition; };
 		void SetLocalPosition(const glm::vec2& pos);
 
-		/// <summary>
-		/// Gets first of matching component
-		/// </summary>
-		/// <typeparam name="T">Component type to find</typeparam>
-		/// <returns>The first matching component</returns>
-		template <typename T>
-		T* GetComponent();
+		template<typename T>
+		inline T* GetComponent()
+		{
+			static_assert(std::is_base_of<Component, T>::value, "T must derive from Component");
 
-		template <typename T>
-		void GetComponentsOfType(std::vector<T*>& ReturnedComponents);
+			for (auto& C : m_attachedComponents)
+			{
+				if (auto CastC = dynamic_cast<T*>(C.get()))
+				{
+					return CastC;
+				}
+			}
 
-		template <typename T>
-		void GetComponentIDsOfType(std::vector<int>& ReturnedComponentIDs);
+			return nullptr;
+		}
 
-		/// <summary>
-		/// Removes first component of type
-		/// </summary>
-		/// <typeparam name="T">Component type to remove</typeparam>
-		/// <returns>Success</returns>
-		template <typename T>
-		bool RemoveComponent();
+		template<typename T>
+		void GetComponentsOfType(std::vector<T*>& ReturnedComponents)
+		{
+			static_assert(std::is_base_of<Component, T>::value, "T must derive from Component");
 
-		/// <summary>
-		/// In case you have multiple of one type and need to remove a specific one.
-		/// </summary>
-		/// <typeparam name="T">Component Type</typeparam>
-		/// <param name="ID">The ID of the component. This will "reshuffle" all other IDs</param>
-		void RemoveComponentAtID(int ID);
+			for (auto& C : m_attachedComponents)
+			{
+				if (auto CastC = dynamic_cast<T*>(C))
+				{
+					ReturnedComponents.push_back(CastC);
+				}
+			}
+		}
 
-		template <typename T>
-		bool HasComponent();
+		template<typename T>
+		void GetComponentIDsOfType(std::vector<int>& ReturnedComponentIDs)
+		{
+			int idx = 0;
+			for (auto& C : m_attachedComponents)
+			{
+				if (auto CastC = dynamic_cast<T*>(C))
+				{
+					ReturnedComponentIDs.push_back(idx);
+				}
+				idx++;
+			}
+		}
+
+		template<typename T>
+		bool RemoveComponent()
+		{
+			static_assert(std::is_base_of<Component, T>::value, "T must derive from Component");
+
+			int idx = 0;
+			for (auto& C : m_attachedComponents)
+			{
+				if (auto CastC = dynamic_cast<T*>(C))
+				{
+					m_attachedComponents.erase(m_attachedComponents.begin() + idx);
+					return true;
+				}
+				idx++;
+			}
+
+			return false;
+		}
+
+		void RemoveComponentAtID(int ID)
+		{
+			m_attachedComponents.erase(m_attachedComponents.begin() + ID);
+		}
+
+		template<typename T>
+		bool HasComponent()
+		{
+			static_assert(std::is_base_of<Component, T>::value, "T must derive from Component");
+
+			T* GC = GetComponent<T>();
+
+			return GC != nullptr;
+		}
 
 		template <typename T, typename... Args>
 		T* AddComponent(Args&&... args)

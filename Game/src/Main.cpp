@@ -13,10 +13,11 @@
 #include "Debugger.h"
 #include "EventManager.h"
 #include "SceneLoader.h"
-#include "ComponentRegistration.h"
+#include "GameComponentRegistration.h"
 
 #include <filesystem>
 #include <string>
+#include <ComponentRegistration.h>
 
 namespace fs = std::filesystem;
 
@@ -36,6 +37,7 @@ int main(int argc, char* argv[]) {
 #endif
 	dae::Minigin engine(data_location);
 	dae::RegisterBuiltinComponentFactories();
+	dae::RegisterGameComponentFactories();
 
 	if (argc > 1)
 	{
