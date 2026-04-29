@@ -99,7 +99,7 @@ add_executable(${TARGET_NAME} ${TARGET_PARAM}
   "Minigin/Components/ScoreComponent.cpp" 
   "Minigin/Controller/ControllerManager.cpp"
   "Minigin/Sound/SoundSystem_SDL.cpp"
-)
+ "Minigin/Components/SwappableRenderer.cpp")
 
 # enable c++20 features
 # enable c++20 features
