@@ -4,6 +4,7 @@
 #include <memory>
 #include <map>
 #include <string>
+#include <ComponentData.h>
 #include "../gencomponents/GameObject_Barebones.h"
 
 class EditorScene

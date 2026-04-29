@@ -3,9 +3,9 @@
 #include <cmath>
 #include <filesystem>
 #include "gencomponents/ComponentRegisterMaster.h"
-#include "../Minigin/ResourceManager.h"
-#include "../Minigin/Texture2D.h"
-#include "../Minigin/Font.h"
+#include "ResourceManager.h"
+#include "Texture2D.h"
+#include "Font.h"
 
 SceneViewport::SceneViewport(SDL_Renderer* renderer, int width, int height)
     : m_renderer(renderer), m_width(width), m_height(height)

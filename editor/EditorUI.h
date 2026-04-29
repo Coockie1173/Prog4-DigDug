@@ -1,8 +1,8 @@
 #pragma once
 
 #include <imgui.h>
+#include <ComponentData.h>
 #include "../gencomponents/GameObject_Barebones.h"
-#include "EditorComponentData.h"
 #include "EditorScene.h"
 #include "InputBindingEditor.h"
 #include "EditorSerialization.h"

@@ -3,7 +3,7 @@
 #include <string>
 #include <map>
 #include <SDL3/SDL.h>
-#include "../Shared/include/InputBindingData.h"
+#include <InputBindingData.h>
 
 // Use the shared InputDeviceType and InputBinding from dae namespace
 using InputBinding = dae::InputBinding;

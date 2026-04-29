@@ -3,6 +3,7 @@
 #include <string>
 #include <memory>
 #include <functional>
+#include <ComponentData.h>
 #include "../gencomponents/GameObject_Barebones.h"
 #include "EditorScene.h"
 #include "InputBindingEditor.h"

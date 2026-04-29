@@ -8,32 +8,35 @@
 
 namespace fs = std::filesystem;
 
-bool ComponentParser::ParseComponentDirectory(const std::string& componentDir, const std::string& gameObjectPath, const std::string& outputDir)
+bool ComponentParser::ParseComponentDirectories(const std::vector<std::string>& componentDirs, const std::string& gameObjectPath, const std::string& outputDir)
 {
-    if (!fs::exists(componentDir))
-    {
-        std::cerr << "Component directory not found: " << componentDir << std::endl;
-        return false;
-    }
-
     fs::create_directories(outputDir);
     std::vector<ComponentInfo> components;
     std::unordered_set<std::string> seenClassNames;
 
-    for (const auto& entry : fs::recursive_directory_iterator(componentDir))
+    for (const auto& componentDir : componentDirs)
     {
-        if (entry.path().extension() == ".h" && entry.path().filename().string().find("Component") != std::string::npos)
+        if (!fs::exists(componentDir))
         {
-            ComponentInfo info;
-            if (ParseComponentFile(entry.path().string(), info))
+            std::cerr << "Component directory not found: " << componentDir << std::endl;
+            return false;
+        }
+
+        for (const auto& entry : fs::recursive_directory_iterator(componentDir))
+        {
+            if (entry.path().extension() == ".h" && entry.path().filename().string().find("Component") != std::string::npos)
             {
-                if (seenClassNames.find(info.className) == seenClassNames.end())
+                ComponentInfo info;
+                if (ParseComponentFile(entry.path().string(), info))
                 {
-                    seenClassNames.insert(info.className);
-                    std::string outputFilename = (fs::path(outputDir) / (info.className + "_Barebones.h")).string();
-                    if (GenerateBarebonesComponent(info, outputFilename))
+                    if (seenClassNames.find(info.className) == seenClassNames.end())
                     {
-                        components.push_back(info);
+                        seenClassNames.insert(info.className);
+                        std::string outputFilename = (fs::path(outputDir) / (info.className + "_Barebones.h")).string();
+                        if (GenerateBarebonesComponent(info, outputFilename))
+                        {
+                            components.push_back(info);
+                        }
                     }
                 }
             }
@@ -340,7 +343,7 @@ bool ComponentParser::GenerateRegisterMaster(const std::vector<ComponentInfo>& c
     headerFile << "#include <string>\n";
     headerFile << "#include <vector>\n";
     headerFile << "#include <functional>\n";
-    headerFile << "#include \"../Minigin/Hash.h\"\n\n";
+    headerFile << "#include <Hash.h>\n\n";
     headerFile << "namespace dae\n";
     headerFile << "{\n";
     headerFile << "    struct PropertyMetadata\n";
@@ -569,7 +572,7 @@ bool ComponentParser::GenerateBarebonesGameObject(const std::string& gameObjectP
     headerFile << "#include <vector>\n";
     headerFile << "#include <algorithm>\n";
     headerFile << "#include <memory>\n";
-    headerFile << "#include \"../EditorComponentData.h\"\n\n";
+    headerFile << "#include <ComponentData.h>\n\n";
      headerFile << "namespace dae\n";
      headerFile << "{\n";
      headerFile << "    using ComponentHandle = std::unique_ptr<ComponentInstance>;\n\n";

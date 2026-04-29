@@ -3,8 +3,8 @@
 #include <cstring>
 #include <format>
 #include <SDL3/SDL.h>
-#include "../Shared/include/MBINSerializer.h"
-#include "../Shared/include/ComponentTypeMap.h"
+#include <MBINSerializer.h>
+#include <ComponentTypeMap.h>
 
 EditorSerialization::EditorSerialization()
 {

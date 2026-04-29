@@ -7,8 +7,8 @@
 #include "EditorScene.h"
 #include "SceneViewport.h"
 #include "EditorUI.h"
-#include "../Minigin/ResourceManager.h"
-#include "../Minigin/Font.h"
+#include "ResourceManager.h"
+#include "Font.h"
 
 constexpr int WINDOW_WIDTH = 1024;
 constexpr int WINDOW_HEIGHT = 576;

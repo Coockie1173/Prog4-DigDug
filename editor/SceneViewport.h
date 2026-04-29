@@ -6,8 +6,8 @@
 #include <unordered_map>
 #include <string>
 #include <glm/glm.hpp>
+#include <ComponentData.h>
 #include "../gencomponents/GameObject_Barebones.h"
-#include "EditorComponentData.h"
 #include <SDL3_ttf/SDL_ttf.h>
 
 class EditorScene;

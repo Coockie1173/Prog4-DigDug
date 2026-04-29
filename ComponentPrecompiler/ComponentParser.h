@@ -7,7 +7,7 @@
 class ComponentParser
 {
 public:
-    bool ParseComponentDirectory(const std::string& componentDir, const std::string& gameObjectPath, const std::string& outputDir);
+    bool ParseComponentDirectories(const std::vector<std::string>& componentDirs, const std::string& gameObjectPath, const std::string& outputDir);
 
 private:
     struct Property
