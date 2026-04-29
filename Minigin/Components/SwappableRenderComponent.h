@@ -5,10 +5,10 @@
 
 namespace dae
 {
-	class SwappableRenderer final : public RenderComponent
+	class SwappableRenderComponent final : public RenderComponent
 	{
 	public:
-		SwappableRenderer(GameObject* Parent);
+		SwappableRenderComponent(GameObject* Parent);
 		void Render() const override;
 		void Update() override;
 		void LateUpdate() override;

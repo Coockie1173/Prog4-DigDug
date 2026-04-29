@@ -15,7 +15,7 @@ namespace dae
 		DeviceType deviceType{};
 		InputType inputType{};
 		std::string action;
-		std::unique_ptr<Command> command;
+		std::weak_ptr<Command> command;
 
 		int controllerId{};
 		GamepadButton button{};
@@ -73,9 +73,17 @@ bool dae::InputManager::ProcessInput()
 			binding->wasPressed = isCurrentlyPressed;
 		}
 
-		if (shouldExecute && binding->command)
+		if (shouldExecute)
 		{
-			binding->command->Execute();
+			auto cmd = binding->command.lock();
+			if (cmd)
+			{
+				cmd->Execute();
+			}
+			else
+			{
+				// command expired (owner removed). Optionally remove or keep binding for future attachment.
+			}
 		}
 	}
 
@@ -111,7 +119,7 @@ bool dae::InputManager::ProcessInput()
 }
 
 void dae::InputManager::BindButton(int ControllerId, GamepadButton Button, InputType InputType,
-	const std::string& Action, std::unique_ptr<Command> Command)
+	const std::string& Action)
 {
 	auto binding = std::make_unique<InputBinding>();
 	binding->deviceType = InputBinding::DeviceType::Gamepad;
@@ -119,20 +127,20 @@ void dae::InputManager::BindButton(int ControllerId, GamepadButton Button, Input
 	binding->button = Button;
 	binding->inputType = InputType;
 	binding->action = Action;
-	binding->command = std::move(Command);
+	binding->command.reset();
 
 	m_Bindings.push_back(std::move(binding));
 }
 
 void dae::InputManager::BindKey(SDL_Keycode Keycode, InputType InputType,
-	const std::string& Action, std::unique_ptr<Command> Command)
+	const std::string& Action)
 {
 	auto binding = std::make_unique<InputBinding>();
 	binding->deviceType = InputBinding::DeviceType::Keyboard;
 	binding->keycode = Keycode;
 	binding->inputType = InputType;
 	binding->action = Action;
-	binding->command = std::move(Command);
+	binding->command.reset();
 	binding->wasPressed = false;
 
 	m_Bindings.push_back(std::move(binding));
@@ -179,4 +187,15 @@ void dae::InputManager::UnbindKeyPadAction(const std::string& Action)
 void dae::InputManager::ClearAllBindings()
 {
 	m_Bindings.clear();
+}
+
+void dae::InputManager::BindActionToCommand(const std::string& Action, std::shared_ptr<Command> Command)
+{
+	for (auto& binding : m_Bindings)
+	{
+		if (binding->action == Action)
+		{
+			binding->command = Command;
+		}
+	}
 }

@@ -85,6 +85,8 @@ add_executable(${TARGET_NAME} ${TARGET_PARAM}
   Minigin/Scene.cpp
   Minigin/SceneManager.cpp
   Minigin/SceneLoader.cpp
+  Minigin/ComponentFactoryRegistry.cpp
+  Minigin/ComponentRegistration.cpp
   Minigin/TextObject.cpp
   "Minigin/Components/TextureRendererComponent.cpp" 
   "Minigin/Components/Component.cpp" 
@@ -99,7 +101,7 @@ add_executable(${TARGET_NAME} ${TARGET_PARAM}
   "Minigin/Components/ScoreComponent.cpp" 
   "Minigin/Controller/ControllerManager.cpp"
   "Minigin/Sound/SoundSystem_SDL.cpp"
- "Minigin/Components/SwappableRenderer.cpp")
+ "Minigin/Components/SwappableRenderComponent.cpp")
 
 # enable c++20 features
 # enable c++20 features

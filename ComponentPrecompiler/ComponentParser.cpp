@@ -441,11 +441,12 @@ bool ComponentParser::GenerateRegisterMaster(const std::vector<ComponentInfo>& c
 
 bool ComponentParser::GenerateComponentTypeMap(const std::vector<ComponentInfo>& components, const std::string& outputDir)
 {
-    std::string headerPath = (fs::path(outputDir) / "../../../Shared/include/ComponentTypeMap.h").string();
+    std::string headerPath = (fs::path(outputDir) / "../../Shared/include/ComponentTypeMap.h").string();
     std::ofstream headerFile(headerPath);
     if (!headerFile.is_open())
     {
         std::cerr << "Failed to create ComponentTypeMap.h" << std::endl;
+        std::cerr << headerPath << std::endl;
         return false;
     }
 

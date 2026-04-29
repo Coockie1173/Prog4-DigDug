@@ -4,66 +4,17 @@
 #include "TextObject.h"
 #include "Scene.h"
 #include "Debugger.h"
+#include "ComponentFactoryRegistry.h"
 
 #include <SceneDeserializer.h>
 #include <SceneData.h>
-#include <ComponentTypeMap.h>
-
-// Component includes
-#include "Components/TextureRendererComponent.h"
-#include "Components/TextRendererComponent.h"
-#include "Components/FPSCounterComponent.h"
-#include "Components/SpinnerComponent.h"
-#include "Components/ScoreComponent.h"
-#include "Components/ObjectMoveComponent.h"
-
+#include "InputManager.h"
 #include <format>
-#include <functional>
-#include <map>
 #include <sstream>
-#include <glm/glm.hpp>
+
 
 namespace dae
 {
-    // Anonymous namespace provides internal linkage for g_componentFactories.
-    // This prevents ODR violations and signals the map is private implementation detail.
-    // Doing it like this also just allows us to plop standard data in before calling deserialize
-    namespace
-    {
-        using ComponentFactory = std::function<Component* (GameObject*)>;
-
-        static const std::map<uint32_t, ComponentFactory> g_componentFactories{
-            {
-                HASH_TextureRenderComponent,
-                [](GameObject* obj) { return obj->AddComponent<TextureRenderComponent>(""); }
-            },
-            {
-                HASH_TextRenderComponent,
-                [](GameObject* obj)
-                {
-                    auto font = ResourceManager::GetInstance().LoadFont("Lingua.otf", 24);
-                    return obj->AddComponent<TextRenderComponent>("", SDL_Color{255, 255, 255, 255}, font);
-                }
-            },
-            {
-                HASH_FPSCounterComponent,
-                [](GameObject* obj) { return obj->AddComponent<FPSCounterComponent>(); }
-            },
-            {
-                HASH_SpinnerComponent,
-                [](GameObject* obj) { return obj->AddComponent<SpinnerComponent>(true, 50.0f, 1.0f, glm::vec2(400.0f, 300.0f)); }
-            },
-            {
-                HASH_ScoreComponent,
-                [](GameObject* obj) { return obj->AddComponent<ScoreComponent>(); }
-            },
-            {
-                HASH_ObjectMoveComponent,
-                [](GameObject* obj) { return obj->AddComponent<ObjectMoveComponent>(); }
-            }
-        };
-    }
-
     bool SceneLoader::LoadSceneFromFile(const std::string& sceneFilePath, Scene& scene, std::string& errorMessage)
     {
         //Deserialize the MBIN file
@@ -84,6 +35,18 @@ namespace dae
 
     bool SceneLoader::AddSceneDataToScene(const SceneData& sceneData, Scene& scene, std::string& errorMessage)
     {
+        //Register input bindings (editor stores action names + device/key). Commands will be attached at runtime by game code.
+        for (const auto& [actionName, binding] : sceneData.inputBindings)
+        {
+            if (binding.deviceType == InputDeviceType::Keyboard)
+            {
+                dae::InputManager::GetInstance().BindKey(binding.keyCode, dae::InputManager::InputType::Down, binding.actionName);
+            }
+            else
+            {
+                dae::InputManager::GetInstance().BindButton(binding.gamepadIndex, binding.gamepadButton, dae::InputManager::InputType::Down, binding.actionName);
+            }
+        }
         //Map deserialized object IDs to created GameObject pointers
         std::map<uint32_t, GameObject*> idToGameObjectMap;
         //Store created GameObjects before adding to scene
@@ -121,9 +84,9 @@ namespace dae
         }
 
         //Establish parent-child relationships
-        for (const auto& [child, parentId] : parentRelationships)
-        {
-            if (idToGameObjectMap.contains(parentId))
+            for (const auto& [child, parentId] : parentRelationships)
+            {
+                if (idToGameObjectMap.find(parentId) != idToGameObjectMap.end())
             {
                 GameObject* parent = idToGameObjectMap[parentId];
                 //Calculate local position relative to parent
@@ -135,9 +98,9 @@ namespace dae
 
 
         //Second pass: add components to game objects
-        for (const auto& objData : sceneData.gameObjects)
-        {
-            if (!idToGameObjectMap.contains(objData.id))
+            for (const auto& objData : sceneData.gameObjects)
+            {
+                if (idToGameObjectMap.find(objData.id) == idToGameObjectMap.end())
             {
                 continue;  //Should not happen, but safety check
             }
@@ -179,7 +142,7 @@ namespace dae
         return true;
     }
 
-    bool SceneLoader::CreateAndAddComponent(GameObject* gameObject, uint32_t componentTypeHash, const std::string&, const std::map<std::string, std::string>& properties, std::string& errorMessage)
+    bool SceneLoader::CreateAndAddComponent(GameObject* gameObject, uint32_t componentTypeHash, const std::string& componentType, const std::map<std::string, std::string>& properties, std::string& errorMessage)
     {
         if (!gameObject)
         {
@@ -188,30 +151,11 @@ namespace dae
             return false;
         }
 
-        Debugger::GetInstance().LogDebug(std::format(
-            "[SceneLoader] CreateAndAddComponent hash={}, properties count={}",
-            componentTypeHash, properties.size()
-        ));
-        for (const auto& [key, value] : properties)
-        {
-            Debugger::GetInstance().LogDebug(std::format(
-                "    Property: {} = {}", key, value
-            ));
-        }
-
-        auto factoryIt = g_componentFactories.find(componentTypeHash);
-        if (factoryIt == g_componentFactories.end())
-        {
-            errorMessage = std::format("Unknown component type hash: 0x{:X}", componentTypeHash);
-            Debugger::GetInstance().LogWarning(errorMessage);
-            return true;
-        }
-
-        Component* component = factoryIt->second(gameObject);
+        auto* component = CreateComponentFromHash(componentTypeHash, gameObject);
         if (!component)
         {
-            errorMessage = "Failed to create component";
-            Debugger::GetInstance().LogError(errorMessage);
+            errorMessage = std::format("Unknown or unregistered component type hash: 0x{:X} ('{}')", componentTypeHash, componentType);
+            Debugger::GetInstance().LogWarning(errorMessage);
             return false;
         }
 

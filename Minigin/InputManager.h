@@ -31,11 +31,17 @@ namespace dae
 	public:
 		bool ProcessInput();
 
+		// Register a button binding without attaching a command. Commands are attached later via BindActionToCommand.
 		void BindButton(int ControllerId, GamepadButton Button, InputType InputType, 
-			const std::string& Action, std::unique_ptr<Command> Command);
+			const std::string& Action);
 
+		// Register a key binding without attaching a command. Commands are attached later via BindActionToCommand.
 		void BindKey(SDL_Keycode Keycode, InputType InputType,
-			const std::string& Action, std::unique_ptr<Command> Command);
+			const std::string& Action);
+
+		// Bind a command to all existing bindings that use the given action name.
+		// Accepts a shared_ptr so the same command can be attached to multiple bindings.
+		void BindActionToCommand(const std::string& Action, std::shared_ptr<Command> Command);
 
 		void UnbindAction(const std::string& Action);
 		void UnbindKeyAction(const std::string& Action);

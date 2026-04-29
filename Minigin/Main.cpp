@@ -13,6 +13,7 @@
 #include "Debugger.h"
 #include "EventManager.h"
 #include "SceneLoader.h"
+#include "ComponentRegistration.h"
 
 #include <filesystem>
 #include <format>
@@ -46,6 +47,7 @@ int main(int argc, char* argv[]) {
 		data_location = "../Data/";
 #endif
 	dae::Minigin engine(data_location);
+	dae::RegisterBuiltinComponentFactories();
 
 	// Check if a scene file path is provided as command-line argument
 	if (argc > 1)
