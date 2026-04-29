@@ -5,6 +5,7 @@
 #include "Commands/Command.h"
 #include <algorithm>
 #include <unordered_map>
+#include <vector>
 
 namespace dae
 {
@@ -15,7 +16,7 @@ namespace dae
 		DeviceType deviceType{};
 		InputType inputType{};
 		std::string action;
-		std::weak_ptr<Command> command;
+		std::vector<std::weak_ptr<Command>> commands;
 
 		int controllerId{};
 		GamepadButton button{};
@@ -75,15 +76,21 @@ bool dae::InputManager::ProcessInput()
 
 		if (shouldExecute)
 		{
-			auto cmd = binding->command.lock();
-			if (cmd)
-			{
-				cmd->Execute();
-			}
-			else
-			{
-				// command expired (owner removed). Optionally remove or keep binding for future attachment.
-			}
+			auto& cmds = binding->commands;
+
+			cmds.erase(
+				std::remove_if(cmds.begin(), cmds.end(),
+					[](auto& weakCmd)
+					{
+						if (auto cmd = weakCmd.lock())
+						{
+							cmd->Execute();
+							return false;
+						}
+						return true; //remove expired
+					}),
+				cmds.end()
+			);
 		}
 	}
 
@@ -127,7 +134,10 @@ void dae::InputManager::BindButton(int ControllerId, GamepadButton Button, Input
 	binding->button = Button;
 	binding->inputType = InputType;
 	binding->action = Action;
-	binding->command.reset();
+	for(auto& command : binding->commands)
+	{
+		command.reset();
+	}
 
 	m_Bindings.push_back(std::move(binding));
 }
@@ -140,7 +150,10 @@ void dae::InputManager::BindKey(SDL_Keycode Keycode, InputType InputType,
 	binding->keycode = Keycode;
 	binding->inputType = InputType;
 	binding->action = Action;
-	binding->command.reset();
+	for (auto& command : binding->commands)
+	{
+		command.reset();
+	}
 	binding->wasPressed = false;
 
 	m_Bindings.push_back(std::move(binding));
@@ -195,7 +208,7 @@ void dae::InputManager::BindActionToCommand(const std::string& Action, std::shar
 	{
 		if (binding->action == Action)
 		{
-			binding->command = Command;
+			binding->commands.push_back(Command);
 		}
 	}
 }

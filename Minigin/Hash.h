@@ -1,6 +1,8 @@
 #ifndef _HASH_MINIGIN_H_
 #define _HASH_MINIGIN_H_
 
+#include <cstddef> 
+
 template <int length> struct sdbm_hash
 {
 	consteval static unsigned int _calculate(const char* const text, unsigned int& value) {
