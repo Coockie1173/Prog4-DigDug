@@ -21,10 +21,23 @@
 
 namespace fs = std::filesystem;
 
-static void load()
+static constexpr auto DEFAULT_SCENE_FILE = "TestScene.mbin";
+
+static void loadSceneFromFile(const fs::path& sceneFilePath)
 {
 	auto& scene = dae::SceneManager::GetInstance().CreateScene();
 	Debugger::GetInstance().AttachToScene(&scene);
+
+	std::string errorMessage;
+	if (!dae::SceneLoader::LoadSceneFromFile(sceneFilePath.string(), scene, errorMessage))
+	{
+		Debugger::GetInstance().LogError("Failed to load scene from '" + sceneFilePath.string() + "': " + errorMessage);
+	}
+	else
+	{
+		Debugger::GetInstance().LogDebug("Successfully loaded scene from '" + sceneFilePath.string() + "'");
+		Debugger::GetInstance().LogDebug("Press F6 to remove these debug messages.");
+	}
 }
 
 int main(int argc, char* argv[]) {
@@ -39,31 +52,16 @@ int main(int argc, char* argv[]) {
 	dae::RegisterBuiltinComponentFactories();
 	dae::RegisterGameComponentFactories();
 
+	auto defaultSceneFilePath = data_location / DEFAULT_SCENE_FILE;
 	if (argc > 1)
 	{
-		std::string sceneFilePath = argv[1];
-		auto loadFromFile = [sceneFilePath]()
-		{
-			auto& scene = dae::SceneManager::GetInstance().CreateScene();
-			Debugger::GetInstance().AttachToScene(&scene);
-
-			std::string errorMessage;
-			if (!dae::SceneLoader::LoadSceneFromFile(sceneFilePath, scene, errorMessage))
-			{
-				Debugger::GetInstance().LogError("Failed to load scene from '" + sceneFilePath + "': " + errorMessage);
-			}
-			else
-			{
-				Debugger::GetInstance().LogDebug("Successfully loaded scene from '" + sceneFilePath + "'");
-			}
-		};
-
-		engine.Run(loadFromFile);
+		defaultSceneFilePath = argv[1];
 	}
-	else
+
+	engine.Run([defaultSceneFilePath]()
 	{
-		engine.Run(load);
-	}
+		loadSceneFromFile(defaultSceneFilePath);
+	});
 
     return 0;
 }
