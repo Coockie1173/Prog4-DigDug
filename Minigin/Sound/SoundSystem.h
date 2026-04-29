@@ -7,7 +7,7 @@ class SoundSystem
 {
 public:
 	virtual ~SoundSystem() = default;
-	virtual void PlaySound(std::string& sound_name) = 0;
+	virtual void PlaySound(std::string sound_name) = 0;
 };
 
 #endif

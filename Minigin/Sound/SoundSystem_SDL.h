@@ -13,7 +13,7 @@ class sound_system_SDL final : public SoundSystem
 public:
 	sound_system_SDL();
 	~sound_system_SDL() override;
-	void PlaySound(std::string& SoundName) override;
+	void PlaySound(std::string SoundName) override;
 private:
 	std::jthread m_thread;
 	std::mutex m_mutex;

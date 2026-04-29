@@ -40,11 +40,11 @@ namespace dae
         {
             if (binding.deviceType == InputDeviceType::Keyboard)
             {
-                dae::InputManager::GetInstance().BindKey(binding.keyCode, dae::InputManager::InputType::Down, binding.actionName);
+                dae::InputManager::GetInstance().BindKey(binding.keyCode, binding.actionName);
             }
             else
             {
-                dae::InputManager::GetInstance().BindButton(binding.gamepadIndex, binding.gamepadButton, dae::InputManager::InputType::Down, binding.actionName);
+                dae::InputManager::GetInstance().BindButton(binding.gamepadIndex, binding.gamepadButton, binding.actionName);
             }
         }
         //Map deserialized object IDs to created GameObject pointers
@@ -84,8 +84,8 @@ namespace dae
         }
 
         //Establish parent-child relationships
-            for (const auto& [child, parentId] : parentRelationships)
-            {
+        for (const auto& [child, parentId] : parentRelationships)
+        {
                 if (idToGameObjectMap.find(parentId) != idToGameObjectMap.end())
             {
                 GameObject* parent = idToGameObjectMap[parentId];
@@ -98,9 +98,9 @@ namespace dae
 
 
         //Second pass: add components to game objects
-            for (const auto& objData : sceneData.gameObjects)
-            {
-                if (idToGameObjectMap.find(objData.id) == idToGameObjectMap.end())
+        for (const auto& objData : sceneData.gameObjects)
+        {
+            if (idToGameObjectMap.find(objData.id) == idToGameObjectMap.end())
             {
                 continue;  //Should not happen, but safety check
             }

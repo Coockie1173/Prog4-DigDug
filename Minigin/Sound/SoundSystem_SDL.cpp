@@ -18,7 +18,7 @@ sound_system_SDL::~sound_system_SDL()
     m_cv.notify_all();
 }
 
-void sound_system_SDL::PlaySound(std::string& SoundName)
+void sound_system_SDL::PlaySound(std::string SoundName)
 {
     {
         std::lock_guard lock(m_mutex);

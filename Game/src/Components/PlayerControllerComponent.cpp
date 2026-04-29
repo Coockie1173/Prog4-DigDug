@@ -8,6 +8,8 @@
 #include <ResourceManager.h>
 #include <SwappableRenderComponent.h>
 #include <Commands/FrameCounterCommand.h>
+#include <Commands/AttackCommand.h>
+#include <SoundSerivceLocator.h>
 
 constexpr float PLAYER_MOVE_SPEED = 100.0f;
 constexpr float TimebetweenFrames = 0.1f;
@@ -53,25 +55,25 @@ void dae::PlayerControllerComponent::Init()
 	auto CommandUp = std::make_shared<dae::MovementInputCommand>(m_pMoveComponent);
 	CommandUp->SetDirection(glm::vec2(0, -1));
 	CommandUp->SetSpeed(PLAYER_MOVE_SPEED);
-	dae::InputManager::GetInstance().BindActionToCommand(parts[0], CommandUp);
+	dae::InputManager::GetInstance().BindActionToCommand(parts[0], CommandUp, dae::InputManager::InputType::Down);
 	m_Commands.push_back(std::move(CommandUp));
 
 	auto CommandDown = std::make_shared<dae::MovementInputCommand>(m_pMoveComponent);
 	CommandDown->SetDirection(glm::vec2(0, 1));
 	CommandDown->SetSpeed(PLAYER_MOVE_SPEED);
-	dae::InputManager::GetInstance().BindActionToCommand(parts[1], CommandDown);
+	dae::InputManager::GetInstance().BindActionToCommand(parts[1], CommandDown, dae::InputManager::InputType::Down);
 	m_Commands.push_back(std::move(CommandDown));
 
 	auto CommandLeft = std::make_shared<dae::MovementInputCommand>(m_pMoveComponent);
 	CommandLeft->SetDirection(glm::vec2(-1, 0));
 	CommandLeft->SetSpeed(PLAYER_MOVE_SPEED);
-	dae::InputManager::GetInstance().BindActionToCommand(parts[2], CommandLeft);
+	dae::InputManager::GetInstance().BindActionToCommand(parts[2], CommandLeft, dae::InputManager::InputType::Down);
 	m_Commands.push_back(std::move(CommandLeft));
 
 	auto CommandRight = std::make_shared<dae::MovementInputCommand>(m_pMoveComponent);
 	CommandRight->SetDirection(glm::vec2(1, 0));
 	CommandRight->SetSpeed(PLAYER_MOVE_SPEED);
-	dae::InputManager::GetInstance().BindActionToCommand(parts[3], CommandRight);
+	dae::InputManager::GetInstance().BindActionToCommand(parts[3], CommandRight, dae::InputManager::InputType::Down);
 	m_Commands.push_back(std::move(CommandRight));
 
 	m_IdleFrame = ResourceManager::GetInstance().LoadTexture(m_IdleFrameName);
@@ -81,43 +83,64 @@ void dae::PlayerControllerComponent::Init()
 	auto CommandMove = std::make_shared<dae::FrameCounterCommand>(this);
 	for (auto& act : parts)
 	{
-		dae::InputManager::GetInstance().BindActionToCommand(act, CommandMove);
+		dae::InputManager::GetInstance().BindActionToCommand(act, CommandMove, dae::InputManager::InputType::Down);
 	}
 	m_Commands.push_back(std::move(CommandMove));
 	m_pRenderComponent->SetTexture(m_IdleFrame);
+
+	auto AttackCommand = std::make_shared<dae::AttackCommand>(this, true);
+	auto EndAttackCommand = std::make_shared<dae::AttackCommand>(this, false);
+	dae::InputManager::GetInstance().BindActionToCommand(m_attackActionName, AttackCommand, dae::InputManager::InputType::Pressed);
+	dae::InputManager::GetInstance().BindActionToCommand(m_attackActionName, EndAttackCommand, dae::InputManager::InputType::Released);
+	m_Commands.push_back(std::move(AttackCommand));
+	m_Commands.push_back(std::move(EndAttackCommand));
 }
 
 bool dae::PlayerControllerComponent::Deserialize(const std::map<std::string, std::string>& properties, std::string& errorMessage)
 {
-	auto inputSchemeIt = properties.find("inputScheme");
-	auto idleFrameIt = properties.find("IdleFrameName");
-	auto walkFrameIt = properties.find("WalkFrameName");
-	auto attackFrameIt = properties.find("AttackFrameName");
-	if (inputSchemeIt != properties.end())
-	{
-		m_inputScheme = inputSchemeIt->second;
-	}
-	if (idleFrameIt != properties.end())
-	{
-		m_IdleFrameName = idleFrameIt->second;
-	}
+	//I'll need to apply this pattern in other places too lateron
+	//TODO: port pattern to other components
+	auto getRequired = [&](const std::string& key, std::string& target) -> bool
+		{
+			auto it = properties.find(key);
+			if (it == properties.end())
+			{
+				errorMessage = "PlayerControllerComponent requires '" + key + "' property.";
+				return false;
+			}
 
-	if (walkFrameIt != properties.end())
-	{
-		m_WalkFrameName = walkFrameIt->second;
-	}
+			target = it->second;
+			return true;
+		};
 
-	if (attackFrameIt != properties.end())
-	{
-		m_AttackFrameName = attackFrameIt->second;
-		return true;
-	}
+	if (!getRequired("inputScheme", m_inputScheme)) return false;
+	if (!getRequired("IdleFrameName", m_IdleFrameName)) return false;
+	if (!getRequired("WalkFrameName", m_WalkFrameName)) return false;
+	if (!getRequired("AttackFrameName", m_AttackFrameName)) return false;
+	if (!getRequired("attackActionName", m_attackActionName)) return false;
 
-	errorMessage = "PlayerControllerComponent requires 'inputScheme' property.";
-	return false;
+	return true;
 }
 
 void dae::PlayerControllerComponent::OnPlayerMove()
 {
+	if (m_PlayerAttacking)
+		return;
 	m_WalkTimer += Timing::GetInstance().GetDeltaTime();
+}
+
+void dae::PlayerControllerComponent::OnPlayerAttack()
+{
+	m_PlayerAttacking = true;
+	m_pMoveComponent->SetIsDisabled(true);
+	m_pRenderComponent->SetTexture(m_AttackFrame);
+
+	SoundServiceLocator::GetSoundSystem().PlaySound("Data/sound/Shoot.wav");
+}
+
+void dae::PlayerControllerComponent::OnPlayerEndAttack()
+{
+	m_PlayerAttacking = false;
+	m_pMoveComponent->SetIsDisabled(false);
+	m_pRenderComponent->SetTexture(m_IdleFrame);
 }

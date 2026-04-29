@@ -22,9 +22,13 @@ namespace dae
 		bool Deserialize(const std::map<std::string, std::string>& properties, std::string& errorMessage) override;
 
 		void OnPlayerMove();
+		void OnPlayerAttack();
+		void OnPlayerEndAttack();
 	private:
 		// EXPOSE_TO_EDITOR("Input Scheme", "Defines the input scheme as follows: upaction|downaction|leftaction|rightaction")
 		std::string m_inputScheme{};
+		// EXPOSE_TO_EDITOR("Attack Action Name", "The name of the action to use for attacking")
+		std::string m_attackActionName{};
 
 		//THIS WILL BE REFACTORED OUT v
 		// EXPOSE_TO_EDITOR("Idle Frame Name", "The name of the frame to use when not walking")
@@ -46,6 +50,7 @@ namespace dae
 		//I will fix this later, but this works for now
 		std::vector<std::shared_ptr<dae::Command>> m_Commands{ nullptr };
 		float m_WalkTimer{};
+		bool m_PlayerAttacking{false};
 	};
 }
 

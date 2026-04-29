@@ -9,10 +9,11 @@ add_executable(${TARGET_NAME}
   ${CMAKE_CURRENT_SOURCE_DIR}/src/GameComponentRegistration.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Commands/MovementInputCommand.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/ObjectMoveComponent.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/PlayerControllerComponent.cpp 
   
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/SpinnerComponent.cpp
- "src/Components/PlayerControllerComponent.cpp" "src/Commands/FrameCounterCommand.cpp")
-
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Commands/FrameCounterCommand.cpp 
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Commands/AttackCommand.cpp)
 target_compile_features(${TARGET_NAME} PUBLIC cxx_std_20)
 
 target_include_directories(${TARGET_NAME} PUBLIC

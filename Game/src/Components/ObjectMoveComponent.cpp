@@ -1,4 +1,4 @@
-#include "ObjectMoveComponent.h"
+#include <Components/ObjectMoveComponent.h>
 #include "GameObject.h"
 #include "Timing.h"
 #include <map>
@@ -28,6 +28,8 @@ bool dae::ObjectMoveComponent::Deserialize(const std::map<std::string, std::stri
 
 void dae::ObjectMoveComponent::MoveObject(glm::vec2& direction, float speed)
 {
+	if(ComponentDisabled)
+		return;
 	auto parent = GetParent();
 	auto currentPos = parent->GetLocalPosition();
 	currentPos += direction * speed * Timing::GetInstance().GetDeltaTime();

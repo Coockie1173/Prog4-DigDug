@@ -24,24 +24,26 @@ namespace dae
 
 	private:
 		struct InputBinding;
+		struct ActionBinding;
 
 		ControllerManager m_ControllerManager;
 		std::vector<std::unique_ptr<InputBinding>> m_Bindings;
+		std::vector<std::unique_ptr<ActionBinding>> m_ActionBindings;
 
 	public:
 		bool ProcessInput();
 
 		// Register a button binding without attaching a command. Commands are attached later via BindActionToCommand.
-		void BindButton(int ControllerId, GamepadButton Button, InputType InputType, 
+		void BindButton(int ControllerId, GamepadButton Button,
 			const std::string& Action);
 
 		// Register a key binding without attaching a command. Commands are attached later via BindActionToCommand.
-		void BindKey(SDL_Keycode Keycode, InputType InputType,
+		void BindKey(SDL_Keycode Keycode,
 			const std::string& Action);
 
-		// Bind a command to all existing bindings that use the given action name.
+		// Bind a command to an action and the input type that should trigger it.
 		// Accepts a shared_ptr so the same command can be attached to multiple bindings.
-		void BindActionToCommand(const std::string& Action, std::shared_ptr<Command> Command);
+		void BindActionToCommand(const std::string& Action, std::shared_ptr<Command> Command, InputType InputType);
 
 		void UnbindAction(const std::string& Action);
 		void UnbindKeyAction(const std::string& Action);

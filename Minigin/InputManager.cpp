@@ -14,15 +14,20 @@ namespace dae
 		enum class DeviceType { Gamepad, Keyboard };
 
 		DeviceType deviceType{};
-		InputType inputType{};
 		std::string action;
-		std::vector<std::weak_ptr<Command>> commands;
 
 		int controllerId{};
 		GamepadButton button{};
 
 		SDL_Keycode keycode{};
 		bool wasPressed{};
+	};
+
+	struct InputManager::ActionBinding
+	{
+		std::string action;
+		InputType inputType{};
+		std::vector<std::weak_ptr<Command>> commands;
 	};
 }
 
@@ -34,63 +39,69 @@ bool dae::InputManager::ProcessInput()
 	m_ControllerManager.Update();
 
 	const bool* keyboardState = SDL_GetKeyboardState(nullptr);
+	auto executeAction = [this](const std::string& action, InputType inputType)
+	{
+		auto bindingIt = std::find_if(m_ActionBindings.begin(), m_ActionBindings.end(),
+			[&action, inputType](const std::unique_ptr<ActionBinding>& binding)
+			{
+				return binding->action == action && binding->inputType == inputType;
+			});
+
+		if (bindingIt == m_ActionBindings.end())
+		{
+			return;
+		}
+
+		auto& cmds = (*bindingIt)->commands;
+		cmds.erase(
+			std::remove_if(cmds.begin(), cmds.end(),
+				[](auto& weakCmd)
+				{
+					if (auto cmd = weakCmd.lock())
+					{
+						cmd->Execute();
+						return false;
+					}
+					return true;
+				}),
+			cmds.end());
+	};
 
 	for (const auto& binding : m_Bindings)
 	{
-		bool shouldExecute = false;
+		bool pressed = false;
+		bool down = false;
+		bool released = false;
 
 		if (binding->deviceType == InputBinding::DeviceType::Gamepad)
 		{
-			switch (binding->inputType)
-			{
-			case InputType::Pressed:
-				shouldExecute = m_ControllerManager.IsPressed(binding->controllerId, binding->button);
-				break;
-			case InputType::Down:
-				shouldExecute = m_ControllerManager.IsDown(binding->controllerId, binding->button);
-				break;
-			case InputType::Released:
-				shouldExecute = m_ControllerManager.IsReleased(binding->controllerId, binding->button);
-				break;
-			}
+			pressed = m_ControllerManager.IsPressed(binding->controllerId, binding->button);
+			down = m_ControllerManager.IsDown(binding->controllerId, binding->button);
+			released = m_ControllerManager.IsReleased(binding->controllerId, binding->button);
 		}
 		else
 		{
 			bool isCurrentlyPressed = keyboardState[SDL_GetScancodeFromKey(binding->keycode, nullptr)];
-
-			switch (binding->inputType)
-			{
-			case InputType::Pressed:
-				shouldExecute = isCurrentlyPressed && !binding->wasPressed;
-				break;
-			case InputType::Down:
-				shouldExecute = isCurrentlyPressed;
-				break;
-			case InputType::Released:
-				shouldExecute = !isCurrentlyPressed && binding->wasPressed;
-				break;
-			}
+			pressed = isCurrentlyPressed && !binding->wasPressed;
+			down = isCurrentlyPressed;
+			released = !isCurrentlyPressed && binding->wasPressed;
 
 			binding->wasPressed = isCurrentlyPressed;
 		}
 
-		if (shouldExecute)
+		if (pressed)
 		{
-			auto& cmds = binding->commands;
+			executeAction(binding->action, InputType::Pressed);
+		}
 
-			cmds.erase(
-				std::remove_if(cmds.begin(), cmds.end(),
-					[](auto& weakCmd)
-					{
-						if (auto cmd = weakCmd.lock())
-						{
-							cmd->Execute();
-							return false;
-						}
-						return true; //remove expired
-					}),
-				cmds.end()
-			);
+		if (down)
+		{
+			executeAction(binding->action, InputType::Down);
+		}
+
+		if (released)
+		{
+			executeAction(binding->action, InputType::Released);
 		}
 	}
 
@@ -125,35 +136,25 @@ bool dae::InputManager::ProcessInput()
 	return true;
 }
 
-void dae::InputManager::BindButton(int ControllerId, GamepadButton Button, InputType InputType,
+void dae::InputManager::BindButton(int ControllerId, GamepadButton Button,
 	const std::string& Action)
 {
 	auto binding = std::make_unique<InputBinding>();
 	binding->deviceType = InputBinding::DeviceType::Gamepad;
 	binding->controllerId = ControllerId;
 	binding->button = Button;
-	binding->inputType = InputType;
 	binding->action = Action;
-	for(auto& command : binding->commands)
-	{
-		command.reset();
-	}
 
 	m_Bindings.push_back(std::move(binding));
 }
 
-void dae::InputManager::BindKey(SDL_Keycode Keycode, InputType InputType,
+void dae::InputManager::BindKey(SDL_Keycode Keycode,
 	const std::string& Action)
 {
 	auto binding = std::make_unique<InputBinding>();
 	binding->deviceType = InputBinding::DeviceType::Keyboard;
 	binding->keycode = Keycode;
-	binding->inputType = InputType;
 	binding->action = Action;
-	for (auto& command : binding->commands)
-	{
-		command.reset();
-	}
 	binding->wasPressed = false;
 
 	m_Bindings.push_back(std::move(binding));
@@ -202,13 +203,24 @@ void dae::InputManager::ClearAllBindings()
 	m_Bindings.clear();
 }
 
-void dae::InputManager::BindActionToCommand(const std::string& Action, std::shared_ptr<Command> Command)
+void dae::InputManager::BindActionToCommand(const std::string& Action, std::shared_ptr<Command> Command, InputType InputType)
 {
-	for (auto& binding : m_Bindings)
-	{
-		if (binding->action == Action)
+	auto bindingIt = std::find_if(m_ActionBindings.begin(), m_ActionBindings.end(),
+		[&Action, InputType](const std::unique_ptr<ActionBinding>& binding)
 		{
-			binding->commands.push_back(Command);
-		}
+			return binding->action == Action && binding->inputType == InputType;
+		});
+
+	if (bindingIt == m_ActionBindings.end())
+	{
+		auto binding = std::make_unique<ActionBinding>();
+		binding->action = Action;
+		binding->inputType = InputType;
+		binding->commands.push_back(Command);
+		m_ActionBindings.push_back(std::move(binding));
+	}
+	else
+	{
+		(*bindingIt)->commands.push_back(Command);
 	}
 }
