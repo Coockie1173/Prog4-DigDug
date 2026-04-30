@@ -10,6 +10,9 @@ namespace fs = std::filesystem;
 
 bool ComponentParser::ParseComponentDirectories(const std::vector<std::string>& componentDirs, const std::string& gameObjectPath, const std::string& outputDir)
 {
+    // Scan component directories to collect metadata, but do NOT emit per-component
+    // barebones headers. The editor needs the master registration metadata and
+    // the component type map (and GameObject_Barebones). Produce only those.
     fs::create_directories(outputDir);
     std::vector<ComponentInfo> components;
     std::unordered_set<std::string> seenClassNames;
@@ -32,27 +35,21 @@ bool ComponentParser::ParseComponentDirectories(const std::vector<std::string>& 
                     if (seenClassNames.find(info.className) == seenClassNames.end())
                     {
                         seenClassNames.insert(info.className);
-                        std::string outputFilename = (fs::path(outputDir) / (info.className + "_Barebones.h")).string();
-                        if (GenerateBarebonesComponent(info, outputFilename))
-                        {
-                            components.push_back(info);
-                        }
+                        components.push_back(std::move(info));
                     }
                 }
             }
         }
     }
 
-    // Generate the base Component_Barebones class first
-    GenerateBaseComponentBarebones(outputDir);
-
-    // Generate the master registration file
+    // Generate master registration and type map used by the editor
     if (!components.empty())
     {
         GenerateRegisterMaster(components, outputDir);
         GenerateComponentTypeMap(components, outputDir);
     }
 
+    // Always generate the GameObject_Barebones used widely by the editor UI
     GenerateBarebonesGameObject(gameObjectPath, outputDir);
 
     return true;
@@ -376,22 +373,13 @@ bool ComponentParser::GenerateRegisterMaster(const std::vector<ComponentInfo>& c
     }
 
     implFile << "#include \"ComponentRegisterMaster.h\"\n";
-    implFile << "#include \"Hash.h\"\n";
-    for (const auto& comp : components)
-    {
-        implFile << "#include \"" << comp.className << "_Barebones.h\"\n";
-    }
-    implFile << "\n";
+    implFile << "#include \"Hash.h\"\n\n";
     implFile << "namespace dae\n";
     implFile << "{\n";
 
-    for (const auto& comp : components)
-    {
-        implFile << "    void " << comp.className << "_Barebones::RegisterComponentStatic()\n";
-        implFile << "    {\n";
-        implFile << "    }\n\n";
-    }
-
+    // Only emit GetAllComponentMetadata (metadata used by the editor UI).
+    // Do not generate per-component RegisterComponentStatic definitions or
+    // include per-component headers to avoid spurious dependencies.
     implFile << "    const std::vector<ComponentMetadata>& GetAllComponentMetadata()\n";
     implFile << "    {\n";
     implFile << "        static const std::vector<ComponentMetadata> metadata = {\n";
@@ -423,19 +411,9 @@ bool ComponentParser::GenerateRegisterMaster(const std::vector<ComponentInfo>& c
     implFile << "        };\n";
     implFile << "        return metadata;\n";
     implFile << "    }\n\n";
-
     implFile << "    void RegisterAllComponents()\n";
     implFile << "    {\n";
-    for (const auto& comp : components)
-    {
-        if (comp.className != "Component")
-        {
-            implFile << "        {\n";
-            implFile << "            " << comp.className << "_Barebones instance;\n";
-            implFile << "            instance.RegisterComponentStatic();\n";
-            implFile << "        }\n";
-        }
-    }
+    implFile << "        //legacy, deprecated.\n";
     implFile << "    }\n";
     implFile << "}\n";
     implFile.close();
