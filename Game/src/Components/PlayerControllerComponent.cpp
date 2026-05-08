@@ -2,31 +2,66 @@
 #include <GameObject.h>
 #include <vector>
 #include <ranges>
-#include <MovementInputCommand.h>
 #include <InputManager.h>
 #include <Timing.h>
 #include <ResourceManager.h>
 #include <SwappableRenderComponent.h>
+#include <Components/ObjectMoveComponent.h>
 #include <Commands/FrameCounterCommand.h>
 #include <Commands/AttackCommand.h>
+#include <Commands/MoveIntentCommand.h>
 #include <SoundSerivceLocator.h>
+#include <glm/geometric.hpp>
+
+#include <Components/PlayerStates/PlayerState.h>
+#include <Components/PlayerStates/PlayerIdle.h>
 
 constexpr float PLAYER_MOVE_SPEED = 100.0f;
 constexpr float TimebetweenFrames = 0.1f;
 
-dae::PlayerControllerComponent::PlayerControllerComponent(dae::GameObject* Parent) : Component(Parent)
+dae::PlayerControllerComponent::PlayerControllerComponent(dae::GameObject* Parent)
+	: Component(Parent), m_pStatePool(std::make_unique<PlayerStatePool>())
 {
 }
 
+dae::PlayerControllerComponent::~PlayerControllerComponent() = default;
+
 void dae::PlayerControllerComponent::Update()
 {
+	if (m_pCurrentState)
+	{
+		if (auto nextState = m_pCurrentState->Update(*this))
+		{
+			m_pCurrentState->Exit(*this);
+			nextState->Enter(*this);
+			m_pCurrentState = nextState;
+		}
+	}
+
 	if (m_WalkTimer > TimebetweenFrames)
 	{
 		m_WalkTimer = 0;
 
 		//swap out the walking frame
-		m_pRenderComponent->SetTexture(m_pRenderComponent->GetTexture() == m_IdleFrame ? m_WalkFrame : m_IdleFrame);
+		//m_pRenderComponent->SetTexture(m_pRenderComponent->GetTexture() == m_IdleFrame ? m_WalkFrame : m_IdleFrame);
 	}
+
+	/*if (!m_PlayerAttacking)
+	{
+		glm::vec2 moveDirection = m_MoveIntent;
+		if (glm::length(moveDirection) > 1.0f)
+		{
+			moveDirection = glm::normalize(moveDirection);
+		}
+
+		if (glm::dot(moveDirection, moveDirection) > 0.0f)
+		{
+			m_pMoveComponent->MoveObject(moveDirection, PLAYER_MOVE_SPEED);
+			OnPlayerMove();
+		}
+	}*/
+
+	ClearMoveIntent();
 }
 
 void dae::PlayerControllerComponent::LateUpdate()
@@ -52,30 +87,40 @@ void dae::PlayerControllerComponent::Init()
 	}
 	//Debugger::GetInstance().LogDebug("PlayerControllerComponent input scheme set to: up='" + parts[0] + "', down='" + parts[1] + "', left='" + parts[2] + "', right='" + parts[3] + "'");
 
-	auto CommandUp = std::make_shared<dae::MovementInputCommand>(m_pMoveComponent);
-	CommandUp->SetDirection(glm::vec2(0, -1));
-	CommandUp->SetSpeed(PLAYER_MOVE_SPEED);
-	dae::InputManager::GetInstance().BindActionToCommand(parts[0], CommandUp, dae::InputManager::InputType::Down);
-	m_Commands.push_back(std::move(CommandUp));
+	std::shared_ptr<dae::Command> m_MoveUpCommand{};
+	std::shared_ptr<dae::Command> m_MoveDownCommand{};
+	std::shared_ptr<dae::Command> m_MoveLeftCommand{};
+	std::shared_ptr<dae::Command> m_MoveRightCommand{};
+	std::shared_ptr<dae::Command> m_AttackStartCommand{};
+	std::shared_ptr<dae::Command> m_AttackEndCommand{};
 
-	auto CommandDown = std::make_shared<dae::MovementInputCommand>(m_pMoveComponent);
-	CommandDown->SetDirection(glm::vec2(0, 1));
-	CommandDown->SetSpeed(PLAYER_MOVE_SPEED);
-	dae::InputManager::GetInstance().BindActionToCommand(parts[1], CommandDown, dae::InputManager::InputType::Down);
-	m_Commands.push_back(std::move(CommandDown));
+	m_MoveUpCommand = std::make_shared<dae::MoveIntentCommand>(this, glm::vec2(0, -1));
+	dae::InputManager::GetInstance().BindActionToCommand(parts[0], m_MoveUpCommand, dae::InputManager::InputType::Down);
+	m_Commands.push_back(std::move(m_MoveUpCommand));
 
-	auto CommandLeft = std::make_shared<dae::MovementInputCommand>(m_pMoveComponent);
-	CommandLeft->SetDirection(glm::vec2(-1, 0));
-	CommandLeft->SetSpeed(PLAYER_MOVE_SPEED);
-	dae::InputManager::GetInstance().BindActionToCommand(parts[2], CommandLeft, dae::InputManager::InputType::Down);
-	m_Commands.push_back(std::move(CommandLeft));
+	m_MoveDownCommand = std::make_shared<dae::MoveIntentCommand>(this, glm::vec2(0, 1));
+	dae::InputManager::GetInstance().BindActionToCommand(parts[1], m_MoveDownCommand, dae::InputManager::InputType::Down);
+	m_Commands.push_back(std::move(m_MoveDownCommand));
 
-	auto CommandRight = std::make_shared<dae::MovementInputCommand>(m_pMoveComponent);
-	CommandRight->SetDirection(glm::vec2(1, 0));
-	CommandRight->SetSpeed(PLAYER_MOVE_SPEED);
-	dae::InputManager::GetInstance().BindActionToCommand(parts[3], CommandRight, dae::InputManager::InputType::Down);
-	m_Commands.push_back(std::move(CommandRight));
+	m_MoveLeftCommand = std::make_shared<dae::MoveIntentCommand>(this, glm::vec2(-1, 0));
+	dae::InputManager::GetInstance().BindActionToCommand(parts[2], m_MoveLeftCommand, dae::InputManager::InputType::Down);
+	m_Commands.push_back(std::move(m_MoveLeftCommand));
 
+	m_MoveRightCommand = std::make_shared<dae::MoveIntentCommand>(this, glm::vec2(1, 0));
+	dae::InputManager::GetInstance().BindActionToCommand(parts[3], m_MoveRightCommand, dae::InputManager::InputType::Down);
+	m_Commands.push_back(std::move(m_MoveRightCommand));
+
+	m_AttackStartCommand = std::make_shared<dae::AttackCommand>(this, true);
+	m_AttackEndCommand = std::make_shared<dae::AttackCommand>(this, false);
+	dae::InputManager::GetInstance().BindActionToCommand(m_attackActionName, m_AttackStartCommand, dae::InputManager::InputType::Pressed);
+	dae::InputManager::GetInstance().BindActionToCommand(m_attackActionName, m_AttackEndCommand, dae::InputManager::InputType::Released);
+	m_Commands.push_back(std::move(m_AttackStartCommand));
+	m_Commands.push_back(std::move(m_AttackEndCommand));
+
+	m_pCurrentState = m_pStatePool->Get<PlayerIdle>();
+	m_pCurrentState->Enter(*this);
+
+	/*
 	m_IdleFrame = ResourceManager::GetInstance().LoadTexture(m_IdleFrameName);
 	m_WalkFrame = ResourceManager::GetInstance().LoadTexture(m_WalkFrameName);
 	m_AttackFrame = ResourceManager::GetInstance().LoadTexture(m_AttackFrameName);
@@ -93,15 +138,12 @@ void dae::PlayerControllerComponent::Init()
 	dae::InputManager::GetInstance().BindActionToCommand(m_attackActionName, AttackCommand, dae::InputManager::InputType::Pressed);
 	dae::InputManager::GetInstance().BindActionToCommand(m_attackActionName, EndAttackCommand, dae::InputManager::InputType::Released);
 	m_Commands.push_back(std::move(AttackCommand));
-	m_Commands.push_back(std::move(EndAttackCommand));
+	m_Commands.push_back(std::move(EndAttackCommand));*/
 }
 
 bool dae::PlayerControllerComponent::Deserialize(const std::map<std::string, std::string>& properties, std::string& errorMessage)
 {
 	if (!GetRequiredProperty(properties, "inputScheme", m_inputScheme, errorMessage, "PlayerControllerComponent")) return false;
-	if (!GetRequiredProperty(properties, "IdleFrameName", m_IdleFrameName, errorMessage, "PlayerControllerComponent")) return false;
-	if (!GetRequiredProperty(properties, "WalkFrameName", m_WalkFrameName, errorMessage, "PlayerControllerComponent")) return false;
-	if (!GetRequiredProperty(properties, "AttackFrameName", m_AttackFrameName, errorMessage, "PlayerControllerComponent")) return false;
 	if (!GetRequiredProperty(properties, "attackActionName", m_attackActionName, errorMessage, "PlayerControllerComponent")) return false;
 
 	return true;
@@ -117,15 +159,14 @@ void dae::PlayerControllerComponent::OnPlayerMove()
 void dae::PlayerControllerComponent::OnPlayerAttack()
 {
 	m_PlayerAttacking = true;
-	m_pMoveComponent->SetIsDisabled(true);
-	m_pRenderComponent->SetTexture(m_AttackFrame);
-
-	SoundServiceLocator::GetSoundSystem().PlaySound("Data/sound/Shoot.wav");
 }
 
 void dae::PlayerControllerComponent::OnPlayerEndAttack()
 {
 	m_PlayerAttacking = false;
-	m_pMoveComponent->SetIsDisabled(false);
-	m_pRenderComponent->SetTexture(m_IdleFrame);
+}
+
+void dae::PlayerControllerComponent::AddMoveIntent(const glm::vec2& direction)
+{
+	m_MoveIntent += direction;
 }

@@ -12,10 +12,10 @@ public:
 	SoundSystem_Debug(std::unique_ptr<SoundSystem> realSoundSystem) : m_realSoundSystem(std::move(realSoundSystem)) {}
 	virtual ~SoundSystem_Debug() = default;
 
-	void PlaySound(std::string sound_name) override
+	void PlaySound(const std::string& sound_name) override
 	{
 		Debugger::GetInstance().LogDebug("Playing sound: " + sound_name);
-		m_realSoundSystem->PlaySound(std::move(sound_name));
+		m_realSoundSystem->PlaySound(sound_name);
 	}
 };
 
