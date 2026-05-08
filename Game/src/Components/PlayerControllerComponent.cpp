@@ -16,7 +16,6 @@
 #include <Components/PlayerStates/PlayerState.h>
 #include <Components/PlayerStates/PlayerIdle.h>
 
-constexpr float PLAYER_MOVE_SPEED = 100.0f;
 constexpr float TimebetweenFrames = 0.1f;
 
 dae::PlayerControllerComponent::PlayerControllerComponent(dae::GameObject* Parent)

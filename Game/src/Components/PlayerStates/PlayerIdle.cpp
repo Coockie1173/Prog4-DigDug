@@ -3,6 +3,7 @@
 #include <Components/PlayerControllerComponent.h>
 #include <GameObject.h>
 #include <Components/PlayerStates/PlayerAttack.h>
+#include <Components/PlayerStates/PlayerMove.h>
 #include <ResourceManager.h>
 
 namespace dae
@@ -29,6 +30,12 @@ namespace dae
 		{
 			return m_pStatePool->Get<PlayerAttack>();
 		}
+
+		 if (Player.GetMoveIntent() != glm::vec2{})
+		{
+			return m_pStatePool->Get<PlayerMove>();
+		 }
+
 		return nullptr;
 	}
 

@@ -14,7 +14,7 @@ add_executable(${TARGET_NAME}
   
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/SpinnerComponent.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Commands/FrameCounterCommand.cpp 
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/Commands/AttackCommand.cpp "src/Components/PlayerStates/PlayerIdle.cpp" "src/Components/PlayerStates/PlayerAttack.cpp")
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Commands/AttackCommand.cpp "src/Components/PlayerStates/PlayerIdle.cpp" "src/Components/PlayerStates/PlayerAttack.cpp" "src/Components/PlayerStates/PlayerMove.cpp")
 target_compile_features(${TARGET_NAME} PUBLIC cxx_std_20)
 
 target_include_directories(${TARGET_NAME} PUBLIC
