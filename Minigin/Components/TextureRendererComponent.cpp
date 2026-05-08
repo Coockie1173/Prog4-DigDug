@@ -26,18 +26,13 @@ namespace dae
 
 	bool TextureRenderComponent::Deserialize(const std::map<std::string, std::string>& properties, std::string& errorMessage)
 	{
-		auto textureNameIt = properties.find("textureName");
-		if (textureNameIt != properties.end())
+		if (!GetRequiredProperty(properties, "textureName", m_textureName, errorMessage, "TextureRenderComponent"))
 		{
-			m_textureName = textureNameIt->second;
-			m_pTexture = dae::ResourceManager::GetInstance().LoadTexture(m_textureName);
-			return true;
-		}
-		else
-		{
-			errorMessage = std::format("TextureRenderComponent missing '{}' property", "textureName");
 			Debugger::GetInstance().LogError(errorMessage);
 			return false;
 		}
+
+		m_pTexture = dae::ResourceManager::GetInstance().LoadTexture(m_textureName);
+		return true;
 	}
 }

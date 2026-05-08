@@ -98,26 +98,11 @@ void dae::PlayerControllerComponent::Init()
 
 bool dae::PlayerControllerComponent::Deserialize(const std::map<std::string, std::string>& properties, std::string& errorMessage)
 {
-	//I'll need to apply this pattern in other places too lateron
-	//TODO: port pattern to other components
-	auto getRequired = [&](const std::string& key, std::string& target) -> bool
-		{
-			auto it = properties.find(key);
-			if (it == properties.end())
-			{
-				errorMessage = "PlayerControllerComponent requires '" + key + "' property.";
-				return false;
-			}
-
-			target = it->second;
-			return true;
-		};
-
-	if (!getRequired("inputScheme", m_inputScheme)) return false;
-	if (!getRequired("IdleFrameName", m_IdleFrameName)) return false;
-	if (!getRequired("WalkFrameName", m_WalkFrameName)) return false;
-	if (!getRequired("AttackFrameName", m_AttackFrameName)) return false;
-	if (!getRequired("attackActionName", m_attackActionName)) return false;
+	if (!GetRequiredProperty(properties, "inputScheme", m_inputScheme, errorMessage, "PlayerControllerComponent")) return false;
+	if (!GetRequiredProperty(properties, "IdleFrameName", m_IdleFrameName, errorMessage, "PlayerControllerComponent")) return false;
+	if (!GetRequiredProperty(properties, "WalkFrameName", m_WalkFrameName, errorMessage, "PlayerControllerComponent")) return false;
+	if (!GetRequiredProperty(properties, "AttackFrameName", m_AttackFrameName, errorMessage, "PlayerControllerComponent")) return false;
+	if (!GetRequiredProperty(properties, "attackActionName", m_attackActionName, errorMessage, "PlayerControllerComponent")) return false;
 
 	return true;
 }

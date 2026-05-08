@@ -59,74 +59,69 @@ namespace dae
 
 	bool TextRenderComponent::Deserialize(const std::map<std::string, std::string>& properties, std::string& errorMessage)
 	{
-		auto textIt = properties.find("text");
-		auto fontSizeIt = properties.find("fontSize");
+		std::string text;
+		std::string fontSize;
+
+		if (!GetRequiredProperty(properties, "text", text, errorMessage, "TextRenderComponent")) return false;
+		if (!GetRequiredProperty(properties, "fontSize", fontSize, errorMessage, "TextRenderComponent")) return false;
+
 		auto colorIt = properties.find("color");
 
-		if (textIt != properties.end() && fontSizeIt != properties.end())
+		try
 		{
-			try
+			m_text = text;
+			m_fontSize = static_cast<uint8_t>(std::stoi(fontSize));
+			m_font = ResourceManager::GetInstance().LoadFont("Lingua.otf", m_fontSize);
+
+			uint8_t r = 255, g = 255, b = 255, a = 255;
+			if (colorIt != properties.end() && !colorIt->second.empty())
 			{
-				m_text = textIt->second;
-				m_fontSize = static_cast<uint8_t>(std::stoi(fontSizeIt->second));
-				m_font = ResourceManager::GetInstance().LoadFont("Lingua.otf", m_fontSize);
+				std::istringstream colorStream(colorIt->second);
+				std::string token;
+				int values[4] = {255, 255, 255, 255};
+				int valueCount = 0;
 
-				uint8_t r = 255, g = 255, b = 255, a = 255;
-				if (colorIt != properties.end() && !colorIt->second.empty())
+				while (valueCount < 4 && std::getline(colorStream, token, ','))
 				{
-					std::istringstream colorStream(colorIt->second);
-					std::string token;
-					int values[4] = {255, 255, 255, 255};
-					int valueCount = 0;
-
-					while (valueCount < 4 && std::getline(colorStream, token, ','))
+					try
 					{
-						try
-						{
-							values[valueCount] = std::stoi(token);
-							valueCount++;
-						}
-						catch (const std::exception&)
-						{
-							break;
-						}
+						values[valueCount] = std::stoi(token);
+						valueCount++;
 					}
-
-					if (valueCount >= 3)
+					catch (const std::exception&)
 					{
-						r = static_cast<uint8_t>(values[0]);
-						g = static_cast<uint8_t>(values[1]);
-						b = static_cast<uint8_t>(values[2]);
-						if (valueCount >= 4)
-						{
-							a = static_cast<uint8_t>(values[3]);
-						}
+						break;
 					}
-					else
+				}
+
+				if (valueCount >= 3)
+				{
+					r = static_cast<uint8_t>(values[0]);
+					g = static_cast<uint8_t>(values[1]);
+					b = static_cast<uint8_t>(values[2]);
+					if (valueCount >= 4)
 					{
-						Debugger::GetInstance().LogDebug(std::format(
-							"Invalid color format '{}', using white",
-							colorIt->second
-						));
+						a = static_cast<uint8_t>(values[3]);
 					}
 				}
 				else
-					Debugger::GetInstance().LogDebug("color empty, using white default");
+				{
+					Debugger::GetInstance().LogDebug(std::format(
+						"Invalid color format '{}', using white",
+						colorIt->second
+					));
+				}
+			}
+			else
+				Debugger::GetInstance().LogDebug("color empty, using white default");
 
-				m_color = SDL_Color{r, g, b, a};
-				m_needsUpdate = true;
-				return true;
-			}
-			catch (const std::exception& e)
-			{
-				errorMessage = std::format("Failed to deserialize TextRenderComponent: {}", e.what());
-				Debugger::GetInstance().LogError(errorMessage);
-				return false;
-			}
+			m_color = SDL_Color{r, g, b, a};
+			m_needsUpdate = true;
+			return true;
 		}
-		else
+		catch (const std::exception& e)
 		{
-			errorMessage = "TextRenderComponent missing required properties (text, fontSize)";
+			errorMessage = std::format("Failed to deserialize TextRenderComponent: {}", e.what());
 			Debugger::GetInstance().LogError(errorMessage);
 			return false;
 		}

@@ -32,6 +32,19 @@ namespace dae
 		Component(dae::GameObject* Parent);
 		bool ComponentDisabled{false};
 
+		bool GetRequiredProperty(const std::map<std::string, std::string>& properties, const std::string& key, std::string& target, std::string& errorMessage, const std::string& componentName) const
+		{
+			auto it = properties.find(key);
+			if (it == properties.end())
+			{
+				errorMessage = componentName + " requires '" + key + "' property.";
+				return false;
+			}
+
+			target = it->second;
+			return true;
+		}
+
 	private:
 		friend class SceneLoader;
 

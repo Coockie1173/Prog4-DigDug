@@ -19,10 +19,8 @@ void dae::ObjectMoveComponent::Init()
 {
 }
 
-bool dae::ObjectMoveComponent::Deserialize(const std::map<std::string, std::string>& properties, std::string& errorMessage)
+bool dae::ObjectMoveComponent::Deserialize(const std::map<std::string, std::string>&, std::string&)
 {
-	(void)properties;
-	(void)errorMessage;
 	return true;
 }
 

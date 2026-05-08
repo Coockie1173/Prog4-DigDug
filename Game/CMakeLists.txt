@@ -1,7 +1,7 @@
 if(EMSCRIPTEN)
-  set(TARGET_NAME minigin_web)
+  set(TARGET_NAME digdug_web)
 else()
-  set(TARGET_NAME minigin)
+  set(TARGET_NAME digdug)
 endif()
 
 add_executable(${TARGET_NAME}
