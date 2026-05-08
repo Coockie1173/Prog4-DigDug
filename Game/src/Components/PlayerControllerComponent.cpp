@@ -4,19 +4,13 @@
 #include <ranges>
 #include <InputManager.h>
 #include <Timing.h>
-#include <ResourceManager.h>
 #include <SwappableRenderComponent.h>
 #include <Components/ObjectMoveComponent.h>
-#include <Commands/FrameCounterCommand.h>
 #include <Commands/AttackCommand.h>
 #include <Commands/MoveIntentCommand.h>
-#include <SoundSerivceLocator.h>
-#include <glm/geometric.hpp>
 
 #include <Components/PlayerStates/PlayerState.h>
 #include <Components/PlayerStates/PlayerIdle.h>
-
-constexpr float TimebetweenFrames = 0.1f;
 
 dae::PlayerControllerComponent::PlayerControllerComponent(dae::GameObject* Parent)
 	: Component(Parent), m_pStatePool(std::make_unique<PlayerStatePool>())
