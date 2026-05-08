@@ -37,29 +37,6 @@ void dae::PlayerControllerComponent::Update()
 		}
 	}
 
-	if (m_WalkTimer > TimebetweenFrames)
-	{
-		m_WalkTimer = 0;
-
-		//swap out the walking frame
-		//m_pRenderComponent->SetTexture(m_pRenderComponent->GetTexture() == m_IdleFrame ? m_WalkFrame : m_IdleFrame);
-	}
-
-	/*if (!m_PlayerAttacking)
-	{
-		glm::vec2 moveDirection = m_MoveIntent;
-		if (glm::length(moveDirection) > 1.0f)
-		{
-			moveDirection = glm::normalize(moveDirection);
-		}
-
-		if (glm::dot(moveDirection, moveDirection) > 0.0f)
-		{
-			m_pMoveComponent->MoveObject(moveDirection, PLAYER_MOVE_SPEED);
-			OnPlayerMove();
-		}
-	}*/
-
 	ClearMoveIntent();
 }
 
