@@ -5,6 +5,7 @@
 #include <thread>
 #include <mutex>
 #include <condition_variable>
+#include <memory>
 #include <vector>
 #include <unordered_map>
 
@@ -17,13 +18,22 @@ public:
 	~sound_system_SDL() override;
 	void PlaySound(const std::string& SoundName) override;
 private:
+	struct MixerDeleter
+	{
+		void operator()(MIX_Mixer* mixer) const noexcept;
+	};
+
+	struct AudioDeleter
+	{
+		void operator()(MIX_Audio* audio) const noexcept;
+	};
+
 	std::mutex m_mutex;
 	std::condition_variable m_cv;
 	void Worker(std::stop_token st);
 	std::vector<std::string> m_soundQueue;
-	// cache loaded audio objects so the worker doesn't reload the same file repeatedly
-	std::unordered_map<std::string, MIX_Audio*> m_audioCache;
-	MIX_Mixer* m_mixer{nullptr};
+	std::unordered_map<std::string, std::unique_ptr<MIX_Audio, AudioDeleter>> m_audioCache;
+	std::unique_ptr<MIX_Mixer, MixerDeleter> m_mixer;
 	std::jthread m_thread;
 };
 
