@@ -2,7 +2,6 @@
 #include <Components/SwappableRenderComponent.h>
 #include <Components/PlayerControllerComponent.h>
 #include <GameObject.h>
-#include <Components/PlayerStates/PlayerAttack.h>
 #include <Components/PlayerStates/PlayerMove.h>
 #include <ResourceManager.h>
 
@@ -26,11 +25,6 @@ namespace dae
 
 	PlayerState* PlayerIdle::Update(PlayerControllerComponent& Player)
 	{		
-		if (Player.GetIsAttacking())
-		{
-			return m_pStatePool->Get<PlayerAttack>();
-		}
-
 		 if (Player.GetMoveIntent() != glm::vec2{})
 		{
 			return m_pStatePool->Get<PlayerMove>();

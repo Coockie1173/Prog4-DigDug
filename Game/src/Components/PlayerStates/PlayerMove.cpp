@@ -4,7 +4,6 @@
 #include <Components/PlayerControllerComponent.h>
 #include <GameObject.h>
 #include <Components/PlayerStates/PlayerIdle.h>
-#include <Components/PlayerStates/PlayerAttack.h>
 #include <ResourceManager.h>
 #include <Timing.h>
 
@@ -42,11 +41,7 @@ namespace dae
 
 	PlayerState* PlayerMove::Update(PlayerControllerComponent& Player)
 	{
-		if (Player.GetIsAttacking())
-		{
-			return m_pStatePool->Get<PlayerAttack>();
-		}
-		else if (Player.GetMoveIntent() == glm::vec2{})
+		if (Player.GetMoveIntent() == glm::vec2{})
 		{
 			return m_pStatePool->Get<PlayerIdle>();
 		}

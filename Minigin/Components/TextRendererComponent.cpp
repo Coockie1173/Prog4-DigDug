@@ -2,12 +2,26 @@
 #include "Font.h"
 #include "Renderer.h"
 #include "ResourceManager.h"
+#include <ComponentTypeMap.h>
+#include "../ComponentFactoryRegistry.h"
 #include <stdexcept>
 #include "GameObject.h"
 #include "Texture2D.h"
 #include "Debugger.h"
 #include <format>
 #include <sstream>
+
+namespace
+{
+	 const bool TextRenderComponentRegistered = dae::RegisterComponentFactory(
+		dae::HASH_TextRenderComponent,
+		[](dae::GameObject* obj)
+		{
+			auto font = dae::ResourceManager::GetInstance().LoadFont("Lingua.otf", 24);
+			return obj->AddComponent<dae::TextRenderComponent>("", SDL_Color{ 255, 255, 255, 255 }, font);
+		}
+	);
+}
 
 namespace dae
 {

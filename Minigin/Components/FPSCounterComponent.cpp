@@ -1,11 +1,18 @@
 #include "FPSCounterComponent.h"
+#include "../ComponentFactoryRegistry.h"
 #include "GameObject.h"
+#include <ComponentTypeMap.h>
 #include "RenderComponent.h"
 #include "TextRendererComponent.h"
 #include "Debugger.h"
 #include "Timing.h"
 #include <string>
 #include <map>
+
+namespace
+{
+	 const bool FPSCounterComponentRegistered = dae::RegisterComponentFactoryFor<dae::FPSCounterComponent>(dae::HASH_FPSCounterComponent);
+}
 
 namespace dae
 {

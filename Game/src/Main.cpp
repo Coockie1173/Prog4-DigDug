@@ -13,11 +13,9 @@
 #include "Debugger.h"
 #include "EventManager.h"
 #include "SceneLoader.h"
-#include "GameComponentRegistration.h"
 
 #include <filesystem>
 #include <string>
-#include <ComponentRegistration.h>
 
 namespace fs = std::filesystem;
 
@@ -49,8 +47,6 @@ int main(int argc, char* argv[]) {
 		data_location = "../Data/";
 #endif
 	dae::Minigin engine(data_location);
-	dae::RegisterBuiltinComponentFactories();
-	dae::RegisterGameComponentFactories();
 
 	auto defaultSceneFilePath = data_location / DEFAULT_SCENE_FILE;
 	if (argc > 1)

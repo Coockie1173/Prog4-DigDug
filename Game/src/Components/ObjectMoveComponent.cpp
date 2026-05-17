@@ -1,7 +1,14 @@
 #include <Components/ObjectMoveComponent.h>
+#include <ComponentFactoryRegistry.h>
+#include <ComponentTypeMap.h>
 #include "GameObject.h"
 #include "Timing.h"
 #include <map>
+
+namespace
+{
+	const bool ObjectMoveComponentRegistered = dae::RegisterComponentFactoryFor<dae::ObjectMoveComponent>(dae::HASH_ObjectMoveComponent);
+}
 
 dae::ObjectMoveComponent::ObjectMoveComponent(GameObject* Parent) : Component(Parent)
 {

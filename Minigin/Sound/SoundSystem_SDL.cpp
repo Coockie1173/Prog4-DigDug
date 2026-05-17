@@ -16,6 +16,22 @@ sound_system_SDL::~sound_system_SDL()
 {
     m_thread.request_stop();
     m_cv.notify_all();
+    m_thread = std::jthread{};
+
+    for (auto& [_, audio] : m_audioCache)
+    {
+        if (audio)
+        {
+            MIX_DestroyAudio(audio);
+        }
+    }
+    m_audioCache.clear();
+
+    if (m_mixer)
+    {
+        MIX_DestroyMixer(m_mixer);
+        m_mixer = nullptr;
+    }
 }
 
 void sound_system_SDL::PlaySound(const std::string& SoundName)
@@ -47,10 +63,19 @@ void sound_system_SDL::Worker(std::stop_token st)
         lock.unlock();
         for (auto& sound : soundsToPlay)
         {
-            MIX_Audio* audio = MIX_LoadAudio(m_mixer, sound.c_str(), true);
-            if (audio)
+            auto audioIt = m_audioCache.find(sound);
+            if (audioIt == m_audioCache.end())
             {
-                MIX_PlayAudio(m_mixer, audio);
+                MIX_Audio* audio = MIX_LoadAudio(m_mixer, sound.c_str(), true);
+                if (audio)
+                {
+                    audioIt = m_audioCache.emplace(sound, audio).first;
+                }
+            }
+
+            if (audioIt != m_audioCache.end() && audioIt->second)
+            {
+                MIX_PlayAudio(m_mixer, audioIt->second);
             }
         }
 

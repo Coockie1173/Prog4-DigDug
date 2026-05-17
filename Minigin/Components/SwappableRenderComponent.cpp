@@ -1,4 +1,11 @@
 #include "SwappableRenderComponent.h"
+#include "../ComponentFactoryRegistry.h"
+#include <ComponentTypeMap.h>
+
+namespace
+{
+	 const bool SwappableRenderComponentRegistered = dae::RegisterComponentFactoryFor<dae::SwappableRenderComponent>(dae::HASH_SwappableRenderComponent);
+}
 
 dae::SwappableRenderComponent::SwappableRenderComponent(GameObject* Parent) : RenderComponent(Parent)
 {

@@ -10,6 +10,7 @@ class SoundServiceLocator final
 public:
 	static SoundSystem& GetSoundSystem() { return *m_service; }
 	static void RegisterSoundSystem(std::unique_ptr<SoundSystem> service) { m_service = std::move(service); }
+	static void ClearSoundSystem() { m_service.reset(); }
 };
 
 #endif // !

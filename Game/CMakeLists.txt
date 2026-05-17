@@ -6,7 +6,6 @@ endif()
 
 add_executable(${TARGET_NAME}
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Main.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/GameComponentRegistration.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Commands/MovementInputCommand.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Commands/MoveIntentCommand.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/ObjectMoveComponent.cpp
@@ -22,7 +21,7 @@ target_include_directories(${TARGET_NAME} PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-target_link_libraries(${TARGET_NAME} PUBLIC minigin_engine)
+target_link_libraries(${TARGET_NAME} PUBLIC $<LINK_LIBRARY:WHOLE_ARCHIVE,minigin_engine>)
 
 if(WIN32 AND NOT EMSCRIPTEN)
   target_link_options(${TARGET_NAME} PRIVATE

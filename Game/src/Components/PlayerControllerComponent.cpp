@@ -1,4 +1,6 @@
 #include <Components/PlayerControllerComponent.h>
+#include <ComponentFactoryRegistry.h>
+#include <ComponentTypeMap.h>
 #include <GameObject.h>
 #include <vector>
 #include <ranges>
@@ -11,6 +13,12 @@
 
 #include <Components/PlayerStates/PlayerState.h>
 #include <Components/PlayerStates/PlayerIdle.h>
+#include <Components/PlayerStates/PlayerAttack.h>
+
+namespace
+{
+	 const bool PlayerControllerComponentRegistered = dae::RegisterComponentFactoryFor<dae::PlayerControllerComponent>(dae::HASH_PlayerControllerComponent);
+}
 
 dae::PlayerControllerComponent::PlayerControllerComponent(dae::GameObject* Parent)
 	: Component(Parent), m_pStatePool(std::make_unique<PlayerStatePool>())
@@ -128,7 +136,21 @@ void dae::PlayerControllerComponent::OnPlayerMove()
 
 void dae::PlayerControllerComponent::OnPlayerAttack()
 {
+	if (m_PlayerAttacking)
+		return;
+
 	m_PlayerAttacking = true;
+
+	if (m_pCurrentState == nullptr)
+		return;
+
+	auto* pAttackState = m_pStatePool->Get<PlayerAttack>();
+	if (m_pCurrentState != pAttackState)
+	{
+		m_pCurrentState->Exit(*this);
+		pAttackState->Enter(*this);
+		m_pCurrentState = pAttackState;
+	}
 }
 
 void dae::PlayerControllerComponent::OnPlayerEndAttack()

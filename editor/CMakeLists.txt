@@ -44,7 +44,7 @@ target_include_directories(minigin_editor PUBLIC
 )
 
 target_link_libraries(minigin_editor PUBLIC
-  minigin_engine
+  $<LINK_LIBRARY:WHOLE_ARCHIVE,minigin_engine>
   SDL3::SDL3
   SDL3_ttf::SDL3_ttf
   glm::glm

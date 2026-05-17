@@ -1,4 +1,6 @@
 #include "SpinnerComponent.h"
+#include <ComponentFactoryRegistry.h>
+#include <ComponentTypeMap.h>
 #include "Timing.h"
 #include "GameObject.h"
 #include "Debugger.h"
@@ -6,6 +8,11 @@
 #include <sstream>
 #include <format>
 #include <map>
+
+namespace
+{
+	 const bool SpinnerComponentRegistered = dae::RegisterComponentFactoryFor<dae::SpinnerComponent>(dae::HASH_SpinnerComponent, true, 0.0f, 0.0f, glm::vec2{ 0.0f, 0.0f });
+}
 
 dae::SpinnerComponent::SpinnerComponent(GameObject* Parent, bool SpinClockwise, float SpinRadius, float SpinSpeed, glm::vec2 SpinPoint) : Component(Parent),
 m_spinClockwise(SpinClockwise), m_spinRadius(SpinRadius), m_spinSpeed(SpinSpeed), m_spinPoint(SpinPoint)

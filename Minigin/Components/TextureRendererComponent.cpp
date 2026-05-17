@@ -1,12 +1,19 @@
 #include "TextureRendererComponent.h"
 #include "../ResourceManager.h"
 #include "../Renderer.h"
+#include "../ComponentFactoryRegistry.h"
+#include <ComponentTypeMap.h>
 #include <glm/glm.hpp>
 #include "RenderComponent.h"
 #include "../GameObject.h"
 #include "Texture2D.h"
 #include "../Debugger.h"
 #include <format>
+
+namespace
+{
+	 const bool TextureRenderComponentRegistered = dae::RegisterComponentFactoryFor<dae::TextureRenderComponent>(dae::HASH_TextureRenderComponent, std::string{});
+}
 
 namespace dae
 {
