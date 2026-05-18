@@ -83,6 +83,10 @@ void dae::GameObject::SetParent(GameObject* Parent, bool KeepWorldPos)
     {
         m_parent->AddChild(this);
     }
+	if (Parent != nullptr)
+	{
+		m_scene = Parent->GetScene();
+	}
 }
 
 void dae::GameObject::MarkForDeletion() noexcept

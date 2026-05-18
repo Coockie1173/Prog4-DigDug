@@ -1,9 +1,8 @@
 #include <Components/PlayerControllerComponent.h>
 #include <ComponentFactoryRegistry.h>
-#include <ComponentTypeMap.h>
+#include <Hash.h>
 #include <GameObject.h>
 #include <vector>
-#include <ranges>
 #include <InputManager.h>
 #include <Timing.h>
 #include <SwappableRenderComponent.h>
@@ -11,13 +10,16 @@
 #include <Commands/AttackCommand.h>
 #include <Commands/MoveIntentCommand.h>
 
+#include <cmath>
+#include <algorithm>
+
 #include <Components/PlayerStates/PlayerState.h>
 #include <Components/PlayerStates/PlayerIdle.h>
 #include <Components/PlayerStates/PlayerAttack.h>
 
 namespace
 {
-	 const bool PlayerControllerComponentRegistered = dae::RegisterComponentFactoryFor<dae::PlayerControllerComponent>(dae::HASH_PlayerControllerComponent);
+	 const bool PlayerControllerComponentRegistered = dae::RegisterComponentFactoryFor<dae::PlayerControllerComponent>(make_sdbm_hash("PlayerControllerComponent"));
 }
 
 dae::PlayerControllerComponent::PlayerControllerComponent(dae::GameObject* Parent)
@@ -29,6 +31,14 @@ dae::PlayerControllerComponent::~PlayerControllerComponent() = default;
 
 void dae::PlayerControllerComponent::Update()
 {
+	if (m_AttackCooldownRemaining > 0.0f)
+	{
+		m_AttackCooldownRemaining = std::max(0.0f, m_AttackCooldownRemaining - Timing::GetInstance().GetDeltaTime());
+	}
+
+	m_MoveIntent = ResolveCardinalMoveIntent();
+	UpdateFacingFromMoveIntent(m_MoveIntent);
+
 	if (m_pCurrentState)
 	{
 		if (auto nextState = m_pCurrentState->Update(*this))
@@ -38,6 +48,8 @@ void dae::PlayerControllerComponent::Update()
 			m_pCurrentState = nextState;
 		}
 	}
+
+	ApplyFacingToRenderComponent();
 
 	ClearMoveIntent();
 }
@@ -54,8 +66,18 @@ void dae::PlayerControllerComponent::Init()
 	//now generate all input actions
 	std::vector<std::string> parts;
 
-	for (auto&& part : m_inputScheme | std::views::split('|')) {
-		parts.emplace_back(part.begin(), part.end());
+	std::size_t startIndex = 0;
+	while (startIndex <= m_inputScheme.size())
+	{
+		const auto separatorIndex = m_inputScheme.find('|', startIndex);
+		if (separatorIndex == std::string::npos)
+		{
+			parts.emplace_back(m_inputScheme.substr(startIndex));
+			break;
+		}
+
+		parts.emplace_back(m_inputScheme.substr(startIndex, separatorIndex - startIndex));
+		startIndex = separatorIndex + 1;
 	}
 	if (parts.size() != 4)
 	{
@@ -98,25 +120,6 @@ void dae::PlayerControllerComponent::Init()
 	m_pCurrentState = m_pStatePool->Get<PlayerIdle>();
 	m_pCurrentState->Enter(*this);
 
-	/*
-	m_IdleFrame = ResourceManager::GetInstance().LoadTexture(m_IdleFrameName);
-	m_WalkFrame = ResourceManager::GetInstance().LoadTexture(m_WalkFrameName);
-	m_AttackFrame = ResourceManager::GetInstance().LoadTexture(m_AttackFrameName);
-
-	auto CommandMove = std::make_shared<dae::FrameCounterCommand>(this);
-	for (auto& act : parts)
-	{
-		dae::InputManager::GetInstance().BindActionToCommand(act, CommandMove, dae::InputManager::InputType::Down);
-	}
-	m_Commands.push_back(std::move(CommandMove));
-	m_pRenderComponent->SetTexture(m_IdleFrame);
-
-	auto AttackCommand = std::make_shared<dae::AttackCommand>(this, true);
-	auto EndAttackCommand = std::make_shared<dae::AttackCommand>(this, false);
-	dae::InputManager::GetInstance().BindActionToCommand(m_attackActionName, AttackCommand, dae::InputManager::InputType::Pressed);
-	dae::InputManager::GetInstance().BindActionToCommand(m_attackActionName, EndAttackCommand, dae::InputManager::InputType::Released);
-	m_Commands.push_back(std::move(AttackCommand));
-	m_Commands.push_back(std::move(EndAttackCommand));*/
 }
 
 bool dae::PlayerControllerComponent::Deserialize(const std::map<std::string, std::string>& properties, std::string& errorMessage)
@@ -136,7 +139,7 @@ void dae::PlayerControllerComponent::OnPlayerMove()
 
 void dae::PlayerControllerComponent::OnPlayerAttack()
 {
-	if (m_PlayerAttacking)
+	if (m_PlayerAttacking || m_AttackCooldownRemaining > 0.0f)
 		return;
 
 	m_PlayerAttacking = true;
@@ -156,9 +159,97 @@ void dae::PlayerControllerComponent::OnPlayerAttack()
 void dae::PlayerControllerComponent::OnPlayerEndAttack()
 {
 	m_PlayerAttacking = false;
+	m_AttackCooldownRemaining = 0.25f;
+}
+
+glm::vec2 dae::PlayerControllerComponent::GetFacingVector() const
+{
+	switch (m_FacingDirection)
+	{
+	case FacingDirection::Right:
+		return { 1.0f, 0.0f };
+	case FacingDirection::Left:
+		return { -1.0f, 0.0f };
+	case FacingDirection::Up:
+		return { 0.0f, -1.0f };
+	case FacingDirection::Down:
+		return { 0.0f, 1.0f };
+	}
+
+	return { 1.0f, 0.0f };
 }
 
 void dae::PlayerControllerComponent::AddMoveIntent(const glm::vec2& direction)
 {
 	m_MoveIntent += direction;
+	m_LastMoveIntent = direction;
+}
+
+glm::vec2 dae::PlayerControllerComponent::ResolveCardinalMoveIntent() const
+{
+	if (m_MoveIntent.x == 0.0f && m_MoveIntent.y == 0.0f)
+	{
+		return {};
+	}
+
+	if (m_MoveIntent.x != 0.0f && m_MoveIntent.y != 0.0f)
+	{
+		if (std::abs(m_LastMoveIntent.x) >= std::abs(m_LastMoveIntent.y))
+		{
+			return { m_MoveIntent.x > 0.0f ? 1.0f : -1.0f, 0.0f };
+		}
+
+		return { 0.0f, m_MoveIntent.y > 0.0f ? 1.0f : -1.0f };
+	}
+
+	if (m_MoveIntent.x != 0.0f)
+	{
+		return { m_MoveIntent.x > 0.0f ? 1.0f : -1.0f, 0.0f };
+	}
+
+	return { 0.0f, m_MoveIntent.y > 0.0f ? 1.0f : -1.0f };
+}
+
+void dae::PlayerControllerComponent::UpdateFacingFromMoveIntent(const glm::vec2& moveIntent)
+{
+	if (moveIntent.x > 0.0f)
+	{
+		m_FacingDirection = FacingDirection::Right;
+	}
+	else if (moveIntent.x < 0.0f)
+	{
+		m_FacingDirection = FacingDirection::Left;
+	}
+	else if (moveIntent.y < 0.0f)
+	{
+		m_FacingDirection = FacingDirection::Up;
+	}
+	else if (moveIntent.y > 0.0f)
+	{
+		m_FacingDirection = FacingDirection::Down;
+	}
+}
+
+void dae::PlayerControllerComponent::ApplyFacingToRenderComponent() const
+{
+	if (m_pRenderComponent == nullptr)
+	{
+		return;
+	}
+
+	switch (m_FacingDirection)
+	{
+	case FacingDirection::Right:
+		m_pRenderComponent->SetRotationAndFlip(0.0f, SDL_FLIP_NONE);
+		break;
+	case FacingDirection::Left:
+		m_pRenderComponent->SetRotationAndFlip(0.0f, SDL_FLIP_HORIZONTAL);
+		break;
+	case FacingDirection::Up:
+		m_pRenderComponent->SetRotationAndFlip(-90.0f, SDL_FLIP_NONE);
+		break;
+	case FacingDirection::Down:
+		m_pRenderComponent->SetRotationAndFlip(90.0f, SDL_FLIP_NONE);
+		break;
+	}
 }

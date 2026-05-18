@@ -7,6 +7,7 @@ using namespace dae;
 void Scene::Add(std::unique_ptr<GameObject> object)
 {
 	assert(object != nullptr && "Cannot add a null GameObject to the scene.");
+	object->SetScene(this);
 	if (m_SceneHasInitialised) //in case an object gets added during runtime, we can still init it after the scene has already initialised the rest
 	{
 		object->Init();

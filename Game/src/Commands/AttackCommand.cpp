@@ -8,10 +8,6 @@ bool dae::AttackCommand::Execute()
 		{
 			playerController->OnPlayerAttack();
 		}
-		else
-		{
-			playerController->OnPlayerEndAttack();
-		}
 		return true;
 	}
 	return false;

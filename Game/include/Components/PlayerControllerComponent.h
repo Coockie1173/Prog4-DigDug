@@ -33,10 +33,19 @@ namespace dae
 		void OnPlayerEndAttack();
 		void AddMoveIntent(const glm::vec2& direction);
 		glm::vec2 GetMoveIntent() const noexcept { return m_MoveIntent; }
+		glm::vec2 GetFacingVector() const;
 		void ClearMoveIntent() noexcept { m_MoveIntent = glm::vec2{}; }
 		bool GetIsAttacking() const noexcept { return m_PlayerAttacking; }
 
 	private:
+		enum class FacingDirection
+		{
+			Right,
+			Left,
+			Up,
+			Down
+		};
+
 		// EXPOSE_TO_EDITOR("Input Scheme", "Defines the input scheme as follows: upaction|downaction|leftaction|rightaction")
 		std::string m_inputScheme{};
 		// EXPOSE_TO_EDITOR("Attack Action Name", "The name of the action to use for attacking")
@@ -47,11 +56,18 @@ namespace dae
 		
 		std::vector<std::shared_ptr<dae::Command>> m_Commands{};
 		glm::vec2 m_MoveIntent{};
+		glm::vec2 m_LastMoveIntent{};
 		float m_WalkTimer{};
 		bool m_PlayerAttacking{false};
+		float m_AttackCooldownRemaining{ 0.0f };
+		FacingDirection m_FacingDirection{ FacingDirection::Right };
 
 		std::unique_ptr<PlayerStatePool> m_pStatePool{};
 		PlayerState* m_pCurrentState{ nullptr };
+
+		glm::vec2 ResolveCardinalMoveIntent() const;
+		void UpdateFacingFromMoveIntent(const glm::vec2& moveIntent);
+		void ApplyFacingToRenderComponent() const;
 	};
 }
 

@@ -12,6 +12,7 @@ class Component;
 class RenderComponent;
 namespace dae
 {
+	class Scene;
 	class GameObject final
 	{
 		//Transform m_transform{};
@@ -25,6 +26,7 @@ namespace dae
 		// EXPOSE_TO_EDITOR("Is Debug", "Whether this is a debug object")
 		bool m_isDebugData{};
 		bool m_markedForRemoval{};
+		Scene* m_scene{ nullptr };
 		// EXPOSE_TO_EDITOR("Local Position", "Position relative to parent")
 		glm::vec2 m_localPosition;
 		// EXPOSE_TO_EDITOR("World Position", "Absolute position in world space")
@@ -47,6 +49,7 @@ namespace dae
 
 		bool IsDebug() const noexcept { return m_isDebugData; };
 		RenderComponent* GetAttachedRenderer() const noexcept { return m_renderer; };
+		Scene* GetScene() const noexcept { return m_scene; }
 
 		GameObject(std::string Name, GameObject* Parent = nullptr, bool IsDebugObject = false);
 		GameObject(std::string Name, float PosX, float PosY, GameObject* Parent = nullptr, bool IsDebugObject = false);
@@ -59,6 +62,7 @@ namespace dae
 		const std::string& GetName() const noexcept { return m_objectName; };
 		GameObject* GetParent() const noexcept { return m_parent; };
 		void SetParent(GameObject* Parent, bool KeepWorldPos);
+		void SetScene(Scene* scene) noexcept { m_scene = scene; for (auto* child : m_children) { child->SetScene(scene); } }
 
 		void MarkForDeletion() noexcept;
 		bool IsMarkedForDelete() const noexcept { return m_markedForRemoval; };
