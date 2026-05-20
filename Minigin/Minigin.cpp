@@ -104,6 +104,9 @@ dae::Minigin::Minigin(const std::filesystem::path& dataPath)
 
 dae::Minigin::~Minigin()
 {
+	SceneManager::GetInstance().Clear();
+	Debugger::GetInstance().Shutdown();
+	ResourceManager::GetInstance().Shutdown();
 	SoundServiceLocator::ClearSoundSystem();
 	MIX_Quit();
 	Renderer::GetInstance().Destroy();

@@ -15,6 +15,21 @@ void dae::ResourceManager::Init(const std::filesystem::path& dataPath)
 	{
 		throw std::runtime_error(std::string("Failed to load support for fonts: ") + SDL_GetError());
 	}
+
+	m_ttfInitialized = true;
+}
+
+void dae::ResourceManager::Shutdown()
+{
+	UnloadUnusedResources();
+	m_loadedTextures.clear();
+	m_loadedFonts.clear();
+
+	if (m_ttfInitialized)
+	{
+		TTF_Quit();
+		m_ttfInitialized = false;
+	}
 }
 
 std::shared_ptr<dae::Texture2D> dae::ResourceManager::LoadTexture(const std::string& file)

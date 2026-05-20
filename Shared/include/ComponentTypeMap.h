@@ -11,7 +11,6 @@ namespace dae
     inline constexpr auto HASH_FPSCounterComponent = make_sdbm_hash("FPSCounterComponent");
     inline constexpr auto HASH_ScoreComponent = make_sdbm_hash("ScoreComponent");
     inline constexpr auto HASH_SpinnerComponent = make_sdbm_hash("SpinnerComponent");
-    inline constexpr auto HASH_PumpComponent = make_sdbm_hash("PumpComponent");
     inline constexpr auto HASH_SwappableRenderComponent = make_sdbm_hash("SwappableRenderComponent");
     inline constexpr auto HASH_TextRenderComponent = make_sdbm_hash("TextRenderComponent");
     inline constexpr auto HASH_TextureRenderComponent = make_sdbm_hash("TextureRenderComponent");
@@ -23,7 +22,6 @@ namespace dae
         { HASH_FPSCounterComponent, "FPSCounterComponent" },
         { HASH_ScoreComponent, "ScoreComponent" },
         { HASH_SpinnerComponent, "SpinnerComponent" },
-        { HASH_PumpComponent, "PumpComponent" },
         { HASH_SwappableRenderComponent, "SwappableRenderComponent" },
         { HASH_TextRenderComponent, "TextRenderComponent" },
         { HASH_TextureRenderComponent, "TextureRenderComponent" },

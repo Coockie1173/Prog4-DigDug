@@ -7,12 +7,20 @@ using namespace dae;
 void Scene::Add(std::unique_ptr<GameObject> object)
 {
 	assert(object != nullptr && "Cannot add a null GameObject to the scene.");
-	object->SetScene(this);
-	if (m_SceneHasInitialised) //in case an object gets added during runtime, we can still init it after the scene has already initialised the rest
+	if (!m_SceneHasInitialised)
 	{
-		object->Init();
+		object->SetScene(this);
+		m_objects.emplace_back(std::move(object));
+		return;
 	}
-	m_objects.emplace_back(std::move(object));
+
+	QueueAdd(std::move(object));
+}
+
+void Scene::QueueAdd(std::unique_ptr<GameObject> object)
+{
+	assert(object != nullptr && "Cannot queue a null GameObject to the scene.");
+	m_pendingObjects.emplace_back(std::move(object));
 }
 
 void Scene::Remove(const GameObject& object)
@@ -60,6 +68,26 @@ void dae::Scene::Init()
 	}
 
 	m_SceneHasInitialised = true;
+	FlushQueuedAdds();
+}
+
+void dae::Scene::FlushQueuedAdds()
+{
+	if (m_pendingObjects.empty())
+	{
+		return;
+	}
+
+	for (auto& object : m_pendingObjects)
+	{
+		object->SetScene(this);
+		if (m_SceneHasInitialised)
+		{
+			object->Init();
+		}
+		m_objects.emplace_back(std::move(object));
+	}
+	m_pendingObjects.clear();
 }
 
 void Scene::Update()

@@ -36,6 +36,26 @@ void dae::SwappableRenderComponent::Init()
 {
 }
 
+void dae::SwappableRenderComponent::SetFacingDirection(const glm::vec2& facingVector)
+{
+	if (facingVector.x > 0.0f)
+	{
+		SetRotationAndFlip(0.0f, SDL_FLIP_NONE);
+	}
+	else if (facingVector.x < 0.0f)
+	{
+		SetRotationAndFlip(0.0f, SDL_FLIP_HORIZONTAL);
+	}
+	else if (facingVector.y < 0.0f)
+	{
+		SetRotationAndFlip(-90.0f, SDL_FLIP_NONE);
+	}
+	else if (facingVector.y > 0.0f)
+	{
+		SetRotationAndFlip(90.0f, SDL_FLIP_NONE);
+	}
+}
+
 bool dae::SwappableRenderComponent::Deserialize(const std::map<std::string, std::string>&, std::string&)
 {
 	//for now this renderer assumes the textures are added externally

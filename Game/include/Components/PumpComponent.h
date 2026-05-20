@@ -3,11 +3,11 @@
 
 #include "Component.h"
 #include <glm/glm.hpp>
+#include <memory>
+#include <functional>
 
 namespace dae
 {
-	class ObjectMoveComponent;
-	class PlayerControllerComponent;
 	class GameObject;
 
 	//don't expose, since this gets auto-added to our gameobject
@@ -16,7 +16,7 @@ namespace dae
 	{
 	public:
 		PumpComponent(GameObject* Parent);
-		void Configure(PlayerControllerComponent* controller, GameObject* tailObject, glm::vec2 direction, float travelDistance, float speed);
+		void Configure(glm::vec2 direction, float travelDistance, float speed, std::function<void()> onFinished);
 		void Update() override;
 		void LateUpdate() override;
 		void Init() override;
@@ -25,13 +25,11 @@ namespace dae
 	private:
 		void FinishPump();
 
-		PlayerControllerComponent* m_pController{ nullptr };
-		GameObject* m_pTailObject{ nullptr };
-		ObjectMoveComponent* m_pMoveComponent{ nullptr };
 		glm::vec2 m_Direction{ 0.0f, 0.0f };
 		float m_TravelDistance{ 0.0f };
 		float m_Speed{ 0.0f };
 		float m_TravelledDistance{ 0.0f };
+		std::function<void()> m_OnFinished{};
 		bool m_IsConfigured{ false };
 		bool m_IsFinished{ false };
 	};

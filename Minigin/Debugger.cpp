@@ -90,6 +90,13 @@ void Debugger::LogMessage(const std::string& Text, const SDL_Color& LogColour, b
 	m_attachedScene->Add(std::move(to));
 }
 
+void Debugger::Shutdown()
+{
+	m_attachedScene = nullptr;
+	m_debugFont.reset();
+	m_messageCount = 0;
+}
+
 void Debugger::DeleteAllLogs()
 {
 	m_messageCount = 0;

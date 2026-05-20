@@ -240,16 +240,16 @@ void dae::PlayerControllerComponent::ApplyFacingToRenderComponent() const
 	switch (m_FacingDirection)
 	{
 	case FacingDirection::Right:
-		m_pRenderComponent->SetRotationAndFlip(0.0f, SDL_FLIP_NONE);
+		m_pRenderComponent->SetFacingDirection({ 1.0f, 0.0f });
 		break;
 	case FacingDirection::Left:
-		m_pRenderComponent->SetRotationAndFlip(0.0f, SDL_FLIP_HORIZONTAL);
+		m_pRenderComponent->SetFacingDirection({ -1.0f, 0.0f });
 		break;
 	case FacingDirection::Up:
-		m_pRenderComponent->SetRotationAndFlip(-90.0f, SDL_FLIP_NONE);
+		m_pRenderComponent->SetFacingDirection({ 0.0f, -1.0f });
 		break;
 	case FacingDirection::Down:
-		m_pRenderComponent->SetRotationAndFlip(90.0f, SDL_FLIP_NONE);
+		m_pRenderComponent->SetFacingDirection({ 0.0f, 1.0f });
 		break;
 	}
 }

@@ -12,6 +12,7 @@ namespace dae
 	{
 	public:
 		Scene& CreateScene();
+		void Clear();
 
 		void Update();
 		void LateUpdate();

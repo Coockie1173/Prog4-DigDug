@@ -1,7 +1,6 @@
 #include <Components/PlayerStates/PlayerAttack.h>
 #include <Components/SwappableRenderComponent.h>
 #include <Components/PlayerControllerComponent.h>
-#include <Components/ObjectMoveComponent.h>
 #include <Components/PumpComponent.h>
 #include <GameObject.h>
 #include <Scene.h>
@@ -10,10 +9,14 @@
 #include <SoundSerivceLocator.h>
 #include <ResourceManager.h>
 #include <Texture2D.h>
+#include <memory>
 
 namespace dae
 {
 	const std::string PLAYER_ATTACK{ "player/player_attack.png" };
+	const std::string PUMP_FRONT{ "player/pump_front.png" };
+	constexpr float PUMP_TRAVEL_DISTANCE{ 64.0f };
+	constexpr float PUMP_SPEED{ 128.0f };
 
 	void PlayerAttack::Enter(PlayerControllerComponent& Player)
 	{
@@ -31,34 +34,29 @@ namespace dae
 		if (scene != nullptr)
 		{
 			static std::shared_ptr<Texture2D> pumpFrontTexture{};
-			static std::shared_ptr<Texture2D> pumpTailTexture{};
 
 			if (pumpFrontTexture == nullptr)
 			{
-				pumpFrontTexture = ResourceManager::GetInstance().LoadTexture("player/pump_front.png");
-			}
-			if (pumpTailTexture == nullptr)
-			{
-				pumpTailTexture = ResourceManager::GetInstance().LoadTexture("player/pump_tail.png");
+				pumpFrontTexture = ResourceManager::GetInstance().LoadTexture(PUMP_FRONT);
 			}
 
 			const auto playerPosition = Player.GetPlayer()->GetWorldPosition();
 			const auto facingDirection = Player.GetFacingVector();
-
-			auto pumpTail = std::make_unique<dae::GameObject>("PumpTail", playerPosition);
-			auto* pumpTailRenderer = pumpTail->AddComponent<SwappableRenderComponent>();
-			pumpTailRenderer->SetTexture(pumpTailTexture);
-
-			auto* pumpTailObject = pumpTail.get();
-			auto pumpFront = std::make_unique<dae::GameObject>("PumpFront", playerPosition + facingDirection * 16.0f);
-			auto* pumpFrontRenderer = pumpFront->AddComponent<SwappableRenderComponent>();
-			pumpFrontRenderer->SetTexture(pumpFrontTexture);
-			pumpFront->AddComponent<ObjectMoveComponent>();
-			auto* pumpComponent = pumpFront->AddComponent<PumpComponent>();
-			pumpComponent->Configure(&Player, pumpTailObject, facingDirection, 64.0f, 128.0f);
-
-			scene->Add(std::move(pumpTail));
-			scene->Add(std::move(pumpFront));
+			auto segment = std::make_unique<dae::GameObject>("PumpFront", playerPosition);
+			auto* renderer = segment->AddComponent<SwappableRenderComponent>();
+			renderer->SetTexture(pumpFrontTexture);
+			renderer->SetFacingDirection(facingDirection);
+			auto* pumpComponent = segment->AddComponent<PumpComponent>();
+			pumpComponent->Configure(
+				facingDirection,
+				PUMP_TRAVEL_DISTANCE,
+				PUMP_SPEED,
+				[controllerPtr = &Player]()
+				{
+					controllerPtr->OnPlayerEndAttack();
+				}
+			);
+			scene->QueueAdd(std::move(segment));
 		}
 		SoundServiceLocator::GetSoundSystem().PlaySound("Data/sound/Shoot.wav");
 	}
@@ -80,4 +78,4 @@ namespace dae
 	{
 
 	}
-};
+}

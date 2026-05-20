@@ -3,6 +3,7 @@
 
 #include "RenderComponent.h"
 #include <SDL3/SDL.h>
+#include <glm/glm.hpp>
 
 namespace dae
 {
@@ -18,6 +19,7 @@ namespace dae
 		void SetTexture(std::shared_ptr<dae::Texture2D> newTexture) { m_pTexture = newTexture; }
 		std::shared_ptr<dae::Texture2D> GetTexture() const { return m_pTexture; }
 		void SetRotationAndFlip(float rotation, SDL_FlipMode flip) { m_Rotation = rotation; m_Flip = flip; }
+		void SetFacingDirection(const glm::vec2& facingVector);
 	private:
 		std::string m_textureName{};
 		float m_Rotation{ 0.0f };

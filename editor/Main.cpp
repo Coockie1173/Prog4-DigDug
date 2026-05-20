@@ -73,6 +73,14 @@ int main()
     ImGui_ImplSDL3_InitForSDLRenderer(window.get(), renderer.get());
     ImGui_ImplSDLRenderer3_Init(renderer.get());
 
+    struct ResourceManagerShutdownGuard
+    {
+        ~ResourceManagerShutdownGuard()
+        {
+            dae::ResourceManager::GetInstance().Shutdown();
+        }
+    } resourceManagerGuard;
+
     std::filesystem::path dataPath = std::filesystem::path(__FILE__).parent_path() / "Data";
     if (!std::filesystem::exists(dataPath))
     {

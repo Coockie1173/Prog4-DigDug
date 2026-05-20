@@ -5,6 +5,7 @@ void dae::SceneManager::Update()
 {
 	for(auto& scene : m_scenes)
 	{
+		scene->FlushQueuedAdds();
 		scene->Update();
 	}
 }
@@ -48,4 +49,9 @@ dae::Scene& dae::SceneManager::CreateScene()
 {
 	m_scenes.emplace_back(new Scene());
 	return *m_scenes.back();
+}
+
+void dae::SceneManager::Clear()
+{
+	m_scenes.clear();
 }

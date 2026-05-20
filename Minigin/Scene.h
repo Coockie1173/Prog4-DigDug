@@ -10,6 +10,7 @@ namespace dae
 	{
 	public:
 		void Add(std::unique_ptr<GameObject> object);
+		void QueueAdd(std::unique_ptr<GameObject> object);
 		void Remove(const GameObject& object);
 		void RemoveAll();
 		void CleanupMarked();
@@ -31,10 +32,12 @@ namespace dae
 		Scene& operator=(Scene&& other) = delete;
 
 	private:
+		void FlushQueuedAdds();
 		friend class SceneManager;
 		explicit Scene() = default;
 
 		std::vector<std::unique_ptr<GameObject>> m_objects{};
+		std::vector<std::unique_ptr<GameObject>> m_pendingObjects{};
 		bool m_SceneHasInitialised{false};
 	};
 
