@@ -16,6 +16,7 @@ namespace dae
     inline constexpr auto HASH_TextureRenderComponent = make_sdbm_hash("TextureRenderComponent");
     inline constexpr auto HASH_ObjectMoveComponent = make_sdbm_hash("ObjectMoveComponent");
     inline constexpr auto HASH_PlayerControllerComponent = make_sdbm_hash("PlayerControllerComponent");
+    inline constexpr auto HASH_TerrainGridComponent = make_sdbm_hash("TerrainGridComponent");
 
     // Maps component type hash to string name
     inline const std::map<uint32_t, std::string> COMPONENT_TYPE_MAP{
@@ -26,7 +27,8 @@ namespace dae
         { HASH_TextRenderComponent, "TextRenderComponent" },
         { HASH_TextureRenderComponent, "TextureRenderComponent" },
         { HASH_ObjectMoveComponent, "ObjectMoveComponent" },
-        { HASH_PlayerControllerComponent, "PlayerControllerComponent" }
+        { HASH_PlayerControllerComponent, "PlayerControllerComponent" },
+        { HASH_TerrainGridComponent, "TerrainGridComponent" }
     };
 
     inline std::string GetComponentTypeFromHash(uint32_t hash)

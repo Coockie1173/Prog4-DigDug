@@ -19,9 +19,10 @@ void dae::SwappableRenderComponent::Render() const
 		return;
 	}
 
-	auto textureSize = m_pTexture->GetSize();
-	auto pos = GetParent()->GetWorldPosition();
-	Renderer::GetInstance().RenderTexture(*m_pTexture, pos.x, pos.y, textureSize.x, textureSize.y, m_Rotation, m_Flip);
+	const auto textureSize = m_pTexture->GetSize();
+	const auto pos = GetParent()->GetWorldPosition();
+	const auto drawPos = pos - glm::vec2(textureSize.x * 0.5f, textureSize.y * 0.5f);
+	Renderer::GetInstance().RenderTexture(*m_pTexture, drawPos.x, drawPos.y, textureSize.x, textureSize.y, m_Rotation, m_Flip);
 }
 
 void dae::SwappableRenderComponent::Update()

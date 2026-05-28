@@ -13,8 +13,13 @@ add_executable(${TARGET_NAME}
   
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/SpinnerComponent.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/PumpComponent.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/TerrainGridComponent.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Commands/FrameCounterCommand.cpp 
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/Commands/AttackCommand.cpp "src/Components/PlayerStates/PlayerIdle.cpp" "src/Components/PlayerStates/PlayerAttack.cpp" "src/Components/PlayerStates/PlayerMove.cpp")
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Commands/AttackCommand.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/PlayerStates/PlayerIdle.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/PlayerStates/PlayerAttack.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/PlayerStates/PlayerMove.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/PlayerStates/PlayerDig.cpp)
 target_compile_features(${TARGET_NAME} PUBLIC cxx_std_20)
 
 target_include_directories(${TARGET_NAME} PUBLIC

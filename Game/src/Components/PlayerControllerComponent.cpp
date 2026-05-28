@@ -16,6 +16,9 @@
 #include <Components/PlayerStates/PlayerState.h>
 #include <Components/PlayerStates/PlayerIdle.h>
 #include <Components/PlayerStates/PlayerAttack.h>
+#include <Components/PlayerStates/PlayerDig.h>
+#include <Components/TerrainGridComponent.h>
+#include <Scene.h>
 
 namespace
 {
@@ -35,6 +38,10 @@ void dae::PlayerControllerComponent::Update()
 	{
 		m_AttackCooldownRemaining = std::max(0.0f, m_AttackCooldownRemaining - Timing::GetInstance().GetDeltaTime());
 	}
+	if (m_DigCooldownRemaining > 0.0f)
+	{
+		m_DigCooldownRemaining = std::max(0.0f, m_DigCooldownRemaining - Timing::GetInstance().GetDeltaTime());
+	}
 
 	m_MoveIntent = ResolveCardinalMoveIntent();
 	UpdateFacingFromMoveIntent(m_MoveIntent);
@@ -47,6 +54,12 @@ void dae::PlayerControllerComponent::Update()
 			nextState->Enter(*this);
 			m_pCurrentState = nextState;
 		}
+	}
+
+	auto* terrain = GetTerrainGrid();
+	if (!m_PlayerAttacking && !m_PlayerDigging && terrain != nullptr && terrain->HasSolidAtWorldPosition(GetPlayer()->GetWorldPosition()))
+	{
+		OnPlayerDig();
 	}
 
 	ApplyFacingToRenderComponent();
@@ -119,6 +132,8 @@ void dae::PlayerControllerComponent::Init()
 
 	m_pCurrentState = m_pStatePool->Get<PlayerIdle>();
 	m_pCurrentState->Enter(*this);
+	m_PlayerDigging = false;
+	m_DigCooldownRemaining = 0.0f;
 
 }
 
@@ -160,6 +175,52 @@ void dae::PlayerControllerComponent::OnPlayerEndAttack()
 {
 	m_PlayerAttacking = false;
 	m_AttackCooldownRemaining = 0.25f;
+}
+
+void dae::PlayerControllerComponent::OnPlayerEndDig()
+{
+	m_PlayerDigging = false;
+}
+
+void dae::PlayerControllerComponent::OnPlayerDig()
+{
+	auto* terrain = GetTerrainGrid();
+	if (terrain == nullptr || !terrain->HasSolidAtWorldPosition(GetPlayer()->GetWorldPosition()))
+	{
+		m_PlayerDigging = false;
+		return;
+	}
+
+	m_PlayerDigging = true;
+	if (m_pCurrentState == nullptr)
+	{
+		return;
+	}
+
+	auto* pDigState = m_pStatePool->Get<PlayerDig>();
+	if (m_pCurrentState != pDigState)
+	{
+		m_pCurrentState->Exit(*this);
+		pDigState->Enter(*this);
+		m_pCurrentState = pDigState;
+	}
+}
+
+dae::TerrainGridComponent* dae::PlayerControllerComponent::GetTerrainGrid() const
+{
+	auto* player = GetPlayer();
+	if (player == nullptr || player->GetScene() == nullptr)
+	{
+		return nullptr;
+	}
+
+	auto* terrainObject = player->GetScene()->FindGameObject("Terrain");
+	if (terrainObject == nullptr)
+	{
+		return nullptr;
+	}
+
+	return terrainObject->GetComponent<dae::TerrainGridComponent>();
 }
 
 glm::vec2 dae::PlayerControllerComponent::GetFacingVector() const

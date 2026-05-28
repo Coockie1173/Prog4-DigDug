@@ -12,6 +12,7 @@ namespace dae
 {
 	class SwappableRenderComponent;
 	class ObjectMoveComponent;
+	class TerrainGridComponent;
 	class PlayerStatePool;
 	class PlayerState;
 	class MoveIntentCommand;
@@ -27,15 +28,20 @@ namespace dae
 		bool Deserialize(const std::map<std::string, std::string>& properties, std::string& errorMessage) override;
 
 		GameObject* GetPlayer() const { return GetParent(); }
+		GameObject* GetOwner() const { return GetParent(); }
+		TerrainGridComponent* GetTerrainGrid() const;
 
 		void OnPlayerMove();
 		void OnPlayerAttack();
 		void OnPlayerEndAttack();
+		void OnPlayerDig();
+		void OnPlayerEndDig();
 		void AddMoveIntent(const glm::vec2& direction);
 		glm::vec2 GetMoveIntent() const noexcept { return m_MoveIntent; }
 		glm::vec2 GetFacingVector() const;
 		void ClearMoveIntent() noexcept { m_MoveIntent = glm::vec2{}; }
 		bool GetIsAttacking() const noexcept { return m_PlayerAttacking; }
+		bool GetIsDigging() const noexcept { return m_PlayerDigging; }
 
 	private:
 		enum class FacingDirection
@@ -59,7 +65,9 @@ namespace dae
 		glm::vec2 m_LastMoveIntent{};
 		float m_WalkTimer{};
 		bool m_PlayerAttacking{false};
+		bool m_PlayerDigging{false};
 		float m_AttackCooldownRemaining{ 0.0f };
+		float m_DigCooldownRemaining{ 0.0f };
 		FacingDirection m_FacingDirection{ FacingDirection::Right };
 
 		std::unique_ptr<PlayerStatePool> m_pStatePool{};
