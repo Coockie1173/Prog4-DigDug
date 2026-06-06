@@ -21,6 +21,18 @@ namespace dae
 		LeftShoulder,
 		RightShoulder
 	};
+
+	enum class GamepadAxis
+	{
+		LeftStickX,
+		LeftStickY,
+
+		RightStickX,
+		RightStickY,
+
+		LeftTrigger, 
+		RightTrigger,
+	};
 }
 
 #endif

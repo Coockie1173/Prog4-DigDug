@@ -107,6 +107,31 @@ void EditorSerialization::SaveSceneToFile(const std::string& filepath)
         }
     }
 
+    const auto& axisBindings = m_inputBindingToSave->GetAxisBindings();
+    auto axisBindingCount = static_cast<uint32_t>(axisBindings.size());
+    dae::serialization::WriteData(file, axisBindingCount);
+
+    for (const auto& [actionName, binding] : axisBindings)
+    {
+        dae::serialization::WriteString(file, actionName);
+
+        auto deviceType = static_cast<uint8_t>(binding.deviceType);
+        dae::serialization::WriteData(file, deviceType);
+
+        if (binding.deviceType == dae::InputDeviceType::Gamepad)
+        {
+            dae::serialization::WriteData(file, binding.gamepadIndex);
+            auto axisIndex = static_cast<uint8_t>(binding.axis);
+            dae::serialization::WriteData(file, axisIndex);
+            dae::serialization::WriteData(file, binding.deadzone);
+        }
+        else
+        {
+            dae::serialization::WriteData(file, binding.positiveKey);
+            dae::serialization::WriteData(file, binding.negativeKey);
+        }
+    }
+
     const auto& allObjects = m_sceneToSave->GetAllObjects();
 
     std::map<int, dae::GameObject_Barebones*> idToObjectMap;

@@ -34,6 +34,7 @@ namespace dae
     struct SceneData
     {
         std::map<std::string, InputBinding> inputBindings;
+        std::map<std::string, AxisBinding> AxisBindings;
         std::vector<GameObjectData> gameObjects;
     };
 }

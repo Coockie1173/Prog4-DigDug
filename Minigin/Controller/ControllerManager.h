@@ -17,6 +17,7 @@ namespace dae
 		bool IsPressed(int controller, GamepadButton button) const;
 		bool IsDown(int controller, GamepadButton button) const;
 		bool IsReleased(int controller, GamepadButton button) const;
+		float GetAxis(int controller, GamepadAxis axis) const;
 
 	private:
 		class Impl;

@@ -43,6 +43,31 @@ namespace dae
             return SDL_GAMEPAD_BUTTON_INVALID;
         }
 
+        static SDL_GamepadAxis ConvertAxis(GamepadAxis axis)
+        {
+            switch (axis)
+            {
+            case GamepadAxis::LeftStickX:   return SDL_GAMEPAD_AXIS_LEFTX;
+            case GamepadAxis::LeftStickY:   return SDL_GAMEPAD_AXIS_LEFTY;
+            case GamepadAxis::RightStickX:  return SDL_GAMEPAD_AXIS_RIGHTX;
+            case GamepadAxis::RightStickY:  return SDL_GAMEPAD_AXIS_RIGHTY;
+            case GamepadAxis::LeftTrigger:  return SDL_GAMEPAD_AXIS_LEFT_TRIGGER;
+            case GamepadAxis::RightTrigger: return SDL_GAMEPAD_AXIS_RIGHT_TRIGGER;
+            }
+            return SDL_GAMEPAD_AXIS_INVALID;
+        }
+
+        float GetAxis(int idx, GamepadAxis axis) const
+        {
+            const auto& c = controllers[idx];
+            if (!c.gamepad) return 0.f;
+
+            Sint16 raw = SDL_GetGamepadAxis(c.gamepad, ConvertAxis(axis));
+            return raw >= 0
+                ? raw / 32767.f
+                : raw / 32768.f;
+        }
+
         Impl()
         {
             int count = 0;
@@ -141,4 +166,8 @@ namespace dae
         return m_pImpl->IsReleased(controller, button);
     }
 
+    float ControllerManager::GetAxis(int controller, GamepadAxis axis) const
+    {
+        return m_pImpl->GetAxis(controller, axis);
+    }
 }

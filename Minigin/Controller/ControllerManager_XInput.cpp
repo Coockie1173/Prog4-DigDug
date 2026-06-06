@@ -105,6 +105,31 @@ namespace dae
 
             return c.released & ConvertButton(button);
         }
+
+        float GetAxis(int idx, GamepadAxis axis) const
+        {
+            const auto& c = controllers[idx];
+            if (!c.connected) return 0.f;
+
+            const auto& gp = c.currentState.Gamepad;
+
+            switch (axis)
+            {
+            case GamepadAxis::LeftStickX:
+                return gp.sThumbLX >= 0 ? gp.sThumbLX / 32767.f : gp.sThumbLX / 32768.f;
+            case GamepadAxis::LeftStickY:
+                return gp.sThumbLY >= 0 ? gp.sThumbLY / 32767.f : gp.sThumbLY / 32768.f;
+            case GamepadAxis::RightStickX:
+                return gp.sThumbRX >= 0 ? gp.sThumbRX / 32767.f : gp.sThumbRX / 32768.f;
+            case GamepadAxis::RightStickY:
+                return gp.sThumbRY >= 0 ? gp.sThumbRY / 32767.f : gp.sThumbRY / 32768.f;
+            case GamepadAxis::LeftTrigger:
+                return gp.bLeftTrigger / 255.f;
+            case GamepadAxis::RightTrigger:
+                return gp.bRightTrigger / 255.f;
+            }
+            return 0.f;
+        }
     };
 
     ControllerManager::ControllerManager()
@@ -134,4 +159,8 @@ namespace dae
         return m_pImpl->IsReleased(controller, button);
     }
 
+    float ControllerManager::GetAxis(int controller, GamepadAxis axis) const
+    {
+        return m_pImpl->GetAxis(controller, axis);
+    }
 }

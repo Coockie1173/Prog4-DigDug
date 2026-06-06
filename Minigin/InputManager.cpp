@@ -3,6 +3,7 @@
 #include "InputManager.h"
 #include "Debugger.h"
 #include "Commands/Command.h"
+#include "Commands/AxisCommand.h"
 #include <algorithm>
 #include <unordered_map>
 #include <vector>
@@ -23,11 +24,31 @@ namespace dae
 		bool wasPressed{};
 	};
 
+	struct InputManager::AxisBinding
+	{
+		enum class DeviceType { Gamepad, Keyboard };
+
+		DeviceType deviceType{};
+		std::string action;
+		int controllerId{};
+		GamepadAxis axis{}; 
+		float deadzone{ 0.2f };
+
+		SDL_Keycode positiveKey{};
+		SDL_Keycode negativeKey{};
+	};
+
 	struct InputManager::ActionBinding
 	{
 		std::string action;
 		InputType inputType{};
 		std::vector<std::weak_ptr<Command>> commands;
+	};
+
+	struct InputManager::AxisActionBinding
+	{
+		std::string action;
+		std::vector<std::weak_ptr<AxisCommand>> commands;
 	};
 }
 
@@ -36,104 +57,139 @@ dae::InputManager::~InputManager() = default;
 
 bool dae::InputManager::ProcessInput()
 {
-	m_ControllerManager.Update();
+    m_ControllerManager.Update();
 
-	const bool* keyboardState = SDL_GetKeyboardState(nullptr);
-	auto executeAction = [this](const std::string& action, InputType inputType)
-	{
-		auto bindingIt = std::find_if(m_ActionBindings.begin(), m_ActionBindings.end(),
-			[&action, inputType](const std::unique_ptr<ActionBinding>& binding)
-			{
-				return binding->action == action && binding->inputType == inputType;
-			});
+    const bool* keyboardState = SDL_GetKeyboardState(nullptr);
 
-		if (bindingIt == m_ActionBindings.end())
-		{
-			return;
-		}
+    auto executeAction = [this](const std::string& action, InputType inputType)
+        {
+            auto bindingIt = std::find_if(m_ActionBindings.begin(), m_ActionBindings.end(),
+                [&action, inputType](const std::unique_ptr<ActionBinding>& binding)
+                {
+                    return binding->action == action && binding->inputType == inputType;
+                });
 
-		auto& cmds = (*bindingIt)->commands;
-		cmds.erase(
-			std::remove_if(cmds.begin(), cmds.end(),
-				[](auto& weakCmd)
-				{
-					if (auto cmd = weakCmd.lock())
-					{
-						cmd->Execute();
-						return false;
-					}
-					return true;
-				}),
-			cmds.end());
-	};
+            if (bindingIt == m_ActionBindings.end())
+                return;
 
-	for (const auto& binding : m_Bindings)
-	{
-		bool pressed = false;
-		bool down = false;
-		bool released = false;
+            auto& cmds = (*bindingIt)->commands;
+            cmds.erase(
+                std::remove_if(cmds.begin(), cmds.end(),
+                    [](auto& weakCmd)
+                    {
+                        if (auto cmd = weakCmd.lock())
+                        {
+                            cmd->Execute();
+                            return false;
+                        }
+                        return true;
+                    }),
+                cmds.end());
+        };
 
-		if (binding->deviceType == InputBinding::DeviceType::Gamepad)
-		{
-			pressed = m_ControllerManager.IsPressed(binding->controllerId, binding->button);
-			down = m_ControllerManager.IsDown(binding->controllerId, binding->button);
-			released = m_ControllerManager.IsReleased(binding->controllerId, binding->button);
-		}
-		else
-		{
-			bool isCurrentlyPressed = keyboardState[SDL_GetScancodeFromKey(binding->keycode, nullptr)];
-			pressed = isCurrentlyPressed && !binding->wasPressed;
-			down = isCurrentlyPressed;
-			released = !isCurrentlyPressed && binding->wasPressed;
+    auto executeAxisAction = [this](const std::string& action, float value)
+        {
+            auto bindingIt = std::find_if(m_AxisActionBindings.begin(), m_AxisActionBindings.end(),
+                [&action](const std::unique_ptr<AxisActionBinding>& binding)
+                {
+                    return binding->action == action;
+                });
 
-			binding->wasPressed = isCurrentlyPressed;
-		}
+            if (bindingIt == m_AxisActionBindings.end())
+                return;
 
-		if (pressed)
-		{
-			executeAction(binding->action, InputType::Pressed);
-		}
+            auto& cmds = (*bindingIt)->commands;
+            cmds.erase(
+                std::remove_if(cmds.begin(), cmds.end(),
+                    [value](auto& weakCmd)
+                    {
+                        if (auto cmd = weakCmd.lock())
+                        {
+                            cmd->Execute(value);
+                            return false;
+                        }
+                        return true;
+                    }),
+                cmds.end());
+        };
 
-		if (down)
-		{
-			executeAction(binding->action, InputType::Down);
-		}
+    for (const auto& binding : m_Bindings)
+    {
+        bool pressed = false;
+        bool down = false;
+        bool released = false;
 
-		if (released)
-		{
-			executeAction(binding->action, InputType::Released);
-		}
-	}
+        if (binding->deviceType == InputBinding::DeviceType::Gamepad)
+        {
+            pressed = m_ControllerManager.IsPressed(binding->controllerId, binding->button);
+            down = m_ControllerManager.IsDown(binding->controllerId, binding->button);
+            released = m_ControllerManager.IsReleased(binding->controllerId, binding->button);
+        }
+        else
+        {
+            bool isCurrentlyPressed = keyboardState[SDL_GetScancodeFromKey(binding->keycode, nullptr)];
+            pressed = isCurrentlyPressed && !binding->wasPressed;
+            down = isCurrentlyPressed;
+            released = !isCurrentlyPressed && binding->wasPressed;
 
-	SDL_Event e;
-	while (SDL_PollEvent(&e)) {
-		if (e.type == SDL_EVENT_QUIT) 
-		{
-			return false;
-		}
-		if (e.type == SDL_EVENT_KEY_DOWN) 
-		{
-			switch (e.key.key)
-			{
-			case SDLK_ESCAPE:
-			{
-				return false;
-			}
-			case SDLK_F6:
-			{
-				Debugger::GetInstance().DeleteAllLogs();
-			}
-			}
-		}
-		if (e.type == SDL_EVENT_MOUSE_BUTTON_DOWN) 
-		{
+            binding->wasPressed = isCurrentlyPressed;
+        }
 
-		}
+        if (pressed)  executeAction(binding->action, InputType::Pressed);
+        if (down)     executeAction(binding->action, InputType::Down);
+        if (released) executeAction(binding->action, InputType::Released);
+    }
 
-		ImGui_ImplSDL3_ProcessEvent(&e);
-	}
+    for (const auto& binding : m_AxisBindings)
+    {
+        float value = 0.f;
 
-	return true;
+        if (binding->deviceType == AxisBinding::DeviceType::Gamepad)
+        {
+            value = m_ControllerManager.GetAxis(binding->controllerId, binding->axis);
+
+            const float dz = binding->deadzone;
+            if (std::abs(value) < dz)
+            {
+                value = 0.f;
+            }
+            else
+            {
+                value = (value - std::copysign(dz, value)) / (1.f - dz);
+            }
+        }
+        else
+        {
+            bool pos = keyboardState[SDL_GetScancodeFromKey(binding->positiveKey, nullptr)];
+            bool neg = keyboardState[SDL_GetScancodeFromKey(binding->negativeKey, nullptr)];
+            value = (pos ? 1.f : 0.f) + (neg ? -1.f : 0.f);
+        }
+
+        executeAxisAction(binding->action, value);
+    }
+
+    SDL_Event e;
+    while (SDL_PollEvent(&e))
+    {
+        if (e.type == SDL_EVENT_QUIT)
+            return false;
+
+        if (e.type == SDL_EVENT_KEY_DOWN)
+        {
+            switch (e.key.key)
+            {
+            case SDLK_ESCAPE:
+                return false;
+            case SDLK_F6:
+                Debugger::GetInstance().DeleteAllLogs();
+                break;
+            }
+        }
+
+        ImGui_ImplSDL3_ProcessEvent(&e);
+    }
+
+    return true;
 }
 
 void dae::InputManager::BindButton(int ControllerId, GamepadButton Button,
@@ -222,5 +278,49 @@ void dae::InputManager::BindActionToCommand(const std::string& Action, std::shar
 	else
 	{
 		(*bindingIt)->commands.push_back(Command);
+	}
+}
+
+void dae::InputManager::BindAxis(int controllerId, GamepadAxis axis, const std::string& action, float deadzone)
+{
+	auto binding = std::make_unique<AxisBinding>();
+	binding->deviceType = AxisBinding::DeviceType::Gamepad;
+	binding->controllerId = controllerId;
+	binding->axis = axis;
+	binding->action = action;
+	binding->deadzone = deadzone;
+
+	m_AxisBindings.push_back(std::move(binding));
+}
+
+void dae::InputManager::BindAxisKeys(SDL_Keycode positive, SDL_Keycode negative, const std::string& action)
+{
+	auto binding = std::make_unique<AxisBinding>();
+	binding->deviceType = AxisBinding::DeviceType::Keyboard;
+	binding->positiveKey = positive;
+	binding->negativeKey = negative;
+	binding->action = action;
+
+	m_AxisBindings.push_back(std::move(binding));
+}
+
+void dae::InputManager::BindAxisActionToCommand(const std::string& action, std::shared_ptr<AxisCommand> command)
+{
+	auto bindingIt = std::find_if(m_AxisActionBindings.begin(), m_AxisActionBindings.end(),
+		[&action](const std::unique_ptr<AxisActionBinding>& binding)
+		{
+			return binding->action == action;
+		});
+
+	if (bindingIt == m_AxisActionBindings.end())
+	{
+		auto binding = std::make_unique<AxisActionBinding>();
+		binding->action = action;
+		binding->commands.push_back(command);
+		m_AxisActionBindings.push_back(std::move(binding));
+	}
+	else
+	{
+		(*bindingIt)->commands.push_back(command);
 	}
 }

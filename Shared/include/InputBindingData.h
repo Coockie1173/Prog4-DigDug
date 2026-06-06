@@ -35,6 +35,18 @@ namespace dae
         {
         }
     };
-}
 
+    struct AxisBinding
+    {
+        InputDeviceType deviceType{ InputDeviceType::Keyboard };
+        std::string actionName;
+
+        int gamepadIndex{ 0 };
+        GamepadAxis axis{ GamepadAxis::LeftStickX };
+        float deadzone{ 0.15f };
+
+        SDL_Keycode positiveKey{ SDLK_UNKNOWN };
+        SDL_Keycode negativeKey{ SDLK_UNKNOWN };
+    };
+}
 #endif

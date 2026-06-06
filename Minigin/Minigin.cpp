@@ -75,8 +75,8 @@ dae::Minigin::Minigin(const std::filesystem::path& dataPath)
 
 	g_window = SDL_CreateWindow(
 		"Dig Dug",
-		1024,
 		576,
+		1024,
 		SDL_WINDOW_OPENGL
 	);
 	if (g_window == nullptr) 

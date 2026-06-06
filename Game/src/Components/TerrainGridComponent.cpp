@@ -67,37 +67,16 @@ namespace dae
 		}
 	}
 
-	bool TerrainGridComponent::Deserialize(const std::map<std::string, std::string>& properties, std::string&)
+	bool TerrainGridComponent::Deserialize(const std::map<std::string, std::string>& properties, std::string& errorMessage)
 	{
-		if (const auto it = properties.find("width"); it != properties.end())
-		{
-			m_Width = std::max(1, std::stoi(it->second));
-		}
-		if (const auto it = properties.find("height"); it != properties.end())
-		{
-			m_Height = std::max(1, std::stoi(it->second));
-		}
-		if (const auto it = properties.find("cellSize"); it != properties.end())
-		{
-			m_CellSize = std::max(1.0f, std::stof(it->second));
-		}
-		if (const auto it = properties.find("originX"); it != properties.end())
-		{
-			m_Origin.x = std::stof(it->second);
-		}
-		if (const auto it = properties.find("originY"); it != properties.end())
-		{
-			m_Origin.y = std::stof(it->second);
-		}
-		if (const auto it = properties.find("defaultDepth"); it != properties.end())
-		{
-			m_DefaultDepth = static_cast<uint8_t>(std::clamp(std::stoi(it->second), 0, 255));
-		}
-
-		if (const auto it = properties.find("layer1"); it != properties.end())
-		{
-			m_DirtTextures.resize(4);
-		}
+		std::string tmp;
+		if (!GetRequiredProperty(properties, "Width", tmp, errorMessage, "TerrainGridComponent")) return false;
+		m_Width = std::max(1, std::stoi(tmp));
+		if (!GetRequiredProperty(properties, "Height", tmp, errorMessage, "TerrainGridComponent")) return false;
+		m_Height = std::max(1, std::stoi(tmp));
+		if (!GetRequiredProperty(properties, "CellSize", tmp, errorMessage, "TerrainGridComponent")) return false;
+		m_CellSize = std::max(1.0f, std::stof(tmp));
+		//m_DirtTextures.resize(4);
 
 		ResizeStorage();
 		LoadTextures();
@@ -116,24 +95,21 @@ namespace dae
 		m_CellSize = std::max(1.0f, cellSize);
 	}
 
-	void TerrainGridComponent::SetOrigin(const glm::vec2& origin)
-	{
-		m_Origin = origin;
-	}
-
 	glm::ivec2 TerrainGridComponent::WorldToCell(const glm::vec2& worldPosition) const
 	{
+		auto Parent = this->GetParent();		
 		return {
-			static_cast<int>(std::floor((worldPosition.x - m_Origin.x) / m_CellSize)),
-			static_cast<int>(std::floor((worldPosition.y - m_Origin.y) / m_CellSize))
+			static_cast<int>(std::floor((worldPosition.x - Parent->GetWorldPosition().x) / m_CellSize)),
+			static_cast<int>(std::floor((worldPosition.y - Parent->GetWorldPosition().y) / m_CellSize))
 		};
 	}
 
 	glm::vec2 TerrainGridComponent::CellToWorldCenter(const glm::ivec2& cell) const
 	{
+		auto Parent = this->GetParent();
 		return {
-			m_Origin.x + (static_cast<float>(cell.x) + 0.5f) * m_CellSize,
-			m_Origin.y + (static_cast<float>(cell.y) + 0.5f) * m_CellSize
+			Parent->GetWorldPosition().x + (static_cast<float>(cell.x) + 0.5f) * m_CellSize,
+			Parent->GetWorldPosition().y + (static_cast<float>(cell.y) + 0.5f) * m_CellSize
 		};
 	}
 
@@ -258,7 +234,13 @@ namespace dae
 		m_Cells.assign(static_cast<size_t>(m_Width * m_Height), 0);
 		for (int y = 0; y < m_Height; ++y)
 		{
-			const auto depthBand = static_cast<uint8_t>(std::min(4, 1 + ((y * 4) / std::max(1, m_Height - 1))));
+			//we need a lil air to begin with, as a treat
+			if (y <= 1)
+			{
+				continue;
+			}
+
+			const auto depthBand = static_cast<uint8_t>(std::min(4, 1 + (((y - 1) * 4) / std::max(1, m_Height - 2))));
 			for (int x = 0; x < m_Width; ++x)
 			{
 				m_Cells[static_cast<size_t>(y * m_Width + x)] = depthBand;

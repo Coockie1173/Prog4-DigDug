@@ -30,7 +30,6 @@ namespace dae
 		int GetWidth() const noexcept { return m_Width; }
 		int GetHeight() const noexcept { return m_Height; }
 		float GetCellSize() const noexcept { return m_CellSize; }
-		glm::vec2 GetOrigin() const noexcept { return m_Origin; }
 
 		glm::ivec2 WorldToCell(const glm::vec2& worldPosition) const;
 		glm::vec2 CellToWorldCenter(const glm::ivec2& cell) const;
@@ -58,9 +57,6 @@ namespace dae
 		int m_Height{ 15 };
 		// EXPOSE_TO_EDITOR("Cell Size", "Size of a single terrain cell in world units")
 		float m_CellSize{ 16.0f };
-		// EXPOSE_TO_EDITOR("Origin", "World-space origin of the terrain grid")
-		glm::vec2 m_Origin{ 0.0f, 0.0f };
-		// EXPOSE_TO_EDITOR("Default Depth", "Initial dirt layers per cell")
 		uint8_t m_DefaultDepth{ 4 };
 		std::vector<uint8_t> m_Cells{};
 		std::vector<std::shared_ptr<Texture2D>> m_DirtTextures{};

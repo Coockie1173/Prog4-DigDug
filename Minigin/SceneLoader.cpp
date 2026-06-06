@@ -47,6 +47,28 @@ namespace dae
                 dae::InputManager::GetInstance().BindButton(binding.gamepadIndex, binding.gamepadButton, binding.actionName);
             }
         }
+
+        for (const auto& [actionName, binding] : sceneData.AxisBindings)
+        {
+            if (binding.deviceType == dae::InputDeviceType::Gamepad)
+            {
+                dae::InputManager::GetInstance().BindAxis(
+                    binding.gamepadIndex,
+                    binding.axis,
+                    binding.actionName,
+                    binding.deadzone
+                );
+            }
+            else
+            {
+                dae::InputManager::GetInstance().BindAxisKeys(
+                    binding.positiveKey,
+                    binding.negativeKey,
+                    binding.actionName
+                );
+            }
+        }
+
         //Map deserialized object IDs to created GameObject pointers
         std::map<uint32_t, GameObject*> idToGameObjectMap;
         //Store created GameObjects before adding to scene
