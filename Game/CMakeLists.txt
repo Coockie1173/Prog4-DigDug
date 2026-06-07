@@ -25,6 +25,8 @@ target_compile_features(${TARGET_NAME} PUBLIC cxx_std_20)
 target_include_directories(${TARGET_NAME} PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/include
   ${CMAKE_CURRENT_SOURCE_DIR}/src
+  ${CMAKE_SOURCE_DIR}/Minigin 
+  ${CMAKE_SOURCE_DIR}/Minigin/Commands
 )
 
 target_link_libraries(${TARGET_NAME} PUBLIC $<LINK_LIBRARY:WHOLE_ARCHIVE,minigin_engine>)

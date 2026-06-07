@@ -115,14 +115,6 @@ void dae::PlayerControllerComponent::Init()
 	dae::InputManager::GetInstance().BindActionToCommand(parts[1], m_MoveDownCommand, dae::InputManager::InputType::Down);
 	m_Commands.push_back(std::move(m_MoveDownCommand));
 
-	m_MoveLeftCommand = std::make_shared<dae::MoveIntentCommand>(this, glm::vec2(-1, 0));
-	dae::InputManager::GetInstance().BindActionToCommand(parts[2], m_MoveLeftCommand, dae::InputManager::InputType::Down);
-	m_Commands.push_back(std::move(m_MoveLeftCommand));
-
-	m_MoveRightCommand = std::make_shared<dae::MoveIntentCommand>(this, glm::vec2(1, 0));
-	dae::InputManager::GetInstance().BindActionToCommand(parts[3], m_MoveRightCommand, dae::InputManager::InputType::Down);
-	m_Commands.push_back(std::move(m_MoveRightCommand));
-
 	m_AttackStartCommand = std::make_shared<dae::AttackCommand>(this, true);
 	m_AttackEndCommand = std::make_shared<dae::AttackCommand>(this, false);
 	dae::InputManager::GetInstance().BindActionToCommand(m_attackActionName, m_AttackStartCommand, dae::InputManager::InputType::Pressed);

@@ -5,14 +5,18 @@
 
 namespace dae
 {
-    class AxisCommand : Command
+    class AxisCommand : public Command
     {
     public:
         virtual ~AxisCommand() = default;
-        virtual bool Execute(float axisValue) = 0;
+        virtual bool Execute() = 0;
+        explicit AxisCommand() noexcept : m_Value(0) {}
+        
+        void SetAxisValue(float V) { m_Value = V; };
+        float GetAxisValue() { return m_Value; };
 
     protected:
-        AxisCommand() = default;
+        float m_Value{0};
     };
 }
 

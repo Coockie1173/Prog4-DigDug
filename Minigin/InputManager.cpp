@@ -105,7 +105,8 @@ bool dae::InputManager::ProcessInput()
                     {
                         if (auto cmd = weakCmd.lock())
                         {
-                            cmd->Execute(value);
+							cmd->SetAxisValue(value);
+                            cmd->Execute();
                             return false;
                         }
                         return true;

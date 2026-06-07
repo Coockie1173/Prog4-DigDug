@@ -1,19 +1,18 @@
 #ifndef _MOVEINTENT_COMMAND_H_
 #define _MOVEINTENT_COMMAND_H_
 
-#include <ComponentCommand.h>
+#include <AxisComponentCommand.h>
 #include <Components/PlayerControllerComponent.h>
 #include <glm/glm.hpp>
 
 namespace dae
 {
-	class MoveIntentCommand final : public ComponentCommand<PlayerControllerComponent>
+	class MoveIntentCommand final : public AxisComponentCommand<PlayerControllerComponent>
 	{
 	public:
 		MoveIntentCommand(PlayerControllerComponent* pComponent, const glm::vec2& direction) noexcept
-			: ComponentCommand(pComponent), m_Direction(direction)
-		{
-		}
+			: AxisComponentCommand<PlayerControllerComponent>(pComponent),	m_Direction(direction)
+		{}
 
 		bool Execute() override;
 
