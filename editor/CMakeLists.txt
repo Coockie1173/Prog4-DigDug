@@ -47,6 +47,7 @@ target_link_libraries(minigin_editor PUBLIC
   $<LINK_LIBRARY:WHOLE_ARCHIVE,minigin_engine>
   SDL3::SDL3
   SDL3_ttf::SDL3_ttf
+  SDL3_mixer::SDL3_mixer
   glm::glm
   imgui
   ${VLD_LIBRARIES}
@@ -75,6 +76,7 @@ if(WIN32)
   set(EDITOR_SDL_DLLS
     SDL3::SDL3
     SDL3_ttf::SDL3_ttf
+    SDL3_mixer::SDL3_mixer
   )
 
   foreach(dllTarget IN LISTS EDITOR_SDL_DLLS)

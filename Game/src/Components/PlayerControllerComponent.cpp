@@ -92,7 +92,7 @@ void dae::PlayerControllerComponent::Init()
 		parts.emplace_back(m_inputScheme.substr(startIndex, separatorIndex - startIndex));
 		startIndex = separatorIndex + 1;
 	}
-	if (parts.size() != 4)
+	if (parts.size() != 2)
 	{
 		//turns out using the debugger DURING INIT fucks up the entire flow of the program, who could've thunk it??
 		//Debugger::GetInstance().LogError("PlayerControllerComponent inputScheme should have 4 parts separated by '|', but got " + std::to_string(parts.size()));
@@ -100,20 +100,18 @@ void dae::PlayerControllerComponent::Init()
 	}
 	//Debugger::GetInstance().LogDebug("PlayerControllerComponent input scheme set to: up='" + parts[0] + "', down='" + parts[1] + "', left='" + parts[2] + "', right='" + parts[3] + "'");
 
-	std::shared_ptr<dae::Command> m_MoveUpCommand{};
-	std::shared_ptr<dae::Command> m_MoveDownCommand{};
-	std::shared_ptr<dae::Command> m_MoveLeftCommand{};
-	std::shared_ptr<dae::Command> m_MoveRightCommand{};
+	std::shared_ptr<dae::AxisCommand> m_MoveVerticalCommand{};
+	std::shared_ptr<dae::AxisCommand> m_MoveHorizontalCommand{};
 	std::shared_ptr<dae::Command> m_AttackStartCommand{};
 	std::shared_ptr<dae::Command> m_AttackEndCommand{};
 
-	m_MoveUpCommand = std::make_shared<dae::MoveIntentCommand>(this, glm::vec2(0, -1));
-	dae::InputManager::GetInstance().BindActionToCommand(parts[0], m_MoveUpCommand, dae::InputManager::InputType::Down);
-	m_Commands.push_back(std::move(m_MoveUpCommand));
+	m_MoveVerticalCommand = std::make_shared<dae::MoveIntentCommand>(this, glm::vec2(-1, 0));
+	dae::InputManager::GetInstance().BindAxisActionToCommand(parts[0], m_MoveVerticalCommand);
+	m_Commands.push_back(std::move(m_MoveVerticalCommand));
 
-	m_MoveDownCommand = std::make_shared<dae::MoveIntentCommand>(this, glm::vec2(0, 1));
-	dae::InputManager::GetInstance().BindActionToCommand(parts[1], m_MoveDownCommand, dae::InputManager::InputType::Down);
-	m_Commands.push_back(std::move(m_MoveDownCommand));
+	m_MoveHorizontalCommand = std::make_shared<dae::MoveIntentCommand>(this, glm::vec2(0, -1));
+	dae::InputManager::GetInstance().BindAxisActionToCommand(parts[1], m_MoveHorizontalCommand);
+	m_Commands.push_back(std::move(m_MoveHorizontalCommand));
 
 	m_AttackStartCommand = std::make_shared<dae::AttackCommand>(this, true);
 	m_AttackEndCommand = std::make_shared<dae::AttackCommand>(this, false);

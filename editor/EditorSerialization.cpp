@@ -252,6 +252,36 @@ void EditorSerialization::LoadSceneFromFile(const std::string& filepath)
         m_inputBindingToLoad->GetBindings()[binding.actionName] = binding;
     }
 
+    uint32_t axisBindingCount = 0;
+    dae::serialization::ReadData(file, axisBindingCount);
+
+    for (uint32_t i = 0; i < axisBindingCount; ++i)
+    {
+        std::string actionName = dae::serialization::ReadString(file);
+        uint8_t deviceType = 0;
+        dae::serialization::ReadData(file, deviceType);
+
+        AxisBinding binding{};
+        binding.actionName = std::move(actionName);
+        binding.deviceType = static_cast<InputDeviceType>(deviceType);
+
+        if (binding.deviceType == InputDeviceType::Gamepad)
+        {
+            dae::serialization::ReadData(file, binding.gamepadIndex);
+            uint8_t axisIndex = 0;
+            dae::serialization::ReadData(file, axisIndex);
+            binding.axis = static_cast<dae::GamepadAxis>(axisIndex);
+            dae::serialization::ReadData(file, binding.deadzone);
+        }
+        else
+        {
+            dae::serialization::ReadData(file, binding.positiveKey);
+            dae::serialization::ReadData(file, binding.negativeKey);
+        }
+
+        m_inputBindingToLoad->GetAxisBindings()[binding.actionName] = std::move(binding);
+    }
+
     uint32_t objectCount = 0;
     dae::serialization::ReadData(file, objectCount);
 

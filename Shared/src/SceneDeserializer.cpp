@@ -77,6 +77,36 @@ namespace dae
 
                 sceneData->inputBindings[binding.actionName] = std::move(binding);
             }
+            
+            uint32_t axisBindingCount = 0;
+            serialization::ReadData(file, axisBindingCount);
+
+            for (uint32_t i = 0; i < axisBindingCount; ++i)
+            {
+                std::string actionName = serialization::ReadString(file);
+                uint8_t deviceType = 0;
+                serialization::ReadData(file, deviceType);
+
+                AxisBinding binding{};
+                binding.actionName = std::move(actionName);
+                binding.deviceType = static_cast<InputDeviceType>(deviceType);
+
+                if (binding.deviceType == InputDeviceType::Gamepad)
+                {
+                    serialization::ReadData(file, binding.gamepadIndex);
+                    uint8_t axisIndex = 0;
+                    serialization::ReadData(file, axisIndex);
+                    binding.axis = static_cast<GamepadAxis>(axisIndex);
+                    serialization::ReadData(file, binding.deadzone);
+                }
+                else
+                {
+                    serialization::ReadData(file, binding.positiveKey);
+                    serialization::ReadData(file, binding.negativeKey);
+                }
+
+                sceneData->AxisBindings[binding.actionName] = std::move(binding);
+            }
 
             // Deserialize game objects
             uint32_t objectCount = 0;

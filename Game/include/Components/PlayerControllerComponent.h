@@ -52,7 +52,7 @@ namespace dae
 			Down
 		};
 
-		// EXPOSE_TO_EDITOR("Input Scheme", "Defines the input scheme as follows: upaction|downaction|leftaction|rightaction")
+		// EXPOSE_TO_EDITOR("Input Scheme", "Defines the input scheme as follows: horizontal|vertical")
 		std::string m_inputScheme{};
 		// EXPOSE_TO_EDITOR("Attack Action Name", "The name of the action to use for attacking")
 		std::string m_attackActionName{};

@@ -1,5 +1,5 @@
-#ifndef _ICOMPONENTCOMMAND_H_
-#define _ICOMPONENTCOMMAND_H_
+#ifndef _IAXISCOMPONENTCOMMAND_H_
+#define _IAXISCOMPONENTCOMMAND_H_
 
 #include "AxisCommand.h"
 #include "../Components/Component.h"
@@ -15,7 +15,11 @@ namespace dae
 
         explicit AxisComponentCommand(T* pComponent) noexcept : AxisCommand(), m_pComponent(pComponent) {}
         virtual ~AxisComponentCommand() = default;
-        virtual bool Execute() = 0;
+
+        AxisComponentCommand(const AxisComponentCommand&) = delete;
+        AxisComponentCommand& operator=(const AxisComponentCommand&) = delete;
+        AxisComponentCommand(AxisComponentCommand&&) noexcept = delete;
+        AxisComponentCommand& operator=(AxisComponentCommand&&) noexcept = delete;
 
     protected:
         T* GetAttachedComponent() const noexcept { return m_pComponent; }
