@@ -17,6 +17,7 @@
 #include <Components/PlayerStates/PlayerIdle.h>
 #include <Components/PlayerStates/PlayerAttack.h>
 #include <Components/PlayerStates/PlayerDig.h>
+#include <Components/PlayerStates/PlayerStart.h>
 #include <Components/TerrainGridComponent.h>
 #include <Scene.h>
 
@@ -120,7 +121,7 @@ void dae::PlayerControllerComponent::Init()
 	m_Commands.push_back(std::move(m_AttackStartCommand));
 	m_Commands.push_back(std::move(m_AttackEndCommand));
 
-	m_pCurrentState = m_pStatePool->Get<PlayerIdle>();
+	m_pCurrentState = m_pStatePool->Get<PlayerStart>();
 	m_pCurrentState->Enter(*this);
 	m_PlayerDigging = false;
 	m_DigCooldownRemaining = 0.0f;
@@ -144,13 +145,23 @@ void dae::PlayerControllerComponent::OnPlayerMove()
 
 void dae::PlayerControllerComponent::OnPlayerAttack()
 {
-	if (m_PlayerAttacking || m_AttackCooldownRemaining > 0.0f)
+	if (auto r = dynamic_cast<PlayerStart*>(m_pCurrentState))
+	{
+		//don't do anything in the start state
 		return;
+	}
+
+	if (m_PlayerAttacking || m_AttackCooldownRemaining > 0.0f)
+	{
+		return;
+	}
 
 	m_PlayerAttacking = true;
 
 	if (m_pCurrentState == nullptr)
+	{
 		return;
+	}
 
 	auto* pAttackState = m_pStatePool->Get<PlayerAttack>();
 	if (m_pCurrentState != pAttackState)
@@ -174,6 +185,12 @@ void dae::PlayerControllerComponent::OnPlayerEndDig()
 
 void dae::PlayerControllerComponent::OnPlayerDig()
 {
+	if (auto r = dynamic_cast<PlayerStart*>(m_pCurrentState))
+	{
+		//don't do anything in the start state
+		return;
+	}
+
 	auto* terrain = GetTerrainGrid();
 	if (terrain == nullptr || !terrain->HasSolidAtWorldPosition(GetPlayer()->GetWorldPosition()))
 	{
@@ -186,6 +203,8 @@ void dae::PlayerControllerComponent::OnPlayerDig()
 	{
 		return;
 	}
+
+	m_PlayerDigging = true;
 
 	auto* pDigState = m_pStatePool->Get<PlayerDig>();
 	if (m_pCurrentState != pDigState)

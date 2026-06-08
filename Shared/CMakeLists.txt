@@ -1,7 +1,7 @@
 add_library(minigin_shared STATIC
     src/MBINSerializer.cpp
     src/SceneDeserializer.cpp
-)
+ "include/Config.h")
 
 target_include_directories(minigin_shared PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include

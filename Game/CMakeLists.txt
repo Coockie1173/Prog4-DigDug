@@ -19,7 +19,7 @@ add_executable(${TARGET_NAME}
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/PlayerStates/PlayerIdle.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/PlayerStates/PlayerAttack.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/PlayerStates/PlayerMove.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/PlayerStates/PlayerDig.cpp)
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/PlayerStates/PlayerDig.cpp "src/Components/PlayerStates/PlayerStart.cpp")
 target_compile_features(${TARGET_NAME} PUBLIC cxx_std_20)
 
 target_include_directories(${TARGET_NAME} PUBLIC

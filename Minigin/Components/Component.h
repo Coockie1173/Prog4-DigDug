@@ -26,9 +26,9 @@ namespace dae
 
 		bool GetIsDisabled() const { return ComponentDisabled; }
 		void SetIsDisabled(bool isDisabled) { ComponentDisabled = isDisabled; }
+		GameObject* GetParent() const noexcept { return m_parent; };
 
 	protected:
-		GameObject* GetParent() const noexcept { return m_parent; };
 		Component(dae::GameObject* Parent);
 		bool ComponentDisabled{false};
 

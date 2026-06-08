@@ -6,13 +6,13 @@
 #include <Components/PlayerStates/PlayerIdle.h>
 #include <ResourceManager.h>
 #include <Timing.h>
+#include <Config.h>
 
 namespace dae
 {
 	const std::string PLAYER_IDLE{ "player/player_idle.png" };
 	const std::string PLAYER_WALK{ "player/player_walk.png" };
 	constexpr float TIMEANIMS = 0.1f;
-	constexpr float PLAYER_MOVE_SPEED = 100.0f;
 
 	void PlayerMove::Enter(PlayerControllerComponent& Player)
 	{

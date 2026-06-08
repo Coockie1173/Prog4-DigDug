@@ -6,6 +6,7 @@
 #include "SceneManager.h"
 #endif
 #include "Texture2D.h"
+#include <Config.h>
 
 #include <imgui.h>
 #include <backends/imgui_impl_sdl3.h>
@@ -30,7 +31,7 @@ void dae::Renderer::Init(SDL_Window* window)
 		throw std::runtime_error(std::string("SDL_CreateRenderer Error: ") + SDL_GetError());
 	}
 
-	SDL_SetRenderScale(m_renderer, 2.0f, 2.0f);
+	SDL_SetRenderScale(m_renderer, RENDERSCALE, RENDERSCALE);
 	SDL_SetDefaultTextureScaleMode(m_renderer, SDL_SCALEMODE_NEAREST);
 
 	IMGUI_CHECKVERSION();

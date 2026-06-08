@@ -9,6 +9,7 @@
 #include <ResourceManager.h>
 #include <Timing.h>
 #include <algorithm>
+#include <Config.h>
 
 namespace dae
 {
@@ -38,10 +39,11 @@ namespace dae
 		m_DigTimer = 0.0f;
 		if (m_pTerrainGrid != nullptr)
 		{
-			const auto cell = m_pTerrainGrid->WorldToCell(Player.GetPlayer()->GetWorldPosition());
-			m_pTerrainGrid->CarveCell(cell);
+			// Use half the player size as radius so all overlapping cells get carved
+			const auto pos = Player.GetPlayer()->GetWorldPosition();
+			m_pTerrainGrid->CarveAtWorldPosition({ pos.x, pos.y }, PLAYERHALFSIZE);
 		}
-		Player.OnPlayerEndDig();
+		//Player.OnPlayerDig();
 	}
 
 	PlayerState* PlayerDig::Update(PlayerControllerComponent& Player)
@@ -66,11 +68,8 @@ namespace dae
 
 		if (m_pTerrainGrid != nullptr)
 		{
-			const auto cell = m_pTerrainGrid->WorldToCell(Player.GetPlayer()->GetWorldPosition());
-			if (m_pTerrainGrid->IsSolidCell(cell))
-			{
-				m_pTerrainGrid->CarveCell(cell);
-			}
+			const auto pos = Player.GetPlayer()->GetWorldPosition();
+			m_pTerrainGrid->CarveAtWorldPosition({ pos.x, pos.y }, PLAYERHALFSIZE);
 		}
 
 		Player.OnPlayerEndDig();

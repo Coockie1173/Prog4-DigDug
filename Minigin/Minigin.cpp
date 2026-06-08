@@ -2,6 +2,7 @@
 #include <sstream>
 #include <iostream>
 #include <thread>
+#include <Config.h>
 
 #if WIN32
 #define WIN32_LEAN_AND_MEAN 
@@ -75,8 +76,8 @@ dae::Minigin::Minigin(const std::filesystem::path& dataPath)
 
 	g_window = SDL_CreateWindow(
 		"Dig Dug",
-		576,
-		1024,
+		SCREENWIDTH,
+		SCREENHEIGHT,
 		SDL_WINDOW_OPENGL
 	);
 	if (g_window == nullptr) 

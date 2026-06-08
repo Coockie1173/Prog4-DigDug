@@ -9,9 +9,10 @@
 #include "EditorUI.h"
 #include "ResourceManager.h"
 #include "Font.h"
+#include <config.h>
 
-constexpr int WINDOW_WIDTH = 1024;
-constexpr int WINDOW_HEIGHT = 576;
+constexpr int WINDOW_WIDTH = SCREENWIDTH;
+constexpr int WINDOW_HEIGHT = SCREENHEIGHT;
 
 int main()
 {
