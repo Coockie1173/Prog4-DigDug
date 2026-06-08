@@ -185,7 +185,7 @@ void dae::PlayerControllerComponent::OnPlayerEndDig()
 
 void dae::PlayerControllerComponent::OnPlayerDig()
 {
-	if (auto r = dynamic_cast<PlayerStart*>(m_pCurrentState))
+	if (dynamic_cast<PlayerStart*>(m_pCurrentState))
 	{
 		//don't do anything in the start state
 		return;
