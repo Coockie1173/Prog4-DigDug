@@ -60,6 +60,7 @@ namespace dae
 		uint8_t m_DefaultDepth{ 4 };
 		std::vector<uint8_t> m_Cells{};
 		std::vector<std::shared_ptr<Texture2D>> m_DirtTextures{};
+		std::shared_ptr<Texture2D> m_WallTexture;
 	};
 }
 

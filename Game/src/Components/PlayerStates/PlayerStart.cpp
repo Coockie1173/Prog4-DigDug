@@ -43,7 +43,7 @@ namespace dae
 
 		m_pRenderComponent->SetTexture(m_pIdleTexture);
 
-		Player.GetParent()->SetPosition(glm::vec2(0, 0));
+		Player.GetParent()->SetPosition(glm::vec2(0, 20));
 		m_pTerrainGrid = Player.GetTerrainGrid();
 		if (m_pTerrainGrid != nullptr)
 		{
@@ -75,7 +75,7 @@ namespace dae
 		}
 		
 		glm::vec2 tmp{ 0,0 };
-		if (Player.GetParent()->GetWorldPosition().x < SCREENWIDTH / RENDERSCALE / 2)
+		if (Player.GetParent()->GetWorldPosition().x < SCREENWIDTH / RENDERSCALE / 2 + 8)
 		{
 			tmp = { 1,0 };
 		}

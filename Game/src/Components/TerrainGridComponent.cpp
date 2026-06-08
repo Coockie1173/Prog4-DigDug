@@ -29,31 +29,59 @@ namespace dae
 
 	void TerrainGridComponent::Render() const
 	{
-		if (m_DirtTextures.empty())
-		{
-			return;
-		}
+		if (m_DirtTextures.empty()) return;
 
+		// Dirt pass
 		for (int y = 0; y < m_Height; ++y)
 		{
 			for (int x = 0; x < m_Width; ++x)
 			{
 				const glm::ivec2 cell{ x, y };
 				const auto depth = GetCellDepth(cell);
-				if (depth == 0)
-				{
-					continue;
-				}
+				if (depth == 0) continue;
 
 				const auto textureIndex = std::min<std::size_t>(m_DirtTextures.size() - 1, static_cast<std::size_t>(depth - 1));
 				const auto& texture = m_DirtTextures[textureIndex];
-				if (!texture)
-				{
-					continue;
-				}
+				if (!texture) continue;
 
 				const auto worldPos = CellToWorldCenter(cell) - glm::vec2(m_CellSize * 0.5f, m_CellSize * 0.5f);
 				Renderer::GetInstance().RenderTexture(*texture, worldPos.x, worldPos.y, m_CellSize, m_CellSize);
+			}
+		}
+
+		if (!m_WallTexture) return;
+
+		//render walls
+		struct WallDef { glm::ivec2 dir; float dx, dy, w, h; double angle; SDL_FlipMode flip; };
+		const float wt = m_CellSize * 0.25f;
+		const float half = m_CellSize * 0.5f;
+		const float halfWt = wt * 0.5f;
+
+		const WallDef defs[4] =
+		{
+			{ { 0, -1}, 0, 0, m_CellSize, wt, 0.0, SDL_FLIP_VERTICAL }, // top
+			{ { 0, 1}, 0, m_CellSize - wt, m_CellSize, wt, 0.0, SDL_FLIP_NONE     }, // bottom
+			{ {-1, 0}, -(half - halfWt), half - halfWt, m_CellSize, wt, 90.0, SDL_FLIP_NONE }, // left
+			{ { 1, 0}, m_CellSize - wt - (half - halfWt), half - halfWt, m_CellSize, wt, 90.0, SDL_FLIP_VERTICAL }, // right
+		};
+
+		for (int y = 0; y < m_Height; ++y)
+		{
+			for (int x = 0; x < m_Width; ++x)
+			{
+				const glm::ivec2 cell{ x, y };
+				if (GetCellDepth(cell) != 0) continue;
+
+				const auto worldPos = CellToWorldCenter(cell) - glm::vec2(m_CellSize * 0.5f, m_CellSize * 0.5f);
+
+				for (const auto& def : defs)
+				{
+					const glm::ivec2 neighbor = cell + def.dir;
+					if (!IsValidCell(neighbor) || GetCellDepth(neighbor) == 0) continue;
+
+					Renderer::GetInstance().RenderTexture(*m_WallTexture,worldPos.x + def.dx, worldPos.y + def.dy,
+						def.w, def.h, (float)def.angle, def.flip);
+				}
 			}
 		}
 	}
@@ -259,5 +287,6 @@ namespace dae
 		m_DirtTextures.emplace_back(ResourceManager::GetInstance().LoadTexture("dirt/Layer2.png"));
 		m_DirtTextures.emplace_back(ResourceManager::GetInstance().LoadTexture("dirt/Layer3.png"));
 		m_DirtTextures.emplace_back(ResourceManager::GetInstance().LoadTexture("dirt/Layer4.png"));
+		m_WallTexture = ResourceManager::GetInstance().LoadTexture("dirt/DirtEdge.png");
 	}
 }

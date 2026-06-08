@@ -5,6 +5,6 @@ constexpr int SCREENWIDTH{ 576 };
 constexpr int SCREENHEIGHT{ 1024 };
 constexpr float RENDERSCALE{ 2 };
 constexpr float PLAYER_MOVE_SPEED = 100.0f;
-constexpr float PLAYERHALFSIZE = 12.0f;
+constexpr float PLAYERHALFSIZE = 14.0f;
 
 #endif
