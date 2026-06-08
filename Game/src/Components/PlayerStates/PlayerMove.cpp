@@ -7,12 +7,16 @@
 #include <ResourceManager.h>
 #include <Timing.h>
 #include <Config.h>
+#include <Components/TerrainGridComponent.h>
+#include <cmath>
 
 namespace dae
 {
 	const std::string PLAYER_IDLE{ "player/player_idle.png" };
 	const std::string PLAYER_WALK{ "player/player_walk.png" };
 	constexpr float TIMEANIMS = 0.1f;
+	constexpr float SNAP_SPEED_FACTOR = 8.0f;
+	constexpr float SNAP_THRESHOLD = 1.0f;
 
 	void PlayerMove::Enter(PlayerControllerComponent& Player)
 	{
@@ -20,7 +24,7 @@ namespace dae
 		{
 			m_pRenderComponent = Player.GetPlayer()->GetComponent<SwappableRenderComponent>();
 		}
-		
+
 		if (m_pIdleTexture == nullptr)
 		{
 			m_pIdleTexture = ResourceManager::GetInstance().LoadTexture(PLAYER_IDLE);
@@ -45,6 +49,7 @@ namespace dae
 		{
 			return m_pStatePool->Get<PlayerIdle>();
 		}
+
 		WalkTimer += Timing::GetInstance().GetDeltaTime();
 		if (WalkTimer >= TIMEANIMS)
 		{
@@ -58,11 +63,49 @@ namespace dae
 			moveDirection = glm::normalize(moveDirection);
 		}
 
-		 if (glm::dot(moveDirection, moveDirection) > 0.0f)
-		 {
-			 m_pMoveComponent->MoveObject(moveDirection, PLAYER_MOVE_SPEED);
-		 }
-		
+		auto* pPlayerObj = Player.GetPlayer();
+		const glm::vec2 pos = pPlayerObj->GetWorldPosition();
+		auto* pTerrain = Player.GetTerrainGrid();
+
+		if (pTerrain != nullptr)
+		{
+			const auto cell = pTerrain->WorldToCell(pos);
+
+			if (moveDirection.x != 0.0f)
+			{
+				const float snapY = pTerrain->CellToWorldCenter(cell).y;
+				const float diff = snapY - pos.y;
+
+				if (std::abs(diff) <= SNAP_THRESHOLD)
+				{
+					pPlayerObj->SetLocalPosition({ pos.x, pos.y + diff });
+				}
+				else
+				{
+					pPlayerObj->SetLocalPosition({ pos.x, pos.y + diff * SNAP_SPEED_FACTOR * Timing::GetInstance().GetDeltaTime() });
+				}
+			}
+			else if (moveDirection.y != 0.0f)
+			{
+				const float snapX = pTerrain->CellToWorldCenter(cell).x;
+				const float diff = snapX - pos.x;
+
+				if (std::abs(diff) <= SNAP_THRESHOLD)
+				{
+					pPlayerObj->SetLocalPosition({ pos.x + diff, pos.y });
+				}
+				else
+				{
+					pPlayerObj->SetLocalPosition({ pos.x + diff * SNAP_SPEED_FACTOR * Timing::GetInstance().GetDeltaTime(), pos.y });
+				}
+			}
+		}
+
+		if (glm::dot(moveDirection, moveDirection) > 0.0f)
+		{
+			m_pMoveComponent->MoveObject(moveDirection, PLAYER_MOVE_SPEED);
+		}
+
 		return nullptr;
 	}
 
