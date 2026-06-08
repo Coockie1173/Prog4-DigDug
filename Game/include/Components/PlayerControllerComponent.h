@@ -76,6 +76,8 @@ namespace dae
 		glm::vec2 ResolveCardinalMoveIntent() const;
 		void UpdateFacingFromMoveIntent(const glm::vec2& moveIntent);
 		void ApplyFacingToRenderComponent() const;
+		glm::ivec2 m_PreviousCell{};
+		bool m_HasPreviousCell{ false };
 	};
 }
 

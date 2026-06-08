@@ -31,56 +31,71 @@ namespace dae
 	{
 		if (m_DirtTextures.empty()) return;
 
-		// Dirt pass
+		const float wt = m_CellSize * 0.25f;
+		const float half = m_CellSize * 0.5f;
+		const float halfWt = wt * 0.5f;
+
+		struct WallDef { glm::ivec2 dir; float dx, dy, w, h; float angle; SDL_FlipMode flip; };
+		const WallDef defs[4] =
+		{
+			{ { 0, -1}, 0, 0, m_CellSize, wt, 0.f,  SDL_FLIP_VERTICAL },
+			{ { 0, 1}, 0, m_CellSize - wt, m_CellSize, wt, 0.f, SDL_FLIP_NONE },
+			{ {-1, 0}, -(half - halfWt), half - halfWt, m_CellSize, wt, 90.f, SDL_FLIP_NONE },
+			{ { 1, 0}, m_CellSize - wt - (half - halfWt), half - halfWt, m_CellSize, wt, 90.f, SDL_FLIP_VERTICAL },
+		};
+
+		const uint8_t wallFlagBits[4] =
+		{
+			static_cast<uint8_t>(WallFlags::Top),
+			static_cast<uint8_t>(WallFlags::Bottom),
+			static_cast<uint8_t>(WallFlags::Left),
+			static_cast<uint8_t>(WallFlags::Right),
+		};
+
+		auto& renderer = Renderer::GetInstance();
+
 		for (int y = 0; y < m_Height; ++y)
 		{
 			for (int x = 0; x < m_Width; ++x)
 			{
 				const glm::ivec2 cell{ x, y };
 				const auto depth = GetCellDepth(cell);
-				if (depth == 0) continue;
+				const auto worldPos = CellToWorldCenter(cell) - glm::vec2(half, half);
 
-				const auto textureIndex = std::min<std::size_t>(m_DirtTextures.size() - 1, static_cast<std::size_t>(depth - 1));
-				const auto& texture = m_DirtTextures[textureIndex];
-				if (!texture) continue;
-
-				const auto worldPos = CellToWorldCenter(cell) - glm::vec2(m_CellSize * 0.5f, m_CellSize * 0.5f);
-				Renderer::GetInstance().RenderTexture(*texture, worldPos.x, worldPos.y, m_CellSize, m_CellSize);
-			}
-		}
-
-		if (!m_WallTexture) return;
-
-		//render walls
-		struct WallDef { glm::ivec2 dir; float dx, dy, w, h; double angle; SDL_FlipMode flip; };
-		const float wt = m_CellSize * 0.25f;
-		const float half = m_CellSize * 0.5f;
-		const float halfWt = wt * 0.5f;
-
-		const WallDef defs[4] =
-		{
-			{ { 0, -1}, 0, 0, m_CellSize, wt, 0.0, SDL_FLIP_VERTICAL }, // top
-			{ { 0, 1}, 0, m_CellSize - wt, m_CellSize, wt, 0.0, SDL_FLIP_NONE     }, // bottom
-			{ {-1, 0}, -(half - halfWt), half - halfWt, m_CellSize, wt, 90.0, SDL_FLIP_NONE }, // left
-			{ { 1, 0}, m_CellSize - wt - (half - halfWt), half - halfWt, m_CellSize, wt, 90.0, SDL_FLIP_VERTICAL }, // right
-		};
-
-		for (int y = 0; y < m_Height; ++y)
-		{
-			for (int x = 0; x < m_Width; ++x)
-			{
-				const glm::ivec2 cell{ x, y };
-				if (GetCellDepth(cell) != 0) continue;
-
-				const auto worldPos = CellToWorldCenter(cell) - glm::vec2(m_CellSize * 0.5f, m_CellSize * 0.5f);
-
-				for (const auto& def : defs)
+				// Dirt pass
+				if (depth != 0)
 				{
-					const glm::ivec2 neighbor = cell + def.dir;
-					if (!IsValidCell(neighbor) || GetCellDepth(neighbor) == 0) continue;
+					const auto textureIndex = std::min<std::size_t>(m_DirtTextures.size() - 1, static_cast<std::size_t>(depth - 1));
+					const auto& texture = m_DirtTextures[textureIndex];
+					if (!texture) continue;
 
-					Renderer::GetInstance().RenderTexture(*m_WallTexture,worldPos.x + def.dx, worldPos.y + def.dy,
-						def.w, def.h, (float)def.angle, def.flip);
+					renderer.RenderTexture(*texture, worldPos.x, worldPos.y, m_CellSize, m_CellSize);
+				}
+
+				// Wall pass
+				else if (m_WallTexture)
+				{
+					const auto idx = IndexOf(cell);
+					if (idx < 0) continue;
+
+					const uint8_t walls = m_CellWalls[static_cast<size_t>(idx)];
+					if (walls == 0) continue;
+
+					for (int i = 0; i < 4; ++i)
+					{
+						if (walls & wallFlagBits[i])
+						{
+							const auto& d = defs[i];
+							renderer.RenderTexture(
+								*m_WallTexture,
+								worldPos.x + d.dx,
+								worldPos.y + d.dy,
+								d.w,
+								d.h,
+								d.angle,
+								d.flip);
+						}
+					}
 				}
 			}
 		}
@@ -260,11 +275,17 @@ namespace dae
 		}
 
 		m_Cells.assign(static_cast<size_t>(m_Width * m_Height), 0);
+		m_CellWalls.assign(static_cast<size_t>(m_Width * m_Height),	
+			static_cast<uint8_t>(WallFlags::Top | WallFlags::Right | WallFlags::Bottom | WallFlags::Left));
 		for (int y = 0; y < m_Height; ++y)
 		{
 			//we need a lil air to begin with, as a treat
 			if (y <= 1)
 			{
+				for (int x = 0; x < m_Width; ++x)
+				{
+					m_CellWalls[static_cast<size_t>(y * m_Width + x)] = 0;
+				}
 				continue;
 			}
 
@@ -273,6 +294,7 @@ namespace dae
 			{
 				m_Cells[static_cast<size_t>(y * m_Width + x)] = depthBand;
 			}
+
 		}
 	}
 
@@ -288,5 +310,98 @@ namespace dae
 		m_DirtTextures.emplace_back(ResourceManager::GetInstance().LoadTexture("dirt/Layer3.png"));
 		m_DirtTextures.emplace_back(ResourceManager::GetInstance().LoadTexture("dirt/Layer4.png"));
 		m_WallTexture = ResourceManager::GetInstance().LoadTexture("dirt/DirtEdge.png");
+	}
+
+	WallFlags TerrainGridComponent::GetWallBetween(const glm::ivec2& from, const glm::ivec2& to) const
+	{
+		const auto delta = to - from;
+
+		if (delta == glm::ivec2{ 0,-1 })
+		{
+			return WallFlags::Top;
+		}
+
+		if (delta == glm::ivec2{ 1,0 })
+		{
+			return WallFlags::Right;
+		}
+
+		if (delta == glm::ivec2{ 0,1 })
+		{
+			return WallFlags::Bottom;
+		}
+
+		if (delta == glm::ivec2{ -1,0 })
+		{
+			return WallFlags::Left;
+		}
+
+		return WallFlags::None;
+	}
+
+	WallFlags TerrainGridComponent::OppositeWall(WallFlags wall) const
+	{
+		switch (wall)
+		{
+		case WallFlags::Top:
+		{
+			return WallFlags::Bottom;
+		}
+
+		case WallFlags::Bottom:
+		{
+			return WallFlags::Top;
+		}
+
+		case WallFlags::Left:
+		{
+			return WallFlags::Right;
+		}
+
+		case WallFlags::Right:
+		{
+			return WallFlags::Left;
+		}
+
+		default:
+		{
+			return WallFlags::None;
+		}
+		}
+	}
+
+	bool TerrainGridComponent::CarveConnection(const glm::ivec2& from, const glm::ivec2& to)
+	{
+		if (!IsValidCell(from))
+		{
+			return false;
+		}
+
+		if (!IsValidCell(to))
+		{
+			return false;
+		}
+
+		const auto wall = GetWallBetween(from, to);
+
+		if (wall == WallFlags::None)
+		{
+			return false;
+		}
+
+		const auto opposite = OppositeWall(wall);
+
+		auto& fromWalls = m_CellWalls[static_cast<size_t>(IndexOf(from))];
+
+		auto& toWalls = m_CellWalls[static_cast<size_t>(IndexOf(to))];
+
+		fromWalls &= ~static_cast<uint8_t>(wall);
+
+		toWalls &= ~static_cast<uint8_t>(opposite);
+
+		m_Cells[static_cast<size_t>(IndexOf(from))] = 0;
+		m_Cells[static_cast<size_t>(IndexOf(to))] = 0;
+
+		return true;
 	}
 }

@@ -12,9 +12,34 @@
 
 namespace dae
 {
+	enum class WallFlags : uint8_t
+	{
+		None = 0,
+		Top = 1 << 0,
+		Right = 1 << 1,
+		Bottom = 1 << 2,
+		Left = 1 << 3,
+	};
+
+	constexpr WallFlags operator|(WallFlags lhs, WallFlags rhs)
+	{
+		return static_cast<WallFlags>(static_cast<uint8_t>(lhs) | static_cast<uint8_t>(rhs));
+	}
+
+	constexpr WallFlags operator&(WallFlags lhs, WallFlags rhs)
+	{
+		return static_cast<WallFlags>(static_cast<uint8_t>(lhs) & static_cast<uint8_t>(rhs));
+	}
+
+	constexpr WallFlags operator~(WallFlags value)
+	{
+		return static_cast<WallFlags>(~static_cast<uint8_t>(value));
+	}
+
 	class TerrainGridComponent final : public RenderComponent
 	{
 	public:
+
 		TerrainGridComponent(GameObject* Parent);
 
 		void Render() const override;
@@ -45,6 +70,7 @@ namespace dae
 		uint8_t GetCellDepth(const glm::ivec2& cell) const;
 		void SetCellDepth(const glm::ivec2& cell, uint8_t depth);
 		uint8_t GetMaxDepth() const noexcept { return m_DefaultDepth; }
+		bool CarveConnection(const glm::ivec2& from, const glm::ivec2& to);
 
 	private:
 		int IndexOf(const glm::ivec2& cell) const;
@@ -59,8 +85,12 @@ namespace dae
 		float m_CellSize{ 16.0f };
 		uint8_t m_DefaultDepth{ 4 };
 		std::vector<uint8_t> m_Cells{};
+		std::vector<uint8_t> m_CellWalls;
 		std::vector<std::shared_ptr<Texture2D>> m_DirtTextures{};
 		std::shared_ptr<Texture2D> m_WallTexture;
+
+		WallFlags GetWallBetween(const glm::ivec2& from, const glm::ivec2& to) const;
+		WallFlags OppositeWall(WallFlags wall) const;
 	};
 }
 

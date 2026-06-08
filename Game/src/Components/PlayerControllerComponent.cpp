@@ -58,6 +58,20 @@ void dae::PlayerControllerComponent::Update()
 	}
 
 	auto* terrain = GetTerrainGrid();
+
+	if (terrain != nullptr)
+	{
+		const auto currentCell = terrain->WorldToCell(GetPlayer()->GetWorldPosition());
+
+		if (m_HasPreviousCell && currentCell != m_PreviousCell)
+		{
+			terrain->CarveConnection(m_PreviousCell, currentCell);
+		}
+
+		m_PreviousCell = currentCell;
+		m_HasPreviousCell = true;
+	}
+
 	if (!m_PlayerAttacking && !m_PlayerDigging && terrain != nullptr && terrain->HasSolidAtWorldPosition(GetPlayer()->GetWorldPosition()))
 	{
 		OnPlayerDig();
