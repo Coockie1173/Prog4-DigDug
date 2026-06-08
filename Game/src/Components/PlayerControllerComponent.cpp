@@ -145,7 +145,7 @@ void dae::PlayerControllerComponent::OnPlayerMove()
 
 void dae::PlayerControllerComponent::OnPlayerAttack()
 {
-	if (auto r = dynamic_cast<PlayerStart*>(m_pCurrentState))
+	if (dynamic_cast<PlayerStart*>(m_pCurrentState))
 	{
 		//don't do anything in the start state
 		return;
