@@ -12,6 +12,8 @@
 
 #include <cmath>
 #include <algorithm>
+#include <string_view>
+#include <ranges>
 
 #include <Components/PlayerStates/PlayerState.h>
 #include <Components/PlayerStates/PlayerIdle.h>
@@ -23,33 +25,42 @@
 
 namespace
 {
-	 const bool PlayerControllerComponentRegistered = dae::RegisterComponentFactoryFor<dae::PlayerControllerComponent>(make_sdbm_hash("PlayerControllerComponent"));
+	const bool PlayerControllerComponentRegistered = dae::RegisterComponentFactoryFor<dae::PlayerControllerComponent>(make_sdbm_hash("PlayerControllerComponent"));
+
+	constexpr float ATTACK_COOLDOWN = 0.25f;
+
+	// Splits a string by a delimiter and returns a vector of string_view parts.
+	// The returned views are valid as long as the source string lives.
+	std::vector<std::string_view> SplitStringView(std::string_view source, char delimiter)
+	{
+		std::vector<std::string_view> parts;
+		for (const auto& part : source | std::views::split(delimiter))
+		{
+			parts.emplace_back(part.begin(), part.end());
+		}
+		return parts;
+	}
 }
 
 dae::PlayerControllerComponent::PlayerControllerComponent(dae::GameObject* Parent)
 	: Component(Parent), m_pStatePool(std::make_unique<StatePool<PlayerState>>())
-{
-}
+{}
 
 dae::PlayerControllerComponent::~PlayerControllerComponent() = default;
 
 void dae::PlayerControllerComponent::Update()
 {
-	if (m_AttackCooldownRemaining > 0.0f)
-	{
-		m_AttackCooldownRemaining = std::max(0.0f, m_AttackCooldownRemaining - Timing::GetInstance().GetDeltaTime());
-	}
-	if (m_DigCooldownRemaining > 0.0f)
-	{
-		m_DigCooldownRemaining = std::max(0.0f, m_DigCooldownRemaining - Timing::GetInstance().GetDeltaTime());
-	}
+	const float dt = Timing::GetInstance().GetDeltaTime();
+
+	m_AttackCooldownRemaining = std::max(0.0f, m_AttackCooldownRemaining - dt);
+	m_DigCooldownRemaining = std::max(0.0f, m_DigCooldownRemaining - dt);
 
 	m_MoveIntent = ResolveCardinalMoveIntent();
 	UpdateFacingFromMoveIntent(m_MoveIntent);
 
 	if (m_pCurrentState)
 	{
-		if (auto nextState = m_pCurrentState->Update(*this))
+		if (auto* nextState = m_pCurrentState->Update(*this))
 		{
 			m_pCurrentState->Exit(*this);
 			nextState->Enter(*this);
@@ -78,8 +89,7 @@ void dae::PlayerControllerComponent::Update()
 }
 
 void dae::PlayerControllerComponent::LateUpdate()
-{
-}
+{}
 
 void dae::PlayerControllerComponent::Init()
 {
@@ -94,21 +104,7 @@ void dae::PlayerControllerComponent::Init()
 	m_pRenderComponent->SetPriority(true);
 
 	//now generate all input actions
-	std::vector<std::string> parts;
-
-	std::size_t startIndex = 0;
-	while (startIndex <= m_inputScheme.size())
-	{
-		const auto separatorIndex = m_inputScheme.find('|', startIndex);
-		if (separatorIndex == std::string::npos)
-		{
-			parts.emplace_back(m_inputScheme.substr(startIndex));
-			break;
-		}
-
-		parts.emplace_back(m_inputScheme.substr(startIndex, separatorIndex - startIndex));
-		startIndex = separatorIndex + 1;
-	}
+	const auto parts = SplitStringView(m_inputScheme, '|');
 	if (parts.size() != 2)
 	{
 		//turns out using the debugger DURING INIT fucks up the entire flow of the program, who could've thunk it??
@@ -117,25 +113,26 @@ void dae::PlayerControllerComponent::Init()
 	}
 	//Debugger::GetInstance().LogDebug("PlayerControllerComponent input scheme set to: up='" + parts[0] + "', down='" + parts[1] + "', left='" + parts[2] + "', right='" + parts[3] + "'");
 
-	std::shared_ptr<dae::AxisCommand> m_MoveVerticalCommand{};
-	std::shared_ptr<dae::AxisCommand> m_MoveHorizontalCommand{};
-	std::shared_ptr<dae::Command> m_AttackStartCommand{};
-	std::shared_ptr<dae::Command> m_AttackEndCommand{};
+	auto bindAxis = [&](std::string_view actionName, glm::vec2 axis)
+		{
+			auto cmd = std::make_shared<dae::MoveIntentCommand>(this, axis);
+			dae::InputManager::GetInstance().BindAxisActionToCommand(std::string(actionName), cmd);
+			m_Commands.push_back(std::move(cmd));
+		};
 
-	m_MoveVerticalCommand = std::make_shared<dae::MoveIntentCommand>(this, glm::vec2(-1, 0));
-	dae::InputManager::GetInstance().BindAxisActionToCommand(parts[0], m_MoveVerticalCommand);
-	m_Commands.push_back(std::move(m_MoveVerticalCommand));
+	auto bindAction = [&](bool pressed)
+		{
+			auto cmd = std::make_shared<dae::AttackCommand>(this, pressed);
+			const auto inputType = pressed ? dae::InputManager::InputType::Pressed
+				: dae::InputManager::InputType::Released;
+			dae::InputManager::GetInstance().BindActionToCommand(m_attackActionName, cmd, inputType);
+			m_Commands.push_back(std::move(cmd));
+		};
 
-	m_MoveHorizontalCommand = std::make_shared<dae::MoveIntentCommand>(this, glm::vec2(0, -1));
-	dae::InputManager::GetInstance().BindAxisActionToCommand(parts[1], m_MoveHorizontalCommand);
-	m_Commands.push_back(std::move(m_MoveHorizontalCommand));
-
-	m_AttackStartCommand = std::make_shared<dae::AttackCommand>(this, true);
-	m_AttackEndCommand = std::make_shared<dae::AttackCommand>(this, false);
-	dae::InputManager::GetInstance().BindActionToCommand(m_attackActionName, m_AttackStartCommand, dae::InputManager::InputType::Pressed);
-	dae::InputManager::GetInstance().BindActionToCommand(m_attackActionName, m_AttackEndCommand, dae::InputManager::InputType::Released);
-	m_Commands.push_back(std::move(m_AttackStartCommand));
-	m_Commands.push_back(std::move(m_AttackEndCommand));
+	bindAxis(parts[0], { -1.f,  0.f });
+	bindAxis(parts[1], { 0.f, -1.f });
+	bindAction(true);
+	bindAction(false);
 
 	m_pCurrentState = m_pStatePool->Get<PlayerStart>();
 	m_pCurrentState->Enter(*this);
@@ -161,7 +158,7 @@ void dae::PlayerControllerComponent::OnPlayerMove()
 
 void dae::PlayerControllerComponent::OnPlayerAttack()
 {
-	if (dynamic_cast<PlayerStart*>(m_pCurrentState))
+	if (m_pStatePool->Get<PlayerStart>() == m_pCurrentState)
 	{
 		//don't do anything in the start state
 		return;
@@ -191,7 +188,7 @@ void dae::PlayerControllerComponent::OnPlayerAttack()
 void dae::PlayerControllerComponent::OnPlayerEndAttack()
 {
 	m_PlayerAttacking = false;
-	m_AttackCooldownRemaining = 0.25f;
+	m_AttackCooldownRemaining = ATTACK_COOLDOWN;
 }
 
 void dae::PlayerControllerComponent::OnPlayerEndDig()
@@ -201,7 +198,7 @@ void dae::PlayerControllerComponent::OnPlayerEndDig()
 
 void dae::PlayerControllerComponent::OnPlayerDig()
 {
-	if (dynamic_cast<PlayerStart*>(m_pCurrentState))
+	if (m_pStatePool->Get<PlayerStart>() == m_pCurrentState)
 	{
 		//don't do anything in the start state
 		return;
@@ -233,19 +230,23 @@ void dae::PlayerControllerComponent::OnPlayerDig()
 
 dae::TerrainGridComponent* dae::PlayerControllerComponent::GetTerrainGrid() const
 {
+	if (m_pCachedTerrainGrid != nullptr)
+		return m_pCachedTerrainGrid;
+
 	auto* player = GetPlayer();
-	if (player == nullptr || player->GetScene() == nullptr)
-	{
+	if (player == nullptr)
 		return nullptr;
-	}
 
-	auto* terrainObject = player->GetScene()->FindGameObject("Terrain");
+	auto* scene = player->GetScene();
+	if (scene == nullptr)
+		return nullptr;
+
+	auto* terrainObject = scene->FindGameObject("Terrain");
 	if (terrainObject == nullptr)
-	{
 		return nullptr;
-	}
 
-	return terrainObject->GetComponent<dae::TerrainGridComponent>();
+	m_pCachedTerrainGrid = terrainObject->GetComponent<dae::TerrainGridComponent>();
+	return m_pCachedTerrainGrid;
 }
 
 glm::vec2 dae::PlayerControllerComponent::GetFacingVector() const
@@ -278,17 +279,11 @@ glm::vec2 dae::PlayerControllerComponent::ResolveCardinalMoveIntent() const
 		return {};
 	}
 
-	if (m_MoveIntent.x != 0.0f && m_MoveIntent.y != 0.0f)
-	{
-		if (std::abs(m_LastMoveIntent.x) >= std::abs(m_LastMoveIntent.y))
-		{
-			return { m_MoveIntent.x > 0.0f ? 1.0f : -1.0f, 0.0f };
-		}
+	// When both axes are active, pick the axis of the most recent input.
+	// Tie-break in favour of X.
+	const bool preferX = m_MoveIntent.x != 0.0f && (m_MoveIntent.y == 0.0f || std::abs(m_LastMoveIntent.x) >= std::abs(m_LastMoveIntent.y));
 
-		return { 0.0f, m_MoveIntent.y > 0.0f ? 1.0f : -1.0f };
-	}
-
-	if (m_MoveIntent.x != 0.0f)
+	if (preferX)
 	{
 		return { m_MoveIntent.x > 0.0f ? 1.0f : -1.0f, 0.0f };
 	}
@@ -323,19 +318,5 @@ void dae::PlayerControllerComponent::ApplyFacingToRenderComponent() const
 		return;
 	}
 
-	switch (m_FacingDirection)
-	{
-	case FacingDirection::Right:
-		m_pRenderComponent->SetFacingDirection({ 1.0f, 0.0f });
-		break;
-	case FacingDirection::Left:
-		m_pRenderComponent->SetFacingDirection({ -1.0f, 0.0f });
-		break;
-	case FacingDirection::Up:
-		m_pRenderComponent->SetFacingDirection({ 0.0f, -1.0f });
-		break;
-	case FacingDirection::Down:
-		m_pRenderComponent->SetFacingDirection({ 0.0f, 1.0f });
-		break;
-	}
+	m_pRenderComponent->SetFacingDirection(GetFacingVector());
 }

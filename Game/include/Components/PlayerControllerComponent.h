@@ -78,6 +78,8 @@ namespace dae
 		void ApplyFacingToRenderComponent() const;
 		glm::ivec2 m_PreviousCell{};
 		bool m_HasPreviousCell{ false };
+
+		mutable TerrainGridComponent* m_pCachedTerrainGrid{ nullptr };
 	};
 }
 
