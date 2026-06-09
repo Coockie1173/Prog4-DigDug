@@ -11,7 +11,7 @@ namespace dae
     class PlayerAttack : public PlayerState
     {
     public:
-		PlayerAttack(PlayerStatePool* pStatePool) : PlayerState(pStatePool) {}
+		PlayerAttack(StatePool<PlayerState>* pStatePool) : PlayerState(pStatePool) {}
         void Enter(PlayerControllerComponent& Player) override;
         PlayerState* Update(PlayerControllerComponent& Player) override;
         void Exit(PlayerControllerComponent& Player) override;

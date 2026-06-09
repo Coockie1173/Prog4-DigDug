@@ -27,7 +27,7 @@ namespace
 }
 
 dae::PlayerControllerComponent::PlayerControllerComponent(dae::GameObject* Parent)
-	: Component(Parent), m_pStatePool(std::make_unique<PlayerStatePool>())
+	: Component(Parent), m_pStatePool(std::make_unique<StatePool<PlayerState>>())
 {
 }
 

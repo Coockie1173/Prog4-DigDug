@@ -14,7 +14,7 @@ namespace dae
 	class PlayerDig final : public PlayerState
 	{
 	public:
-		PlayerDig(PlayerStatePool* pStatePool) : PlayerState(pStatePool) {}
+		PlayerDig(StatePool<PlayerState>* pStatePool) : PlayerState(pStatePool) {}
 		void Enter(PlayerControllerComponent& Player) override;
 		PlayerState* Update(PlayerControllerComponent& Player) override;
 		void Exit(PlayerControllerComponent& Player) override;

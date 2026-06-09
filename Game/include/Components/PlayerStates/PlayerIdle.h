@@ -10,7 +10,7 @@ namespace dae
 	class PlayerIdle final : public PlayerState
 	{
 	public:
-		PlayerIdle(PlayerStatePool* pStatePool) : PlayerState(pStatePool) {}
+		PlayerIdle(StatePool<PlayerState>* pStatePool) : PlayerState(pStatePool) {}
 		void Enter(PlayerControllerComponent& Player) override;
 		PlayerState* Update(PlayerControllerComponent& Player) override;
 		void Exit(PlayerControllerComponent& Player) override;

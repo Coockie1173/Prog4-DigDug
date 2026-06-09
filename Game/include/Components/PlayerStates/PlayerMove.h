@@ -11,7 +11,7 @@ namespace dae
 	class PlayerMove final : public PlayerState
 	{
 	public:
-		PlayerMove(PlayerStatePool* pStatePool) : PlayerState(pStatePool) {}
+		PlayerMove(StatePool<PlayerState>* pStatePool) : PlayerState(pStatePool) {}
 		void Enter(PlayerControllerComponent& Player) override;
 		PlayerState* Update(PlayerControllerComponent& Player) override;
 		void Exit(PlayerControllerComponent& Player) override;

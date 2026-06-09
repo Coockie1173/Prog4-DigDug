@@ -7,13 +7,13 @@
 #include <vector>
 #include <Texture2D.h>
 #include <glm/glm.hpp>
+#include <StateHelper.h>
 
 namespace dae
 {
 	class SwappableRenderComponent;
 	class ObjectMoveComponent;
 	class TerrainGridComponent;
-	class PlayerStatePool;
 	class PlayerState;
 	class MoveIntentCommand;
 
@@ -70,7 +70,7 @@ namespace dae
 		float m_DigCooldownRemaining{ 0.0f };
 		FacingDirection m_FacingDirection{ FacingDirection::Right };
 
-		std::unique_ptr<PlayerStatePool> m_pStatePool{};
+		std::unique_ptr<StatePool<PlayerState>> m_pStatePool{nullptr};
 		PlayerState* m_pCurrentState{ nullptr };
 
 		glm::vec2 ResolveCardinalMoveIntent() const;

@@ -13,7 +13,7 @@ namespace dae
 	class PlayerStart final : public PlayerState
 	{
 	public:
-		PlayerStart(PlayerStatePool* pStatePool) : PlayerState(pStatePool) {}
+		PlayerStart(StatePool<PlayerState>* pStatePool) : PlayerState(pStatePool) {}
 		void Enter(PlayerControllerComponent& Player) override;
 		PlayerState* Update(PlayerControllerComponent& Player) override;
 		void Exit(PlayerControllerComponent& Player) override;
