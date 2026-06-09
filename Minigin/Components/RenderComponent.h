@@ -18,10 +18,14 @@ namespace dae
 		RenderComponent& operator=(const RenderComponent&) = delete;
 		RenderComponent(RenderComponent&&) noexcept = delete;
 		RenderComponent& operator=(RenderComponent&&) noexcept = delete;
+
+		bool GetPriority() { return HighPriority; }
+		void SetPriority(bool v) { HighPriority = v; }
 	protected:
 		RenderComponent(dae::GameObject* Parent);
 		void RenderAssignedTexture() const;
 		std::shared_ptr<Texture2D> m_pTexture{nullptr};
+		bool HighPriority{false};
 	private:
 	};
 };

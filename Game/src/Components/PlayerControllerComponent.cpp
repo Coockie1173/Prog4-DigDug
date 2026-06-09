@@ -63,18 +63,13 @@ void dae::PlayerControllerComponent::Update()
 	{
 		const auto currentCell = terrain->WorldToCell(GetPlayer()->GetWorldPosition());
 
-		if (m_HasPreviousCell && currentCell != m_PreviousCell)
+		if (m_HasPreviousCell && currentCell != m_PreviousCell && !m_PlayerDigging)
 		{
 			terrain->CarveConnection(m_PreviousCell, currentCell);
 		}
 
 		m_PreviousCell = currentCell;
 		m_HasPreviousCell = true;
-	}
-
-	if (!m_PlayerAttacking && !m_PlayerDigging && terrain != nullptr && terrain->HasSolidAtWorldPosition(GetPlayer()->GetWorldPosition()))
-	{
-		OnPlayerDig();
 	}
 
 	ApplyFacingToRenderComponent();
@@ -90,6 +85,13 @@ void dae::PlayerControllerComponent::Init()
 {
 	m_pRenderComponent = GetParent()->GetComponent<SwappableRenderComponent>();
 	m_pMoveComponent = GetParent()->GetComponent<ObjectMoveComponent>();
+
+	if (m_pRenderComponent == nullptr || m_pMoveComponent == nullptr)
+	{
+		return;
+	}
+
+	m_pRenderComponent->SetPriority(true);
 
 	//now generate all input actions
 	std::vector<std::string> parts;

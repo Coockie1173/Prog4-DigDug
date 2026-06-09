@@ -4,6 +4,7 @@
 #include <Components/PlayerControllerComponent.h>
 #include <GameObject.h>
 #include <Components/PlayerStates/PlayerIdle.h>
+#include <Components/PlayerStates/PlayerDig.h>
 #include <ResourceManager.h>
 #include <Timing.h>
 #include <Config.h>
@@ -70,12 +71,11 @@ namespace dae
 		if (pTerrain != nullptr)
 		{
 			const auto cell = pTerrain->WorldToCell(pos);
+			const glm::vec2 cellCenter = pTerrain->CellToWorldCenter(cell);
 
 			if (moveDirection.x != 0.0f)
 			{
-				const float snapY = pTerrain->CellToWorldCenter(cell).y;
-				const float diff = snapY - pos.y;
-
+				const float diff = cellCenter.y - pos.y;
 				if (std::abs(diff) <= SNAP_THRESHOLD)
 				{
 					pPlayerObj->SetLocalPosition({ pos.x, pos.y + diff });
@@ -87,9 +87,7 @@ namespace dae
 			}
 			else if (moveDirection.y != 0.0f)
 			{
-				const float snapX = pTerrain->CellToWorldCenter(cell).x;
-				const float diff = snapX - pos.x;
-
+				const float diff = cellCenter.x - pos.x;
 				if (std::abs(diff) <= SNAP_THRESHOLD)
 				{
 					pPlayerObj->SetLocalPosition({ pos.x + diff, pos.y });
@@ -97,6 +95,22 @@ namespace dae
 				else
 				{
 					pPlayerObj->SetLocalPosition({ pos.x + diff * SNAP_SPEED_FACTOR * Timing::GetInstance().GetDeltaTime(), pos.y });
+				}
+			}
+
+			const glm::vec2 snappedPos = pPlayerObj->GetWorldPosition();
+			const glm::vec2 snappedCellCenter = pTerrain->CellToWorldCenter(pTerrain->WorldToCell(snappedPos));
+			const float perpendicularDiff = (moveDirection.x != 0.0f)
+				? std::abs(snappedCellCenter.y - snappedPos.y)
+				: std::abs(snappedCellCenter.x - snappedPos.x);
+
+			if (perpendicularDiff <= SNAP_THRESHOLD)
+			{
+				const auto currentCell = pTerrain->WorldToCell(snappedPos);
+				const glm::ivec2 nextCell = currentCell + glm::ivec2(glm::round(moveDirection));
+				if (pTerrain->IsValidCell(nextCell) && pTerrain->IsSolidCell(nextCell))
+				{
+					return m_pStatePool->Get<PlayerDig>();
 				}
 			}
 		}

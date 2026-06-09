@@ -108,23 +108,29 @@ void dae::Scene::LateUpdate()
 
 void Scene::Render() const
 {
-	std::vector<int> DebugItems{};
-	int CurrentObjectIndex{-1};
 	for (const auto& object : m_objects)
 	{
-		CurrentObjectIndex++;
-		if (object->IsDebug())
+		if (!object->IsDebug() || !object->GetAttachedRenderer()->GetPriority())
 		{
-			DebugItems.push_back(CurrentObjectIndex);
-			continue;
+			object->Render();
 		}
-		object->Render();
 	}
 
-	//ensure anything debug related gets rendered last
-	for (const auto idx : DebugItems)
+	// Ensure anything debug-related gets rendered last.
+	for (const auto& object : m_objects)
 	{
-		m_objects[idx]->Render();
+		if (object->IsDebug())
+		{
+			object->Render();
+		}
+	}
+
+	for (const auto& object : m_objects)
+	{
+		if (object->GetAttachedRenderer()->GetPriority())
+		{
+			object->Render();
+		}
 	}
 }
 

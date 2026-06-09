@@ -86,14 +86,7 @@ namespace dae
 						if (walls & wallFlagBits[i])
 						{
 							const auto& d = defs[i];
-							renderer.RenderTexture(
-								*m_WallTexture,
-								worldPos.x + d.dx,
-								worldPos.y + d.dy,
-								d.w,
-								d.h,
-								d.angle,
-								d.flip);
+							renderer.RenderTexture(*m_WallTexture, worldPos.x + d.dx, worldPos.y + d.dy, d.w, d.h, d.angle, d.flip);
 						}
 					}
 				}
@@ -280,7 +273,7 @@ namespace dae
 		for (int y = 0; y < m_Height; ++y)
 		{
 			//we need a lil air to begin with, as a treat
-			if (y <= 1)
+			if (y <= 2)
 			{
 				for (int x = 0; x < m_Width; ++x)
 				{

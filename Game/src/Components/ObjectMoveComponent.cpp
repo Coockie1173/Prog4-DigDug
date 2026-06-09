@@ -31,7 +31,7 @@ bool dae::ObjectMoveComponent::Deserialize(const std::map<std::string, std::stri
 	return true;
 }
 
-void dae::ObjectMoveComponent::MoveObject(glm::vec2& direction, float speed)
+void dae::ObjectMoveComponent::MoveObject(const glm::vec2& direction, float speed)
 {
 	if(ComponentDisabled)
 		return;
