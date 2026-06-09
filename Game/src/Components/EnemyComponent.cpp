@@ -2,6 +2,8 @@
 #include <ComponentTypeMap.h>
 #include <Components/EnemyComponent.h>
 #include <ResourceManager.h>
+#include <Components/SwappableRenderComponent.h>
+#include <Components/EnemyStates/EnemyIdle.h>
 
 namespace
 {
@@ -18,6 +20,11 @@ namespace dae
 
     void EnemyComponent::LateUpdate()
     {}
+
+    SwappableRenderComponent* EnemyComponent::GetRenderer()
+    {
+        return m_pRenderComponent;
+    }
 
     //you may be wondering why it's like this here and different for the player, the reason might shock you:
     //I did NOT think of it at the time, if I have enough time I'll refactor it like so, if I didn't have enough time
@@ -36,6 +43,12 @@ namespace dae
         {
             TextureLinks.emplace(file.hash, ResourceManager::GetInstance().LoadTexture(m_SpriteDirs + file.name));
         }
+
+        m_pRenderComponent = dynamic_cast<SwappableRenderComponent*>(GetParent()->GetAttachedRenderer());
+
+        m_pStatePool = std::make_unique<StatePool<EnemyState>>();
+        m_pCurrentState = m_pStatePool->Get<EnemyIdleState>();
+        m_pCurrentState->Enter(*this);
     }
 
     bool EnemyComponent::Deserialize(const std::map<std::string, std::string>& properties, std::string& errorMessage)

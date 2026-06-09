@@ -27,6 +27,8 @@ namespace dae
 			return TextureLinks;
 		}
 
+		SwappableRenderComponent* GetRenderer() override;
+
 		struct NamedFile {
 			const char* name;
 			unsigned int hash;
@@ -58,6 +60,8 @@ namespace dae
 		bool m_CanAttack{};
 
 		std::unordered_map<unsigned int, std::shared_ptr<Texture2D>> TextureLinks;
+		std::unique_ptr<StatePool<EnemyState>> m_pStatePool{ nullptr };
+		EnemyState* m_pCurrentState{ nullptr };
 	};
 }
 
