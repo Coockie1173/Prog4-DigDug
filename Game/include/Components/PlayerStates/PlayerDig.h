@@ -31,7 +31,6 @@ namespace dae
 		ObjectMoveComponent* m_pMoveComponent{ nullptr };
 		TerrainGridComponent* m_pTerrainGrid{ nullptr };
 		std::shared_ptr<Texture2D> m_pDigTexture{ nullptr };
-		float m_DigTimer{ 0.0f };
 	};
 }
 
