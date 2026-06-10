@@ -59,38 +59,70 @@ namespace dae
 		//I know it should be two states but it's a lil silly surely
 		//considering the player doesn't "auto move" besides on the spawn state
 
-		WalkTimer += Timing::GetInstance().GetDeltaTime();
-		if (WalkTimer >= TIMEANIMS)
-		{
-			m_pRenderComponent->SetTexture(m_pRenderComponent->GetTexture() == m_pIdleTexture ? m_pWalkTexture : m_pIdleTexture);
-			WalkTimer = 0.f;
-		}
+        WalkTimer += Timing::GetInstance().GetDeltaTime();
+        if (WalkTimer >= TIMEANIMS)
+        {
+            m_pRenderComponent->SetTexture(
+                m_pRenderComponent->GetTexture() == m_pIdleTexture
+                ? m_pWalkTexture
+                : m_pIdleTexture
+            );
+            WalkTimer = 0.f;
+        }
 
-		if (m_pTerrainGrid != nullptr)
-		{
-			const auto cell = m_pTerrainGrid->WorldToCell(Player.GetPlayer()->GetWorldPosition());
-			if (m_pTerrainGrid->IsSolidCell(cell))
-			{
-				m_pTerrainGrid->CarveCell(cell);
-			}
-		}
-		
-		glm::vec2 tmp{ 0,0 };
-		if (Player.GetParent()->GetWorldPosition().x < SCREENWIDTH / RENDERSCALE / 2 + 8)
-		{
-			tmp = { 1,0 };
-		}
-		else if (Player.GetParent()->GetWorldPosition().y < SCREENHEIGHT / RENDERSCALE / 2)
-		{
-			tmp = { 0,1 };
-		}
-		else
-		{
-			return m_pStatePool->Get<PlayerIdle>();
-		}
-		m_pMoveComponent->MoveObject(tmp, PLAYER_MOVE_SPEED);
+        if (m_pTerrainGrid != nullptr)
+        {
+            const auto cell = m_pTerrainGrid->WorldToCell(
+                Player.GetPlayer()->GetWorldPosition()
+            );
 
-		return nullptr;
+            if (m_pTerrainGrid->IsSolidCell(cell))
+            {
+                m_pTerrainGrid->CarveCell(cell);
+            }
+        }
+
+        auto* parent = Player.GetParent();
+        const glm::vec2 pos = parent->GetWorldPosition();
+
+        const glm::vec2 terrainCenter =
+            m_pTerrainGrid
+            ? m_pTerrainGrid->CellToWorldCenter({
+                m_pTerrainGrid->GetWidth() / 2,
+                m_pTerrainGrid->GetHeight() / 2
+                })
+            : glm::vec2{
+                SCREENWIDTH / RENDERSCALE / 2.0f,
+                SCREENHEIGHT / RENDERSCALE / 2.0f
+        };
+
+        const float speed = PLAYER_MOVE_SPEED;
+
+        glm::vec2 target = terrainCenter;
+
+        glm::vec2 delta = target - pos;
+
+        glm::vec2 moveDir{ 0.f, 0.f };
+
+        const float eps = 0.5f;
+
+        if (std::abs(delta.x) > eps)
+        {
+            moveDir.x = (delta.x > 0.f) ? 1.f : -1.f;
+        }
+        else if (std::abs(delta.y) > eps)
+        {
+            moveDir.y = (delta.y > 0.f) ? 1.f : -1.f;
+        }
+        else
+        {
+            parent->SetLocalPosition(terrainCenter);
+            return m_pStatePool->Get<PlayerIdle>();
+        }
+
+        m_pMoveComponent->MoveObject(moveDir, speed);
+
+        return nullptr;
 	}
 
 	void PlayerStart::Exit(PlayerControllerComponent&)

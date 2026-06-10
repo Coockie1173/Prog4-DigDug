@@ -26,7 +26,7 @@ namespace dae
 		float m_WaddleTimer{ 0 };
 		uint8_t m_WaddleFrame{ 0 };
 		static constexpr float TIMEBETWEENFRAMES{ 0.25f };
-		static constexpr float WADDLESPEED{ 1.f };
+		static constexpr float WADDLESPEED{ 40.f };
 		ObjectMoveComponent* OMC{ nullptr };
 
 		TerrainGridComponent* GetTerrain(IEnemyContext& ctx) const;

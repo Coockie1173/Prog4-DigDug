@@ -248,34 +248,72 @@ namespace dae
 
 	bool TerrainGridComponent::CarveCell(const glm::ivec2& cell)
 	{
-		if (!IsValidCell(cell)) return false;
+		if (!IsValidCell(cell))
+		{
+			return false;
+		}
+
 		const auto index = IndexOf(cell);
-		if (index < 0) return false;
+		if (index < 0)
+		{
+			return false;
+		}
 
 		auto& depth = m_Cells[static_cast<size_t>(index)];
-		if (depth == 0) return false;
+		if (depth == 0)
+		{
+			return false;
+		}
 
 		depth = 0;
-		m_CellWalls[static_cast<size_t>(index)] = 0;
 
-		const glm::ivec2 dirs[4] = { {0,-1},{0,1},{-1,0},{1,0} };
-		const WallFlags  flags[4] = { WallFlags::Top, WallFlags::Bottom, WallFlags::Left, WallFlags::Right };
-		const WallFlags  opp[4] = { WallFlags::Bottom, WallFlags::Top, WallFlags::Right, WallFlags::Left };
+		m_CellWalls[static_cast<size_t>(index)] =
+			static_cast<uint8_t>(
+				WallFlags::Top |
+				WallFlags::Bottom |
+				WallFlags::Left |
+				WallFlags::Right);
+
+		const glm::ivec2 dirs[4] =
+		{
+			{ 0, -1 }, 
+			{ 0,  1 }, 
+			{ -1, 0 }, 
+			{ 1,  0 }  
+		};
+
+		const WallFlags flags[4] =
+		{
+			WallFlags::Top,
+			WallFlags::Bottom,
+			WallFlags::Left,
+			WallFlags::Right
+		};
+
+		const WallFlags opposite[4] =
+		{
+			WallFlags::Bottom,
+			WallFlags::Top,
+			WallFlags::Right,
+			WallFlags::Left
+		};
 
 		for (int i = 0; i < 4; ++i)
 		{
-			const auto neighbour = cell + dirs[i];
-			if (!IsValidCell(neighbour)) continue;
+			const glm::ivec2 neighbour = cell + dirs[i];
+
+			if (!IsValidCell(neighbour))
+			{
+				continue;
+			}
+
 			const auto nIdx = static_cast<size_t>(IndexOf(neighbour));
 
 			if (m_Cells[nIdx] == 0)
 			{
-				m_CellWalls[nIdx] &= ~static_cast<uint8_t>(opp[i]);
 				m_CellWalls[static_cast<size_t>(index)] &= ~static_cast<uint8_t>(flags[i]);
-			}
-			else
-			{
-				m_CellWalls[nIdx] |= static_cast<uint8_t>(opp[i]);
+
+				m_CellWalls[nIdx] &= ~static_cast<uint8_t>(opposite[i]);
 			}
 		}
 

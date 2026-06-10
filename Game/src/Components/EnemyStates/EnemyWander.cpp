@@ -28,44 +28,45 @@ namespace dae
 	{
 		const float dt = Timing::GetInstance().GetDeltaTime();
 
-       m_WaddleTimer += dt;
-        if (m_WaddleTimer > TIMEBETWEENFRAMES)
-        {
-            m_WaddleTimer = 0;
-            m_WaddleFrame ^= 1;
-            ctx.GetRenderer()->SetTexture(ctx.GetTextureMap()[EnemyComponent::WalkFiles[m_WaddleFrame].hash]);
-        }
+		m_WaddleTimer += dt;
+		if (m_WaddleTimer > TIMEBETWEENFRAMES)
+		{
+			m_WaddleTimer = 0.f;
+			m_WaddleFrame ^= 1;
+			ctx.GetRenderer()->SetTexture(
+				ctx.GetTextureMap()[EnemyComponent::WalkFiles[m_WaddleFrame].hash]
+			);
+		}
 
 		auto* terrain = GetTerrain(ctx);
 		if (!terrain) return nullptr;
 
-		const glm::vec2 worldPos = ctx.GetMe()->GetParent()->GetWorldPosition();
+		auto* parent = ctx.GetMe()->GetParent();
+
+		const glm::vec2 worldPos = parent->GetWorldPosition();
 		const glm::vec2 targetWorld = terrain->CellToWorldCenter(m_TargetCell);
+
 		const glm::vec2 toTarget = targetWorld - worldPos;
 		const float distSq = glm::dot(toTarget, toTarget);
+
 		const float stepDist = WADDLESPEED * dt;
 
 		if (distSq <= stepDist * stepDist)
 		{
-			//snap to grid
-			ctx.GetMe()->GetParent()->SetLocalPosition(targetWorld);
+			parent->SetLocalPosition(targetWorld);
 
-			const glm::ivec2 arrivedCell = m_TargetCell;
 			const glm::ivec2 cameFrom = m_CurrentCell;
-			m_CurrentCell = arrivedCell;
 
-			m_TargetCell = PickNextCell(arrivedCell, cameFrom, terrain);
-
-			const glm::vec2 newTarget = terrain->CellToWorldCenter(m_TargetCell);
-			const glm::vec2 delta = newTarget - targetWorld;
-			if (glm::dot(delta, delta) > 0.f)
-			{
-				m_Direction = glm::normalize(delta);
-			}
-
-			OMC->MoveObject(m_Direction, WADDLESPEED);
+			m_CurrentCell = m_TargetCell;
+			m_TargetCell = PickNextCell(m_CurrentCell, cameFrom, terrain);
 
 			return nullptr;
+		}
+
+		if (distSq > 0.0001f)
+		{
+			m_Direction = glm::normalize(toTarget);
+			OMC->MoveObject(m_Direction, WADDLESPEED);
 		}
 
 		return nullptr;
