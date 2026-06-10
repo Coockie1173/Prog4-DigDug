@@ -1,13 +1,14 @@
 #include <ComponentFactoryRegistry.h>
-#include <ComponentTypeMap.h>
 #include <Components/EnemyComponent.h>
-#include <ResourceManager.h>
-#include <Components/SwappableRenderComponent.h>
 #include <Components/EnemyStates/EnemyIdle.h>
-#include <Components/EnemyStates/EnemyWander.h>
 #include <Components/EnemyStates/EnemyPumped.h>
-#include <Components/PlayerControllerComponent.h>
+#include <Components/EnemyStates/EnemyWander.h>
 #include <Components/ObjectMoveComponent.h>
+#include <Components/PlayerControllerComponent.h>
+#include <Components/SwappableRenderComponent.h>
+#include <ComponentTypeMap.h>
+#include <GameObject.h>
+#include <ResourceManager.h>
 
 namespace
 {
@@ -21,7 +22,12 @@ namespace dae
 
     void EnemyComponent::Update()
     {
-        m_pCurrentState->Update(*this);
+        if (auto* nextState = m_pCurrentState->Update(*this))
+        {
+            m_pCurrentState->Exit(*this);
+            nextState->Enter(*this);
+            m_pCurrentState = nextState;
+        }
     }
 
     void EnemyComponent::LateUpdate()
@@ -102,5 +108,19 @@ namespace dae
         pumped->SetPumper(pumper);
         pumped->Enter(*this);
         m_pCurrentState = pumped;
+    }
+
+    void EnemyComponent::OnAirBlownIntoEnemy()
+    {
+        if (m_pCurrentState == m_pStatePool->Get<EnemyPumpedState>())
+        {
+            auto p = dynamic_cast<EnemyPumpedState*>(m_pCurrentState);
+            p->OnAirPumped();
+        }
+    }
+
+    void EnemyComponent::KillMe()
+    { 
+        this->GetParent()->MarkForDeletion(); 
     }
 }

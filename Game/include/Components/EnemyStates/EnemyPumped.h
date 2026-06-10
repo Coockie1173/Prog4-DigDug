@@ -5,6 +5,7 @@
 namespace dae
 {
 	class PlayerControllerComponent;
+	class SwappableRenderComponent;
 	class EnemyPumpedState final : public EnemyState
 	{
 	public:
@@ -15,9 +16,14 @@ namespace dae
 		void Exit(IEnemyContext& ctx) override;
 
 		void SetPumper(PlayerControllerComponent* pumper) { m_pPumper = pumper; };
+		void OnAirPumped();
 
 	private:
 		PlayerControllerComponent* m_pPumper{nullptr};
+		uint8_t m_PumpCount{0};
+		static constexpr float TIMETODEFLATE{ .5f };
+		float m_DeflateTimer{ 0 };
+		SwappableRenderComponent* m_pSRC{nullptr};
 	};
 };
 

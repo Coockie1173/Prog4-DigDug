@@ -179,7 +179,8 @@ void dae::PlayerControllerComponent::OnPlayerAttack()
 	}
 	if (m_pStatePool->Get<PlayerPumping>() == m_pCurrentState)
 	{
-		//don't do anything in the start state
+		auto* p = dynamic_cast<PlayerPumping*>(m_pCurrentState);
+		p->Pump();
 		return;
 	}
 
@@ -364,4 +365,13 @@ void dae::PlayerControllerComponent::OnPlayerHitEnemy(EnemyComponent* enemy)
 	m_pCurrentState->Exit(*this);
 	pumpingState->Enter(*this);
 	m_pCurrentState = pumpingState;
+}
+
+void dae::PlayerControllerComponent::AlertPumperDone()
+{
+	auto* IdleState = m_pStatePool->Get<PlayerIdle>();
+
+	m_pCurrentState->Exit(*this);
+	IdleState->Enter(*this);
+	m_pCurrentState = IdleState;
 }

@@ -11,7 +11,7 @@ namespace dae
 {
 	//for sending over data between the Enemy and the state
 	//why not do it like the playercontext? I wanted to check if this was better or not!
-	//conclusion? this is cleaner!
+	//conclusion? this is cleaner! Albeit with the caveat when I need the EnemyComponent and not the ctx it's a bit stupid
 	class SwappableRenderComponent;
 	class ObjectMoveComponent;
 	class EnemyComponent;
@@ -21,6 +21,7 @@ namespace dae
 		virtual SwappableRenderComponent* GetRenderer() = 0;
 		virtual ObjectMoveComponent* GetOMC() = 0;
 		virtual EnemyComponent* GetMe() = 0;
+		virtual void KillMe() = 0;
 	};
 
 	class EnemyState

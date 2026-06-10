@@ -1,11 +1,16 @@
 # TODO
-[] take out all unnecessary shared pointers
-[x] remove using namespace dae's from headers
-[x] add clean runtime warning/error logging to the screen
-	[x] add a debug handler that shows warnings/errors in the top left
-	[x] add a way to remove all debug logs
-[x] implement init for objects
-[x] add framecounter
-	[] tweak framerate counter thing so it runs at stable 144 rather than weirdly fluctuating
-[] figure out what is causing VLD to see a million leaks
-[] Fix emscriptem
+[] Make Fygar blow fire
+[] Make player die on touch
+[] Make the pump not travel through walls unless it's a thin one
+[x] Allow enemies to die via pumping
+[] Give score on kill (based on layer)
+[] Main menu
+[] High Score scene
+[] F2 mute button
+[] F1 skip level button
+[] Add sounds
+[] Add coop functionality
+[] Add vs functionality
+[] Implement lives
+[] Add round flow
+[] Implement rocks

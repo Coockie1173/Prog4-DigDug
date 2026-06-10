@@ -18,11 +18,14 @@ namespace dae
 		void Exit(PlayerControllerComponent& Player) override;
 
 		void SetTarget(EnemyComponent* Enemy) { m_pTarget = Enemy; };
+		void Pump();
 	private:
 		SwappableRenderComponent* m_pRenderComponent{ nullptr };
 		std::shared_ptr<Texture2D> m_pPumpTextureOne{ nullptr };
 		std::shared_ptr<Texture2D> m_pPumpTextureTwo{ nullptr };
 		EnemyComponent* m_pTarget{ nullptr };
+		static constexpr float TIMEBETWEENPUMPS{ .25f };
+		float m_PumpTimer{ 0 };
 	};
 };
 

@@ -44,6 +44,7 @@ namespace dae
 		SwappableRenderComponent* GetRenderer() override;
 		ObjectMoveComponent* GetOMC() override;
 		EnemyComponent* GetMe() override { return this; };
+		void KillMe() override;
 
 		//interface for terrain
 		void PassData(bool CanAttack, std::string SpriteDir) override
@@ -63,6 +64,7 @@ namespace dae
 		inline static constexpr NamedFile WalkFiles[2]{ "Walk01.png", "Walk02.png" };
 
 		void OnPumped(PlayerControllerComponent* Player);
+		void OnAirBlownIntoEnemy();
 
 	private:
 		dae::SwappableRenderComponent* m_pRenderComponent{ nullptr };

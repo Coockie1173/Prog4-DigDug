@@ -44,6 +44,7 @@ namespace dae
 		void ClearMoveIntent() noexcept { m_MoveIntent = glm::vec2{}; }
 		bool GetIsAttacking() const noexcept { return m_PlayerAttacking; }
 		bool GetIsDigging() const noexcept { return m_PlayerDigging; }
+		void AlertPumperDone();
 
 		template<typename T>
 		T* GetState() { return m_pStatePool->Get<T>(); }

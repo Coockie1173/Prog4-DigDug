@@ -2,6 +2,8 @@
 #include <Components/PlayerControllerComponent.h>
 #include <Components/SwappableRenderComponent.h>
 #include <GameObject.h>
+#include <Timing.h>
+#include <Components/EnemyComponent.h>
 
 namespace dae
 {
@@ -15,6 +17,7 @@ namespace dae
 
 	PlayerState* PlayerPumping::Update(PlayerControllerComponent&)
 	{
+		m_PumpTimer -= Timing::GetInstance().GetDeltaTime();
 		return nullptr;
 	}
 
@@ -23,4 +26,12 @@ namespace dae
 
 	}
 
+	void PlayerPumping::Pump()
+	{
+		if (m_PumpTimer < 0)
+		{
+			m_PumpTimer = TIMEBETWEENPUMPS;
+			m_pTarget->OnAirBlownIntoEnemy();
+		}
+	}
 };
