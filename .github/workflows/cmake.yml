@@ -52,7 +52,8 @@ jobs:
             libxfixes-dev \
             libxkbcommon-dev \
             libwayland-dev \
-            wayland-protocols
+            wayland-protocols \
+            libxss-dev
 
       # -------------------------
       # Linux compiler setup
