@@ -76,7 +76,7 @@ jobs:
             libgles2-mesa-dev \
             \
             libudev-dev \
-            dbus-1-dev
+            libdbus-1-dev
 
       # -------------------------
       # LINUX COMPILER SETUP
