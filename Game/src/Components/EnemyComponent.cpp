@@ -73,7 +73,7 @@ namespace dae
         m_pCurrentState->Enter(*this);
 
         //once the player enters the center we can make the enemy waddle about
-        EventManager::GetInstance().Subscribe(PlayerControllerComponent::PLAYERREADYHASH,
+        m_PlayerReadyEventID = EventManager::GetInstance().Subscribe(PlayerControllerComponent::PLAYERREADYHASH,
             [this](unsigned int, const std::any&) { this->PlayerReady(); });
     }
 
