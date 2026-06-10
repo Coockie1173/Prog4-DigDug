@@ -10,6 +10,7 @@
 #include <glm/vec2.hpp>
 #include <Timing.h>
 #include <ResourceManager.h>
+#include <EventManager.h>
 
 namespace dae
 {
@@ -94,6 +95,7 @@ namespace dae
 
 	void PlayerStart::Exit(PlayerControllerComponent&)
 	{
-
+		//tell the game we are ready to rock n roll racing
+		EventManager::GetInstance().Publish(PlayerControllerComponent::PLAYERREADYHASH);
 	}
 };

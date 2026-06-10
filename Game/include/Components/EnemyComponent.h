@@ -8,11 +8,14 @@
 #include <map>
 #include <Components/EnemyStates/EnemyState.h>
 #include <Hash.h>
+#include <EventManager.h>
+#include <TerrainGridLevelLoader.h>
 
 namespace dae
 {
 	class SwappableRenderComponent;
-	class EnemyComponent : public Component, public IEnemyContext
+	class ObjectMoveComponent;
+	class EnemyComponent : public Component, public IEnemyContext, public ITerrainDeserializeHelper
 	{
 	public:
 		EnemyComponent(GameObject* Parent);
@@ -28,6 +31,15 @@ namespace dae
 		}
 
 		SwappableRenderComponent* GetRenderer() override;
+		ObjectMoveComponent* GetOMC() override;
+		EnemyComponent* GetMe() override { return this; };
+
+		//interface for terrain
+		void PassData(bool CanAttack, std::string SpriteDir) override
+		{
+			m_SpriteDirs = SpriteDir;
+			m_CanAttack = CanAttack;
+		}
 
 		struct NamedFile {
 			const char* name;
@@ -62,6 +74,11 @@ namespace dae
 		std::unordered_map<unsigned int, std::shared_ptr<Texture2D>> TextureLinks;
 		std::unique_ptr<StatePool<EnemyState>> m_pStatePool{ nullptr };
 		EnemyState* m_pCurrentState{ nullptr };
+
+		void PlayerReady();
+
+		EventManager::EventId m_PlayerReadyEventID{0};
+		ObjectMoveComponent* OMC{ nullptr };
 	};
 }
 

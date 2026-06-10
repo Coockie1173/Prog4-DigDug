@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <TerrainGridLevelLoader.h>
 
 namespace dae
 {
@@ -72,10 +73,25 @@ namespace dae
 		uint8_t GetMaxDepth() const noexcept { return m_DefaultDepth; }
 		bool CarveConnection(const glm::ivec2& from, const glm::ivec2& to);
 
-	private:
 		int IndexOf(const glm::ivec2& cell) const;
+		uint8_t GetCellWalls(const glm::ivec2& cell) const
+		{
+			const auto index = IndexOf(cell);
+			if (index < 0) return 0xFF;   // treat out-of-bounds as fully walled
+			return m_CellWalls[static_cast<size_t>(index)];
+		}
+
+		void ApplyLevelData(const TerrainData& data);
+		void SetLevelIndex(int index) { m_LevelIndex = index; }
+		const TerrainData& GetLevelData() const { return m_LevelData; }
+
+	private:
+		int m_LevelIndex{ 0 };
+		TerrainData   m_LevelData{};
+
 		void ResizeStorage();
 		void LoadTextures();
+		void SpawnEnemy(const EnemySpawnData& ESD);
 
 		// EXPOSE_TO_EDITOR("Width", "Number of cells horizontally")
 		int m_Width{ 20 };

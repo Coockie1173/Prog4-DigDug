@@ -4,6 +4,9 @@
 #include <ResourceManager.h>
 #include <Components/SwappableRenderComponent.h>
 #include <Components/EnemyStates/EnemyIdle.h>
+#include <Components/EnemyStates/EnemyWander.h>
+#include <Components/PlayerControllerComponent.h>
+#include <Components/ObjectMoveComponent.h>
 
 namespace
 {
@@ -16,7 +19,9 @@ namespace dae
     {}
 
     void EnemyComponent::Update()
-    {}
+    {
+        m_pCurrentState->Update(*this);
+    }
 
     void EnemyComponent::LateUpdate()
     {}
@@ -24,6 +29,23 @@ namespace dae
     SwappableRenderComponent* EnemyComponent::GetRenderer()
     {
         return m_pRenderComponent;
+    }
+
+    ObjectMoveComponent* EnemyComponent::GetOMC()
+    {
+        if (OMC != nullptr)
+        {
+            return OMC;
+        }
+
+        OMC = this->GetParent()->GetComponent<ObjectMoveComponent>();
+
+        if (OMC == nullptr)
+        {
+            Debugger::GetInstance().LogError("Warning: Gameobject " + this->GetParent()->GetName() + "\nhas no ObjectMoveComponent");
+        }
+
+        return OMC;
     }
 
     //you may be wondering why it's like this here and different for the player, the reason might shock you:
@@ -49,6 +71,10 @@ namespace dae
         m_pStatePool = std::make_unique<StatePool<EnemyState>>();
         m_pCurrentState = m_pStatePool->Get<EnemyIdleState>();
         m_pCurrentState->Enter(*this);
+
+        //once the player enters the center we can make the enemy waddle about
+        EventManager::GetInstance().Subscribe(PlayerControllerComponent::PLAYERREADYHASH,
+            [this](unsigned int, const std::any&) { this->PlayerReady(); });
     }
 
     bool EnemyComponent::Deserialize(const std::map<std::string, std::string>& properties, std::string& errorMessage)
@@ -59,5 +85,12 @@ namespace dae
         if (!GetRequiredProperty(properties, "CanAttack", CA, errorMessage, "PlayerControllerComponent")) return false;
         m_CanAttack = CA == "true";
         return true;
+    }
+
+    void EnemyComponent::PlayerReady()
+    {
+        m_pCurrentState->Exit(*this);
+        m_pCurrentState = m_pStatePool->Get<EnemyWanderState>();
+        m_pCurrentState->Enter(*this);
     }
 }

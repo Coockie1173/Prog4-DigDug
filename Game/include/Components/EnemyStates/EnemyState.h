@@ -11,15 +11,18 @@ namespace dae
 {
 	//for sending over data between the Enemy and the state
 	//why not do it like the playercontext? I wanted to check if this was better or not!
-	//conclusion? ask me again later
+	//conclusion? this is cleaner!
 	class SwappableRenderComponent;
+	class ObjectMoveComponent;
+	class EnemyComponent;
 	struct IEnemyContext
 	{
 		virtual std::unordered_map<unsigned int, std::shared_ptr<Texture2D>>& GetTextureMap() = 0;
 		virtual SwappableRenderComponent* GetRenderer() = 0;
+		virtual ObjectMoveComponent* GetOMC() = 0;
+		virtual EnemyComponent* GetMe() = 0;
 	};
 
-	class EnemyComponent;
 	class EnemyState
 	{
 	public:

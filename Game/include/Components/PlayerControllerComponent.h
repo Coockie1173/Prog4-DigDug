@@ -8,6 +8,7 @@
 #include <Texture2D.h>
 #include <glm/glm.hpp>
 #include <StateHelper.h>
+#include <Hash.h>
 
 namespace dae
 {
@@ -42,6 +43,8 @@ namespace dae
 		void ClearMoveIntent() noexcept { m_MoveIntent = glm::vec2{}; }
 		bool GetIsAttacking() const noexcept { return m_PlayerAttacking; }
 		bool GetIsDigging() const noexcept { return m_PlayerDigging; }
+
+		static constexpr unsigned int PLAYERREADYHASH = make_sdbm_hash("PlayerReady");
 
 	private:
 		enum class FacingDirection

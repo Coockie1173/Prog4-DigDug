@@ -6,6 +6,11 @@
 #include <ResourceManager.h>
 #include <algorithm>
 #include <cmath>
+#include <Components/EnemyComponent.h>
+#include <Components/SwappableRenderComponent.h>
+#include <Components/ObjectMoveComponent.h>
+#include <memory>
+#include <Scene.h>
 
 namespace
 {
@@ -101,7 +106,49 @@ namespace dae
 		{
 			ResizeStorage();
 		}
+
+		const std::string path = "Data/terrain/level" + std::to_string(m_LevelIndex) + ".tdbin";
+		m_LevelData = TerrainLoader::Read(path);
+		ApplyLevelData(m_LevelData);
 	}
+
+	void TerrainGridComponent::SpawnEnemy(const EnemySpawnData& ESD)
+	{
+		const std::string Directories[2]{ "pooka/", "fygar/" };
+
+		auto NewEnemy = std::make_unique<GameObject>("Enemy");
+		NewEnemy->SetLocalPosition(CellToWorldCenter(ESD.cell));
+
+		EnemyComponent* EC = NewEnemy->AddComponent<EnemyComponent>();
+		ITerrainDeserializeHelper* TDH = dynamic_cast<ITerrainDeserializeHelper*>(EC);
+		TDH->PassData(static_cast<bool>(ESD.type), Directories[static_cast<uint8_t>(ESD.type)]);
+
+		NewEnemy->AddComponent<SwappableRenderComponent>();
+		NewEnemy->AddComponent<ObjectMoveComponent>();
+
+		this->GetParent()->GetScene()->QueueAdd(std::move(NewEnemy));
+	}
+
+	void TerrainGridComponent::ApplyLevelData(const TerrainData& data)
+	{
+		for (const auto& cell : data.carvedCells)
+		{
+			CarveCell(cell);
+		}
+
+		//unused for now
+		for (const auto& [from, to] : data.connections)
+		{
+			CarveConnection(from, to);
+		}
+
+		//now spawn all the enemies
+		for (const auto& enem : data.enemySpawns)
+		{
+			SpawnEnemy(enem);
+		}
+	}
+
 
 	bool TerrainGridComponent::Deserialize(const std::map<std::string, std::string>& properties, std::string& errorMessage)
 	{
@@ -201,24 +248,37 @@ namespace dae
 
 	bool TerrainGridComponent::CarveCell(const glm::ivec2& cell)
 	{
-		if (!IsValidCell(cell))
-		{
-			return false;
-		}
-
+		if (!IsValidCell(cell)) return false;
 		const auto index = IndexOf(cell);
-		if (index < 0)
-		{
-			return false;
-		}
+		if (index < 0) return false;
 
 		auto& depth = m_Cells[static_cast<size_t>(index)];
-		if (depth == 0)
-		{
-			return false;
-		}
+		if (depth == 0) return false;
 
 		depth = 0;
+		m_CellWalls[static_cast<size_t>(index)] = 0;
+
+		const glm::ivec2 dirs[4] = { {0,-1},{0,1},{-1,0},{1,0} };
+		const WallFlags  flags[4] = { WallFlags::Top, WallFlags::Bottom, WallFlags::Left, WallFlags::Right };
+		const WallFlags  opp[4] = { WallFlags::Bottom, WallFlags::Top, WallFlags::Right, WallFlags::Left };
+
+		for (int i = 0; i < 4; ++i)
+		{
+			const auto neighbour = cell + dirs[i];
+			if (!IsValidCell(neighbour)) continue;
+			const auto nIdx = static_cast<size_t>(IndexOf(neighbour));
+
+			if (m_Cells[nIdx] == 0)
+			{
+				m_CellWalls[nIdx] &= ~static_cast<uint8_t>(opp[i]);
+				m_CellWalls[static_cast<size_t>(index)] &= ~static_cast<uint8_t>(flags[i]);
+			}
+			else
+			{
+				m_CellWalls[nIdx] |= static_cast<uint8_t>(opp[i]);
+			}
+		}
+
 		return true;
 	}
 
