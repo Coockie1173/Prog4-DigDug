@@ -1,4 +1,5 @@
 #include "MBINSerializer.h"
+#include <cstdint>
 
 namespace dae::serialization
 {
