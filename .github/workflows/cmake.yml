@@ -13,17 +13,78 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ${{ matrix.os }}
+
     strategy:
+      fail-fast: false
       matrix:
-        BUILD_TYPE: [Release, Debug]
+        os: [ubuntu-latest, windows-latest]
+
+        build_type: [Release, Debug]
+
+        compiler:
+          - msvc
+          - clang
+          - gcc
+
+        exclude:
+          - os: windows-latest
+            compiler: gcc
+          - os: windows-latest
+            compiler: clang
+            
+          - os: ubuntu-latest
+            compiler: msvc
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Configure CMake (Game Only)
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{matrix.BUILD_TYPE}} -DBUILD_EDITOR=OFF
+      - name: Setup Ninja (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get update && sudo apt-get install -y ninja-build
 
-    - name: Build Minigin
-      run: cmake --build ${{github.workspace}}/build --config ${{matrix.BUILD_TYPE}} --target digdug
+      - name: Setup compiler (Linux GCC/Clang)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          if [ "${{ matrix.compiler }}" = "gcc" ]; then
+            sudo apt-get install -y g++
+          fi
+          if [ "${{ matrix.compiler }}" = "clang" ]; then
+            sudo apt-get install -y clang
+          fi
 
+      - name: Configure CMake (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          if [ "${{ matrix.compiler }}" = "gcc" ]; then
+            export CC=gcc && export CXX=g++
+          fi
+          if [ "${{ matrix.compiler }}" = "clang" ]; then
+            export CC=clang && export CXX=clang++
+          fi
+
+          cmake -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+            -DBUILD_EDITOR=OFF
+
+      - name: Configure CMake (Windows MSVC)
+        if: matrix.os == 'windows-latest' && matrix.compiler == 'msvc'
+        run: |
+          cmake -B build -G "Visual Studio 17 2022" ^
+            -DBUILD_EDITOR=OFF
+
+      - name: Configure CMake (Windows Clang-cl)
+        if: matrix.os == 'windows-latest' && matrix.compiler == 'clang'
+        run: |
+          cmake -B build -G Ninja ^
+            -DCMAKE_C_COMPILER=clang-cl ^
+            -DCMAKE_CXX_COMPILER=clang-cl ^
+            -DBUILD_EDITOR=OFF
+
+      - name: Build (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: cmake --build build
+
+      - name: Build (Windows)
+        if: matrix.os == 'windows-latest'
+        run: cmake --build build --config ${{ matrix.build_type }} --target digdug
