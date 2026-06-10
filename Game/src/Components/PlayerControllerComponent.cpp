@@ -105,8 +105,8 @@ void dae::PlayerControllerComponent::Init()
 	m_pRenderComponent->SetPriority(true);
 
 	//now generate all input actions
-	const auto parts = SplitStringView(m_inputScheme, '|');
-	if (parts.size() != 2)
+	auto parts = SplitStringView(m_inputScheme, '|');
+	if (parts.size() < 2)
 	{
 		//turns out using the debugger DURING INIT fucks up the entire flow of the program, who could've thunk it??
 		//Debugger::GetInstance().LogError("PlayerControllerComponent inputScheme should have 4 parts separated by '|', but got " + std::to_string(parts.size()));
@@ -121,19 +121,31 @@ void dae::PlayerControllerComponent::Init()
 			m_Commands.push_back(std::move(cmd));
 		};
 
-	auto bindAction = [&](bool pressed)
+	auto bindAction = [&](std::string_view actionName, bool pressed)
 		{
 			auto cmd = std::make_shared<dae::AttackCommand>(this, pressed);
 			const auto inputType = pressed ? dae::InputManager::InputType::Pressed
 				: dae::InputManager::InputType::Released;
-			dae::InputManager::GetInstance().BindActionToCommand(m_attackActionName, cmd, inputType);
+			dae::InputManager::GetInstance().BindActionToCommand(std::string(actionName), cmd, inputType);
 			m_Commands.push_back(std::move(cmd));
 		};
 
 	bindAxis(parts[0], { -1.f,  0.f });
 	bindAxis(parts[1], { 0.f, -1.f });
-	bindAction(true);
-	bindAction(false);
+
+	//if we have four it means we also bound controller/keyboard to this player
+	if (parts.size() > 2)
+	{
+		bindAxis(parts[2], { 1.f,  0.f });
+		bindAxis(parts[3], { 0.f, -1.f });
+	}
+
+	parts = SplitStringView(m_attackActionName, '|');
+
+	bindAction(parts[0], true);
+	bindAction(parts[1], true);
+	bindAction(parts[0], false);
+	bindAction(parts[1], false);
 
 	m_pCurrentState = m_pStatePool->Get<PlayerStart>();
 	m_pCurrentState->Enter(*this);
@@ -146,6 +158,7 @@ bool dae::PlayerControllerComponent::Deserialize(const std::map<std::string, std
 {
 	if (!GetRequiredProperty(properties, "inputScheme", m_inputScheme, errorMessage, "PlayerControllerComponent")) return false;
 	if (!GetRequiredProperty(properties, "attackActionName", m_attackActionName, errorMessage, "PlayerControllerComponent")) return false;
+	if (!GetRequiredProperty(properties, "cancelActionName", m_cancelActionName, errorMessage, "PlayerControllerComponent")) return false;
 
 	return true;
 }
@@ -160,6 +173,11 @@ void dae::PlayerControllerComponent::OnPlayerMove()
 void dae::PlayerControllerComponent::OnPlayerAttack()
 {
 	if (m_pStatePool->Get<PlayerStart>() == m_pCurrentState)
+	{
+		//don't do anything in the start state
+		return;
+	}
+	if (m_pStatePool->Get<PlayerPumping>() == m_pCurrentState)
 	{
 		//don't do anything in the start state
 		return;
@@ -294,6 +312,22 @@ glm::vec2 dae::PlayerControllerComponent::ResolveCardinalMoveIntent() const
 
 void dae::PlayerControllerComponent::UpdateFacingFromMoveIntent(const glm::vec2& moveIntent)
 {
+	if (m_pStatePool->Get<PlayerStart>() == m_pCurrentState)
+	{
+		//don't do anything in the start state
+		return;
+	}
+	if (m_pStatePool->Get<PlayerAttack>() == m_pCurrentState)
+	{
+		//don't do anything in the start state
+		return;
+	}
+	if (m_pStatePool->Get<PlayerPumping>() == m_pCurrentState)
+	{
+		//don't do anything in the start state
+		return;
+	}
+
 	if (moveIntent.x > 0.0f)
 	{
 		m_FacingDirection = FacingDirection::Right;

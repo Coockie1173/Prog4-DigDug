@@ -1,15 +1,15 @@
-#include <Components/PlayerStates/PlayerMove.h>
-#include <Components/SwappableRenderComponent.h>
+#include <cmath>
 #include <Components/ObjectMoveComponent.h>
 #include <Components/PlayerControllerComponent.h>
-#include <GameObject.h>
-#include <Components/PlayerStates/PlayerIdle.h>
 #include <Components/PlayerStates/PlayerDig.h>
+#include <Components/PlayerStates/PlayerIdle.h>
+#include <Components/PlayerStates/PlayerMove.h>
+#include <Components/SwappableRenderComponent.h>
+#include <Components/TerrainGridComponent.h>
+#include <Config.h>
+#include <GameObject.h>
 #include <ResourceManager.h>
 #include <Timing.h>
-#include <Config.h>
-#include <Components/TerrainGridComponent.h>
-#include <cmath>
 
 namespace dae
 {

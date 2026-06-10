@@ -65,6 +65,8 @@ namespace dae
 		std::string m_inputScheme{};
 		// EXPOSE_TO_EDITOR("Attack Action Name", "The name of the action to use for attacking")
 		std::string m_attackActionName{};
+		// EXPOSE_TO_EDITOR("Cancel Action Name", "The name of the action to use for canceling your attack")
+		std::string m_cancelActionName{};
 
 		dae::SwappableRenderComponent* m_pRenderComponent{ nullptr };
 		dae::ObjectMoveComponent* m_pMoveComponent{ nullptr };
