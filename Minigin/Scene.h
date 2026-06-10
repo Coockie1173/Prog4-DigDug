@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include "GameObject.h"
+#include <functional>
 
 namespace dae
 {
@@ -30,6 +31,8 @@ namespace dae
 		Scene(Scene&& other) = delete;
 		Scene& operator=(const Scene& other) = delete;
 		Scene& operator=(Scene&& other) = delete;
+
+		void ForEachGameObject(const std::function<void(GameObject*)>& callback) const;
 
 	private:
 		void FlushQueuedAdds();

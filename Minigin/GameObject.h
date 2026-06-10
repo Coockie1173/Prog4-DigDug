@@ -73,6 +73,8 @@ namespace dae
 		glm::vec2 GetLocalPosition() const noexcept { return m_localPosition; };
 		void SetLocalPosition(const glm::vec2& pos);
 
+		bool OverlapsWith(const GameObject* other) const;
+
 		template<typename T>
 		inline T* GetComponent()
 		{

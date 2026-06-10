@@ -71,6 +71,14 @@ void dae::Scene::Init()
 	FlushQueuedAdds();
 }
 
+void dae::Scene::ForEachGameObject(const std::function<void(GameObject*)>& callback) const
+{
+	for (const auto& object : m_objects)
+	{
+		callback(object.get());
+	}
+}
+
 void dae::Scene::FlushQueuedAdds()
 {
 	if (m_pendingObjects.empty())

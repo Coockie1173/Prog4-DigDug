@@ -16,7 +16,7 @@ namespace dae
 	{
 	public:
 		PumpComponent(GameObject* Parent);
-		void Configure(glm::vec2 direction, float travelDistance, float speed, std::function<void()> onFinished);
+		void Configure(glm::vec2 direction, float travelDistance, float speed, std::function<void()> onFinished, std::function<void(GameObject*)> onHitEnemy);
 		void Update() override;
 		void LateUpdate() override;
 		void Init() override;
@@ -30,6 +30,7 @@ namespace dae
 		float m_Speed{ 0.0f };
 		float m_TravelledDistance{ 0.0f };
 		std::function<void()> m_OnFinished{};
+		std::function<void(GameObject*)> m_OnHitEnemy{};
 		bool m_IsConfigured{ false };
 		bool m_IsFinished{ false };
 	};

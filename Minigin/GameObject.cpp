@@ -7,6 +7,7 @@
 
 #include "Components/RenderComponent.h"
 #include <iostream>
+#include <memory>
 
 dae::GameObject::GameObject(std::string Name, GameObject* Parent, bool IsDebugObject) 
     : m_parent(Parent), m_objectName(Name), m_isDebugData(IsDebugObject)
@@ -191,3 +192,28 @@ void dae::GameObject::SetLocalPosition(const glm::vec2& pos)
     SetPositionDirty();
 }
 
+bool dae::GameObject::OverlapsWith(const GameObject* other) const
+{
+    if (other == nullptr) return false;
+
+    auto* myRenderer = GetAttachedRenderer();
+    auto* otherRenderer = other->GetAttachedRenderer();
+
+    if (myRenderer == nullptr || otherRenderer == nullptr) return false;
+
+    auto myTexture = myRenderer->GetTexture();
+    auto otherTexture = otherRenderer->GetTexture();
+
+    if (myTexture == nullptr || otherTexture == nullptr) return false;
+
+    const glm::vec2 mySize = myTexture->GetSize();
+    const glm::vec2 otherSize = otherTexture->GetSize();
+
+    const glm::vec2 myPos = const_cast<GameObject*>(this)->GetWorldPosition();
+    const glm::vec2 otherPos = const_cast<GameObject*>(other)->GetWorldPosition();
+
+    return myPos.x < otherPos.x + otherSize.x
+        && myPos.x + mySize.x > otherPos.x
+        && myPos.y < otherPos.y + otherSize.y
+        && myPos.y + mySize.y > otherPos.y;
+}

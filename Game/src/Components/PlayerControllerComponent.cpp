@@ -19,6 +19,7 @@
 #include <Components/PlayerStates/PlayerIdle.h>
 #include <Components/PlayerStates/PlayerAttack.h>
 #include <Components/PlayerStates/PlayerDig.h>
+#include <Components/PlayerStates/PlayerPumping.h>
 #include <Components/PlayerStates/PlayerStart.h>
 #include <Components/TerrainGridComponent.h>
 #include <Scene.h>
@@ -319,4 +320,14 @@ void dae::PlayerControllerComponent::ApplyFacingToRenderComponent() const
 	}
 
 	m_pRenderComponent->SetFacingDirection(GetFacingVector());
+}
+
+void dae::PlayerControllerComponent::OnPlayerHitEnemy(EnemyComponent* enemy)
+{
+	auto* pumpingState = m_pStatePool->Get<PlayerPumping>();
+	pumpingState->SetTarget(enemy);
+
+	m_pCurrentState->Exit(*this);
+	pumpingState->Enter(*this);
+	m_pCurrentState = pumpingState;
 }

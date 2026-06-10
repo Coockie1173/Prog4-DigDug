@@ -17,6 +17,7 @@ namespace dae
 	class TerrainGridComponent;
 	class PlayerState;
 	class MoveIntentCommand;
+	class EnemyComponent;
 
 	class PlayerControllerComponent final : public dae::Component
 	{
@@ -43,6 +44,11 @@ namespace dae
 		void ClearMoveIntent() noexcept { m_MoveIntent = glm::vec2{}; }
 		bool GetIsAttacking() const noexcept { return m_PlayerAttacking; }
 		bool GetIsDigging() const noexcept { return m_PlayerDigging; }
+
+		template<typename T>
+		T* GetState() { return m_pStatePool->Get<T>(); }
+
+		void OnPlayerHitEnemy(EnemyComponent* enemy);
 
 		static constexpr unsigned int PLAYERREADYHASH = make_sdbm_hash("PlayerReady");
 

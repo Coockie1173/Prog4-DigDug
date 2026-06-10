@@ -24,6 +24,7 @@ namespace dae
 	};
 
 	class SwappableRenderComponent;
+	class PlayerControllerComponent;
 	class ObjectMoveComponent;
 	class EnemyComponent : public Component, public IEnemyContext, public ITerrainDeserializeHelper
 	{
@@ -60,6 +61,8 @@ namespace dae
 		inline static constexpr NamedFile GhostFiles[2]{ "Ghost01.png", "Ghost02.png" };
 		inline static constexpr NamedFile PumpFiles[4]{ "Pump01.png", "Pump02.png", "Pump03.png", "Pump04.png" };
 		inline static constexpr NamedFile WalkFiles[2]{ "Walk01.png", "Walk02.png" };
+
+		void OnPumped(PlayerControllerComponent* Player);
 
 	private:
 		dae::SwappableRenderComponent* m_pRenderComponent{ nullptr };

@@ -5,6 +5,7 @@
 #include <Components/SwappableRenderComponent.h>
 #include <Components/EnemyStates/EnemyIdle.h>
 #include <Components/EnemyStates/EnemyWander.h>
+#include <Components/EnemyStates/EnemyPumped.h>
 #include <Components/PlayerControllerComponent.h>
 #include <Components/ObjectMoveComponent.h>
 
@@ -92,5 +93,14 @@ namespace dae
         m_pCurrentState->Exit(*this);
         m_pCurrentState = m_pStatePool->Get<EnemyWanderState>();
         m_pCurrentState->Enter(*this);
+    }
+
+    void EnemyComponent::OnPumped(PlayerControllerComponent* pumper)
+    {
+        m_pCurrentState->Exit(*this);
+        auto* pumped = m_pStatePool->Get<EnemyPumpedState>();
+        pumped->SetPumper(pumper);
+        pumped->Enter(*this);
+        m_pCurrentState = pumped;
     }
 }

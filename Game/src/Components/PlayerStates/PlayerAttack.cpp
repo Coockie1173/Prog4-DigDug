@@ -6,10 +6,12 @@
 #include <Scene.h>
 #include <Components/PlayerStates/PlayerIdle.h>
 #include <Components/PlayerStates/PlayerMove.h>
+#include <Components/PlayerStates/PlayerPumping.h>
 #include <SoundSerivceLocator.h>
 #include <ResourceManager.h>
 #include <Texture2D.h>
 #include <memory>
+#include <Components/EnemyComponent.h>
 
 namespace dae
 {
@@ -54,6 +56,18 @@ namespace dae
 				[controllerPtr = &Player]()
 				{
 					controllerPtr->OnPlayerEndAttack();
+				},
+				[controllerPtr = &Player](GameObject* hitObject)  // onHitEnemy
+				{
+					auto* enemy = hitObject->GetComponent<EnemyComponent>();
+					if (enemy == nullptr) return;
+
+					auto* pumpingState = controllerPtr->GetState<PlayerPumping>();
+					pumpingState->SetTarget(enemy);
+
+					enemy->OnPumped(controllerPtr);
+
+					controllerPtr->OnPlayerHitEnemy(enemy);
 				}
 			);
 			scene->QueueAdd(std::move(segment));

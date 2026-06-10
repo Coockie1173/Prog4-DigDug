@@ -7,18 +7,21 @@
 
 #include <algorithm>
 #include <cmath>
+#include <Components/EnemyComponent.h>
+#include <Scene.h>
 
 dae::PumpComponent::PumpComponent(GameObject* Parent) : Component(Parent)
 {
 }
 
-void dae::PumpComponent::Configure(glm::vec2 direction, float travelDistance, float speed, std::function<void()> onFinished)
+void dae::PumpComponent::Configure(glm::vec2 direction, float travelDistance, float speed, std::function<void()> onFinished, std::function<void(GameObject*)> onHitEnemy)
 {
 	m_Direction = glm::length(direction) > 0.0f ? glm::normalize(direction) : glm::vec2{ 1.0f, 0.0f };
 	m_TravelDistance = travelDistance;
 	m_Speed = speed;
 	m_TravelledDistance = 0.0f;
 	m_OnFinished = std::move(onFinished);
+	m_OnHitEnemy = std::move(onHitEnemy);
 	m_IsConfigured = true;
 }
 
@@ -40,6 +43,26 @@ void dae::PumpComponent::Update()
 	currentPosition += m_Direction * m_Speed * Timing::GetInstance().GetDeltaTime();
 	parent->SetLocalPosition(currentPosition);
 	m_TravelledDistance += m_Speed * Timing::GetInstance().GetDeltaTime();
+
+	if (m_OnHitEnemy)
+	{
+		auto* scene = parent->GetScene();
+		if (scene != nullptr)
+		{
+			scene->ForEachGameObject([&](GameObject* obj)
+				{
+					if (m_IsFinished) return;
+					if (obj == parent) return;
+					if (obj->GetComponent<EnemyComponent>() == nullptr) return;
+
+					if (parent->OverlapsWith(obj))
+					{
+						m_OnHitEnemy(obj);
+						FinishPump();
+					}
+				});
+		}
+	}
 
 	if (m_TravelledDistance >= m_TravelDistance)
 	{

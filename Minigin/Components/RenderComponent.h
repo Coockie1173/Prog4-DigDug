@@ -19,6 +19,7 @@ namespace dae
 		RenderComponent(RenderComponent&&) noexcept = delete;
 		RenderComponent& operator=(RenderComponent&&) noexcept = delete;
 
+		std::shared_ptr<dae::Texture2D> GetTexture() const { return m_pTexture; }
 		bool GetPriority() { return HighPriority; }
 		void SetPriority(bool v) { HighPriority = v; }
 	protected:

@@ -35,7 +35,7 @@ void dae::ResourceManager::Shutdown()
 std::shared_ptr<dae::Texture2D> dae::ResourceManager::LoadTexture(const std::string& file)
 {
 	const auto fullPath = m_dataPath/file;
-	const auto filename = fs::path(fullPath).filename().string();
+	const auto filename = fs::path(fullPath).string(); //basing on filename is crazy
 	if(m_loadedTextures.find(filename) == m_loadedTextures.end())
 		m_loadedTextures.insert(std::pair(filename,std::make_shared<Texture2D>(fullPath.string())));
 	return m_loadedTextures.at(filename);

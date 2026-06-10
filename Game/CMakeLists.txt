@@ -24,7 +24,7 @@ add_executable(${TARGET_NAME}
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/EnemyComponent.cpp 
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/EnemyStates/EnemyIdle.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/EnemyStates/EnemyWander.cpp 
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/TerrainGridLevelLoader.cpp)
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/TerrainGridLevelLoader.cpp "src/Components/PlayerStates/PlayerPumping.cpp" "src/Components/EnemyStates/EnemyPumped.cpp")
 target_compile_features(${TARGET_NAME} PUBLIC cxx_std_20)
 
 target_include_directories(${TARGET_NAME} PUBLIC
