@@ -19,61 +19,95 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-
         build_type: [Release, Debug]
-
-        compiler:
-          - msvc
-          - clang
-          - gcc
+        compiler: [msvc, gcc, clang]
 
         exclude:
-          - os: windows-latest
-            compiler: gcc
-          - os: windows-latest
-            compiler: clang
-            
           - os: ubuntu-latest
             compiler: msvc
+
+          - os: windows-latest
+            compiler: gcc
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Ninja (Linux)
+      # -------------------------
+      # Linux dependencies (SDL + build tools)
+      # -------------------------
+      - name: Install Linux dependencies
         if: matrix.os == 'ubuntu-latest'
-        run: sudo apt-get update && sudo apt-get install -y ninja-build
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            ninja-build \
+            build-essential \
+            pkg-config \
+            libx11-dev \
+            libxext-dev \
+            libxrandr-dev \
+            libxinerama-dev \
+            libxcursor-dev \
+            libxi-dev \
+            libxfixes-dev \
+            libxkbcommon-dev \
+            libwayland-dev \
+            wayland-protocols
 
-      - name: Setup compiler (Linux GCC/Clang)
+      # -------------------------
+      # Linux compiler setup
+      # -------------------------
+      - name: Setup Linux compiler
         if: matrix.os == 'ubuntu-latest'
         run: |
           if [ "${{ matrix.compiler }}" = "gcc" ]; then
-            sudo apt-get install -y g++
-          fi
-          if [ "${{ matrix.compiler }}" = "clang" ]; then
-            sudo apt-get install -y clang
+            sudo apt-get install -y g++ gcc
+            export CC=gcc
+            export CXX=g++
           fi
 
+          if [ "${{ matrix.compiler }}" = "clang" ]; then
+            sudo apt-get install -y clang
+            export CC=clang
+            export CXX=clang++
+          fi
+
+          echo "CC=$CC"
+          echo "CXX=$CXX"
+
+      # -------------------------
+      # Configure (Linux)
+      # -------------------------
       - name: Configure CMake (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: |
           if [ "${{ matrix.compiler }}" = "gcc" ]; then
-            export CC=gcc && export CXX=g++
+            export CC=gcc
+            export CXX=g++
           fi
+
           if [ "${{ matrix.compiler }}" = "clang" ]; then
-            export CC=clang && export CXX=clang++
+            export CC=clang
+            export CXX=clang++
           fi
 
           cmake -B build -G Ninja \
             -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
             -DBUILD_EDITOR=OFF
 
+      # -------------------------
+      # Configure (Windows MSVC)
+      # -------------------------
       - name: Configure CMake (Windows MSVC)
         if: matrix.os == 'windows-latest' && matrix.compiler == 'msvc'
         run: |
           cmake -B build -G "Visual Studio 17 2022" ^
             -DBUILD_EDITOR=OFF
 
-      - name: Configure CMake (Windows Clang-cl)
+      # -------------------------
+      # Configure (Windows clang-cl)
+      # -------------------------
+      - name: Configure CMake (Windows Clang)
         if: matrix.os == 'windows-latest' && matrix.compiler == 'clang'
         run: |
           cmake -B build -G Ninja ^
@@ -81,10 +115,16 @@ jobs:
             -DCMAKE_CXX_COMPILER=clang-cl ^
             -DBUILD_EDITOR=OFF
 
+      # -------------------------
+      # Build (Linux)
+      # -------------------------
       - name: Build (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: cmake --build build
 
+      # -------------------------
+      # Build (Windows)
+      # -------------------------
       - name: Build (Windows)
         if: matrix.os == 'windows-latest'
         run: cmake --build build --config ${{ matrix.build_type }} --target digdug
