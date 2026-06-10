@@ -1,7 +1,7 @@
 #ifndef _ENEMYCOMPONENT_H_
 #define _ENEMYCOMPONENT_H_
 
-#include <component.h>
+#include <Component.h>
 #include <Texture2D.h>
 #include <glm/glm.hpp>
 #include <string>
