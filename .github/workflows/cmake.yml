@@ -32,18 +32,7 @@ jobs:
       - uses: actions/checkout@v4
 
       # -------------------------
-      # CACHE (Linux SDL deps + build cache)
-      # -------------------------
-      - name: Cache build dependencies
-        if: matrix.os == 'ubuntu-latest'
-        uses: actions/cache@v4
-        with:
-          path: |
-            build/_deps
-          key: sdl-${{ runner.os }}-${{ matrix.compiler }}-${{ hashFiles('**/CMakeLists.txt') }}
-
-      # -------------------------
-      # LINUX DEPENDENCIES (complete minimal SDL + SDL_ttf fix)
+      # LINUX DEPENDENCIES
       # -------------------------
       - name: Install Linux dependencies
         if: matrix.os == 'ubuntu-latest'
@@ -52,6 +41,7 @@ jobs:
           sudo apt-get install -y \
             ninja-build \
             build-essential \
+            clang \
             pkg-config \
             \
             libx11-dev \
@@ -82,58 +72,80 @@ jobs:
             libudev-dev \
             libdbus-1-dev \
             \
-            # SDL_ttf fix
             libfreetype6-dev \
             libharfbuzz-dev
 
       # -------------------------
-      # CONFIGURE (LINUX)
+      # CONFIGURE (LINUX GCC)
       # -------------------------
-      - name: Configure CMake (Linux)
-        if: matrix.os == 'ubuntu-latest'
+      - name: Configure CMake (Linux GCC)
+        if: matrix.os == 'ubuntu-latest' && matrix.compiler == 'gcc'
         run: |
-          if [ "${{ matrix.compiler }}" = "gcc" ]; then
-            CC=gcc CXX=g++ cmake -B build -G Ninja \
-              -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
-              -DBUILD_EDITOR=OFF
-          fi
+          CC=gcc CXX=g++ cmake -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+            -DBUILD_EDITOR=OFF \
+            -DSDLMIXER_OPUS=OFF
 
-          if [ "${{ matrix.compiler }}" = "clang" ]; then
-            CC=clang CXX=clang++ cmake -B build -G Ninja \
-              -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
-              -DBUILD_EDITOR=OFF
-          fi
+      # -------------------------
+      # CONFIGURE (LINUX CLANG)
+      # -------------------------
+      - name: Configure CMake (Linux Clang)
+        if: matrix.os == 'ubuntu-latest' && matrix.compiler == 'clang'
+        run: |
+          CC=clang CXX=clang++ cmake -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+            -DBUILD_EDITOR=OFF \
+            -DSDLMIXER_OPUS=OFF
 
       # -------------------------
       # CONFIGURE (WINDOWS MSVC)
       # -------------------------
       - name: Configure CMake (Windows MSVC)
         if: matrix.os == 'windows-latest' && matrix.compiler == 'msvc'
+        shell: pwsh
         run: |
-          cmake -B build -G "Visual Studio 17 2022" `
-            -DBUILD_EDITOR=OFF
+          cmake -B build `
+            -G "Visual Studio 17 2022" `
+            -DBUILD_EDITOR=OFF `
+            -DSDLMIXER_OPUS=OFF
 
       # -------------------------
-      # CONFIGURE (WINDOWS clang-cl FIXED)
+      # CONFIGURE (WINDOWS CLANG)
       # -------------------------
       - name: Configure CMake (Windows Clang)
         if: matrix.os == 'windows-latest' && matrix.compiler == 'clang'
-        run: >
-          cmake -B build -G Ninja
-          -DCMAKE_C_COMPILER=clang-cl
-          -DCMAKE_CXX_COMPILER=clang-cl
-          -DBUILD_EDITOR=OFF
+        shell: pwsh
+        run: |
+          cmake -B build `
+            -G Ninja `
+            -DCMAKE_C_COMPILER=clang-cl `
+            -DCMAKE_CXX_COMPILER=clang-cl `
+            -DCMAKE_C_FLAGS="/arch:AVX2" `
+            -DCMAKE_CXX_FLAGS="/arch:AVX2" `
+            -DBUILD_EDITOR=OFF `
+            -DSDLMIXER_OPUS=OFF
+
+      # -------------------------
+      # VERIFY CONFIGURE
+      # -------------------------
+      - name: Verify Configure
+        run: |
+          test -f build/CMakeCache.txt || exit 1
+        shell: bash
 
       # -------------------------
       # BUILD (LINUX)
       # -------------------------
       - name: Build (Linux)
         if: matrix.os == 'ubuntu-latest'
-        run: cmake --build build
+        run: |
+          cmake --build build --parallel
 
       # -------------------------
       # BUILD (WINDOWS)
       # -------------------------
       - name: Build (Windows)
         if: matrix.os == 'windows-latest'
-        run: cmake --build build --config ${{ matrix.build_type }} --target digdug
+        run: |
+          cmake --build build --config ${{ matrix.build_type }} --parallel
+        shell: pwsh
