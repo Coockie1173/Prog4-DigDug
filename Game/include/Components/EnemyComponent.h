@@ -13,6 +13,16 @@
 
 namespace dae
 {
+	struct NamedFile
+	{
+		const char* name;
+		unsigned int hash;
+
+		template<size_t N>
+		consteval NamedFile(const char(&text)[N]) : name(text), hash(make_sdbm_hash(text))
+		{}
+	};
+
 	class SwappableRenderComponent;
 	class ObjectMoveComponent;
 	class EnemyComponent : public Component, public IEnemyContext, public ITerrainDeserializeHelper
@@ -41,25 +51,15 @@ namespace dae
 			m_CanAttack = CanAttack;
 		}
 
-		struct NamedFile
-		{
-			const char* name;
-			unsigned int hash;
-
-			template<size_t N>
-			consteval NamedFile(const char(&text)[N]): name(text), hash(make_sdbm_hash(text))
-			{}
-		};
-
 		static_assert(NamedFile{ "Attack.png" }.hash == make_sdbm_hash("Attack.png"));
 
 		//allows us to access both the hashes and actual filenames
 		//for some reason emscriptem doesn't allow this, emscriptem is therefore stupid and dumb
-		static constexpr NamedFile AttackFile{ "Attack.png" };
-		static constexpr NamedFile SplatFile{ "Splat.png" };
-		static constexpr NamedFile GhostFiles[2]{ "Ghost01.png", "Ghost02.png" };
-		static constexpr NamedFile PumpFiles[4]{ "Pump01.png", "Pump02.png", "Pump03.png", "Pump04.png" };
-		static constexpr NamedFile WalkFiles[2]{ "Walk01.png", "Walk02.png" };
+		inline static constexpr NamedFile AttackFile{ "Attack.png" };
+		inline static constexpr NamedFile SplatFile{ "Splat.png" };
+		inline static constexpr NamedFile GhostFiles[2]{ "Ghost01.png", "Ghost02.png" };
+		inline static constexpr NamedFile PumpFiles[4]{ "Pump01.png", "Pump02.png", "Pump03.png", "Pump04.png" };
+		inline static constexpr NamedFile WalkFiles[2]{ "Walk01.png", "Walk02.png" };
 
 	private:
 		dae::SwappableRenderComponent* m_pRenderComponent{ nullptr };
