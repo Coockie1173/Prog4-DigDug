@@ -41,17 +41,20 @@ namespace dae
 			m_CanAttack = CanAttack;
 		}
 
-		struct NamedFile {
+		struct NamedFile
+		{
 			const char* name;
 			unsigned int hash;
 
 			template<size_t N>
-			consteval NamedFile(const char(&text)[N]) : name(text), hash(make_sdbm_hash(text)) {}
+			consteval NamedFile(const char(&text)[N]): name(text), hash(make_sdbm_hash(text))
+			{}
 		};
 
 		static_assert(NamedFile{ "Attack.png" }.hash == make_sdbm_hash("Attack.png"));
 
 		//allows us to access both the hashes and actual filenames
+		//for some reason emscriptem doesn't allow this, emscriptem is therefore stupid and dumb
 		static constexpr NamedFile AttackFile{ "Attack.png" };
 		static constexpr NamedFile SplatFile{ "Splat.png" };
 		static constexpr NamedFile GhostFiles[2]{ "Ghost01.png", "Ghost02.png" };

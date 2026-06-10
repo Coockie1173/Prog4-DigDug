@@ -119,7 +119,7 @@ dae::Minigin::~Minigin()
 void dae::Minigin::Run(const std::function<void()>& load)
 {
 	load();
-	m_lastTime = std::chrono::high_resolution_clock::now();
+	m_lastTime = std::chrono::steady_clock::now();
 #ifndef __EMSCRIPTEN__
 	while (!m_quit)
 	{
@@ -132,7 +132,7 @@ void dae::Minigin::Run(const std::function<void()>& load)
 
 void dae::Minigin::RunOneFrame()
 {
-	const auto currentTime = std::chrono::high_resolution_clock::now();
+	const auto currentTime = std::chrono::steady_clock::now();
 	const float deltaTime = std::chrono::duration<float>(currentTime - m_lastTime).count();
 	m_lastTime = currentTime;
 	Timing::GetInstance().SetTimings(deltaTime);
@@ -145,7 +145,7 @@ void dae::Minigin::RunOneFrame()
 	SceneManager::GetInstance().Cleanup(); //get rid of anything marked for deletion
 	Renderer::GetInstance().Render();
 
-	auto frameEnd = std::chrono::high_resolution_clock::now();
+	auto frameEnd = std::chrono::steady_clock::now();
 	std::chrono::duration<float> frameDuration = frameEnd - currentTime;
 	std::chrono::duration<float> target(TARGET_FRAME_TIME);
 
