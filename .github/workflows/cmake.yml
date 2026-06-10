@@ -134,6 +134,8 @@ jobs:
           cmake -B build -G Ninja
           -DCMAKE_C_COMPILER=clang-cl
           -DCMAKE_CXX_COMPILER=clang-cl
+          -DCMAKE_C_FLAGS="/arch:SSE2 /clang:-msse4.1 /clang:-mssse3"
+          -DCMAKE_CXX_FLAGS="/arch:SSE2 /clang:-msse4.1 /clang:-mssse3"
           -DBUILD_EDITOR=OFF
 
       # -------------------------
