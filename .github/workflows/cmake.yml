@@ -121,7 +121,7 @@ jobs:
             -DCMAKE_C_COMPILER=clang-cl `
             -DCMAKE_CXX_COMPILER=clang-cl `
             -DCMAKE_C_FLAGS="/arch:AVX2" `
-            -DCMAKE_CXX_FLAGS="/arch:AVX2" `
+            -DCMAKE_CXX_FLAGS="/arch:AVX2 /EHsc" `
             -DBUILD_EDITOR=OFF `
             -DSDLMIXER_OPUS=OFF
 

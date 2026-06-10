@@ -1,4 +1,5 @@
 #include "EventManager.h"
+#include <algorithm>
 
 dae::EventManager::EventManager() = default;
 
