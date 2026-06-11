@@ -8,7 +8,7 @@ add_library(minigin_engine STATIC
   ${CMAKE_SOURCE_DIR}/Minigin/Renderer.cpp
   ${CMAKE_SOURCE_DIR}/Minigin/ResourceManager.cpp
   ${CMAKE_SOURCE_DIR}/Minigin/Scene.cpp
-  ${CMAKE_SOURCE_DIR}/Minigin/SceneLoader.cpp
+  
   ${CMAKE_SOURCE_DIR}/Minigin/SceneManager.cpp
   ${CMAKE_SOURCE_DIR}/Minigin/TextObject.cpp
   ${CMAKE_SOURCE_DIR}/Minigin/Texture2D.cpp
@@ -24,7 +24,7 @@ add_library(minigin_engine STATIC
   ${CMAKE_SOURCE_DIR}/Minigin/Sound/SoundSerivceLocator.cpp
   ${CMAKE_SOURCE_DIR}/Minigin/Sound/SoundSystem_SDL.cpp
   ${CMAKE_SOURCE_DIR}/Minigin/Sound/SoundSystem_Debug.cpp
-)
+  ${CMAKE_SOURCE_DIR}/Minigin/SceneLoader.cpp)
 
 target_compile_features(minigin_engine PUBLIC cxx_std_20)
 

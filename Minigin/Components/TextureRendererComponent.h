@@ -12,7 +12,7 @@ namespace dae
 	class TextureRenderComponent final : public RenderComponent
 	{
 	public:
-		TextureRenderComponent(dae::GameObject* Parent, const std::string& TextureName);
+		TextureRenderComponent(dae::GameObject* Parent);
 		void Render() const override;
 		void Update() override;
 		void LateUpdate() override;

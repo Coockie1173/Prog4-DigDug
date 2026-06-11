@@ -12,14 +12,14 @@
 
 namespace
 {
-	 const bool TextureRenderComponentRegistered = dae::RegisterComponentFactoryFor<dae::TextureRenderComponent>(dae::HASH_TextureRenderComponent, std::string{});
+	 const bool TextureRenderComponentRegistered = dae::RegisterComponentFactoryFor<dae::TextureRenderComponent>(dae::HASH_TextureRenderComponent);
 }
 
 namespace dae
 {
-	TextureRenderComponent::TextureRenderComponent(dae::GameObject* Parent, const std::string& TextureName) : RenderComponent(Parent), m_textureName(TextureName)
+	TextureRenderComponent::TextureRenderComponent(dae::GameObject* Parent) : RenderComponent(Parent), m_textureName("")
 	{
-		m_pTexture = dae::ResourceManager::GetInstance().LoadTexture(TextureName);
+		
 	}
 
 	void TextureRenderComponent::Render() const

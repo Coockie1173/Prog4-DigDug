@@ -19,7 +19,7 @@
 
 namespace fs = std::filesystem;
 
-static constexpr auto DEFAULT_SCENE_FILE = "TestScene.mbin";
+static constexpr auto DEFAULT_SCENE_FILE = "MainMenu.mbin";
 
 static void loadSceneFromFile(const fs::path& sceneFilePath)
 {

@@ -118,6 +118,10 @@ void Scene::Render() const
 {
 	for (const auto& object : m_objects)
 	{
+		if (object->GetAttachedRenderer() == nullptr)
+		{
+			continue;
+		}
 		if (!object->IsDebug() || !object->GetAttachedRenderer()->GetPriority())
 		{
 			object->Render();
@@ -127,6 +131,10 @@ void Scene::Render() const
 	// Ensure anything debug-related gets rendered last.
 	for (const auto& object : m_objects)
 	{
+		if (object->GetAttachedRenderer() == nullptr)
+		{
+			continue;
+		}
 		if (object->IsDebug())
 		{
 			object->Render();
@@ -135,6 +143,10 @@ void Scene::Render() const
 
 	for (const auto& object : m_objects)
 	{
+		if (object->GetAttachedRenderer() == nullptr)
+		{
+			continue;
+		}
 		if (object->GetAttachedRenderer()->GetPriority())
 		{
 			object->Render();
