@@ -5,6 +5,7 @@
 #include <Components/EnemyStates/EnemyWander.h>
 #include <Components/ObjectMoveComponent.h>
 #include <Components/PlayerControllerComponent.h>
+#include <Components/ScoreComponent.h>
 #include <Components/SwappableRenderComponent.h>
 #include <ComponentTypeMap.h>
 #include <GameObject.h>
@@ -121,6 +122,9 @@ namespace dae
 
     void EnemyComponent::KillMe()
     { 
+        //decide killvalues based on the layer the enemy is killed in
+        uint32_t ScoreVal = KillValues[0] * (m_CanAttack ? 2 : 1);
+        EventManager::GetInstance().Publish(ScoreComponent::SCOREHASH, ScoreVal);
         this->GetParent()->MarkForDeletion(); 
     }
 }

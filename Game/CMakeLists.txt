@@ -6,25 +6,33 @@ endif()
 
 add_executable(${TARGET_NAME}
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Main.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/Commands/MovementInputCommand.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/Commands/MoveIntentCommand.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/ObjectMoveComponent.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/PlayerControllerComponent.cpp 
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/TerrainGridLevelLoader.cpp 
   
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/ObjectMoveComponent.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/PlayerControllerComponent.cpp   
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/SpinnerComponent.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/PumpComponent.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/TerrainGridComponent.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/Commands/FrameCounterCommand.cpp 
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/Commands/AttackCommand.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/ScoreComponent.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/EnemyComponent.cpp 
+
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/EnemyStates/EnemyIdle.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/EnemyStates/EnemyWander.cpp 
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/EnemyStates/EnemyPumped.cpp 
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/EnemyStates/EnemyPop.cpp 
+  
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/PlayerStates/PlayerIdle.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/PlayerStates/PlayerAttack.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/PlayerStates/PlayerMove.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/PlayerStates/PlayerDig.cpp 
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/PlayerStates/PlayerStart.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/EnemyComponent.cpp 
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/EnemyStates/EnemyIdle.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/EnemyStates/EnemyWander.cpp 
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/TerrainGridLevelLoader.cpp "src/Components/PlayerStates/PlayerPumping.cpp" "src/Components/EnemyStates/EnemyPumped.cpp" "src/Components/EnemyStates/EnemyPop.cpp")
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/PlayerStates/PlayerPumping.cpp 
+  
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Commands/FrameCounterCommand.cpp 
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Commands/MovementInputCommand.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Commands/AttackCommand.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Commands/MoveIntentCommand.cpp
+)
 target_compile_features(${TARGET_NAME} PUBLIC cxx_std_20)
 
 target_include_directories(${TARGET_NAME} PUBLIC

@@ -10,6 +10,7 @@
 #include <Hash.h>
 #include <EventManager.h>
 #include <TerrainGridLevelLoader.h>
+#include <cstdint>
 
 namespace dae
 {
@@ -82,6 +83,8 @@ namespace dae
 		std::unordered_map<unsigned int, std::shared_ptr<Texture2D>> TextureLinks;
 		std::unique_ptr<StatePool<EnemyState>> m_pStatePool{ nullptr };
 		EnemyState* m_pCurrentState{ nullptr };
+
+		const uint32_t KillValues[4]{ 200,300,400,500 };		
 
 		void PlayerReady();
 

@@ -23,7 +23,7 @@ add_library(minigin_engine STATIC
   ${CMAKE_SOURCE_DIR}/Minigin/Controller/ControllerManager.cpp
   ${CMAKE_SOURCE_DIR}/Minigin/Sound/SoundSerivceLocator.cpp
   ${CMAKE_SOURCE_DIR}/Minigin/Sound/SoundSystem_SDL.cpp
-  "Sound/SoundSystem_Debug.cpp"
+  ${CMAKE_SOURCE_DIR}/Minigin/Sound/SoundSystem_Debug.cpp
 )
 
 target_compile_features(minigin_engine PUBLIC cxx_std_20)

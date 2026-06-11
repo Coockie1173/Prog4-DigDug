@@ -3,7 +3,8 @@
 [] Make player die on touch
 [] Make the pump not travel through walls unless it's a thin one
 [x] Allow enemies to die via pumping
-[] Give score on kill (based on layer)
+[x] Give score on kill (based on layer)
+[] Make score based on layer
 [] Main menu
 [] High Score scene
 [] F2 mute button
