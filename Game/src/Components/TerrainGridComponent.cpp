@@ -495,4 +495,14 @@ namespace dae
 
 		return true;
 	}
+
+	uint8_t TerrainGridComponent::GetOriginalDepthAt(const glm::ivec2& cell) const
+	{
+		if (!IsValidCell(cell)) return 0;
+
+		if (cell.y <= 2) return 0;
+
+		return static_cast<uint8_t>(std::min(4, 1 + (((cell.y - 1) * 4) / std::max(1, m_Height - 2))));
+	}
 }
+

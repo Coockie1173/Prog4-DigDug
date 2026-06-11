@@ -84,6 +84,7 @@ namespace dae
 		void ApplyLevelData(const TerrainData& data);
 		void SetLevelIndex(int index) { m_LevelIndex = index; }
 		const TerrainData& GetLevelData() const { return m_LevelData; }
+		uint8_t GetOriginalDepthAt(const glm::ivec2& cell) const;
 
 	private:
 		int m_LevelIndex{ 0 };
@@ -104,6 +105,7 @@ namespace dae
 		std::vector<uint8_t> m_CellWalls;
 		std::vector<std::shared_ptr<Texture2D>> m_DirtTextures{};
 		std::shared_ptr<Texture2D> m_WallTexture;
+
 
 		WallFlags GetWallBetween(const glm::ivec2& from, const glm::ivec2& to) const;
 		WallFlags OppositeWall(WallFlags wall) const;

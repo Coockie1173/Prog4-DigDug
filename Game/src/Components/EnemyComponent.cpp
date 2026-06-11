@@ -7,9 +7,11 @@
 #include <Components/PlayerControllerComponent.h>
 #include <Components/ScoreComponent.h>
 #include <Components/SwappableRenderComponent.h>
+#include <Components/TerrainGridComponent.h>
 #include <ComponentTypeMap.h>
 #include <GameObject.h>
 #include <ResourceManager.h>
+#include <Scene.h>
 
 namespace
 {
@@ -121,10 +123,32 @@ namespace dae
     }
 
     void EnemyComponent::KillMe()
-    { 
-        //decide killvalues based on the layer the enemy is killed in
-        uint32_t ScoreVal = KillValues[0] * (m_CanAttack ? 2 : 1);
+    {
+        uint8_t layerIndex = 0;
+
+        auto* scene = this->GetParent()->GetScene();
+        if (scene != nullptr)
+        {
+            auto* terrainObject = scene->FindGameObject("Terrain");
+            if (terrainObject != nullptr)
+            {
+                auto* terrain = terrainObject->GetComponent<TerrainGridComponent>();
+                if (terrain != nullptr)
+                {
+                    const glm::vec2 worldPos = this->GetParent()->GetWorldPosition();
+                    const glm::ivec2 cell = terrain->WorldToCell(worldPos);
+
+                    uint8_t depth = terrain->GetCellDepth(cell);
+                    if (depth == 0)
+                        depth = terrain->GetOriginalDepthAt(cell);
+
+                    layerIndex = (depth > 0) ? (depth - 1) : 0;
+                }
+            }
+        }
+
+        uint32_t ScoreVal = KillValues[layerIndex] * (m_CanAttack ? 2 : 1);
         EventManager::GetInstance().Publish(ScoreComponent::SCOREHASH, ScoreVal);
-        this->GetParent()->MarkForDeletion(); 
+        this->GetParent()->MarkForDeletion();
     }
 }
