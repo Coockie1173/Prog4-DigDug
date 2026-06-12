@@ -14,6 +14,7 @@ namespace dae
 	{
 	public:
 		ScoreComponent(GameObject* Parent) : Component(Parent) {};
+		~ScoreComponent();
 
 		void Init() override;
 		void Update() override;

@@ -31,6 +31,7 @@ namespace dae
 	{
 	public:
 		EnemyComponent(GameObject* Parent);
+		~EnemyComponent();
 		void Update() override;
 		void LateUpdate() override;
 		void Init() override;

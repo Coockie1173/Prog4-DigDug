@@ -52,6 +52,7 @@ namespace dae
 		void OnPlayerHitEnemy(EnemyComponent* enemy);
 
 		static constexpr unsigned int PLAYERREADYHASH = make_sdbm_hash("PlayerReady");
+		static constexpr unsigned int PLAYERDEADHASH = make_sdbm_hash("PlayerDied");
 
 	private:
 		enum class FacingDirection
@@ -90,6 +91,8 @@ namespace dae
 		void ApplyFacingToRenderComponent() const;
 		glm::ivec2 m_PreviousCell{};
 		bool m_HasPreviousCell{ false };
+		void PlayerDeath();
+		bool m_PlayerDied{ false };
 
 		mutable TerrainGridComponent* m_pCachedTerrainGrid{ nullptr };
 	};

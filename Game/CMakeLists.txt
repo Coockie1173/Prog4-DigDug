@@ -33,7 +33,7 @@ add_executable(${TARGET_NAME}
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Commands/AttackCommand.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Commands/MoveIntentCommand.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/MenuCursorComponent.cpp 
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/Commands/MainMenuMovementCommand.cpp "src/Commands/MenuSubmit.cpp")
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Commands/MainMenuMovementCommand.cpp "src/Commands/MenuSubmit.cpp" "src/GameManager.cpp" "src/Components/PlayerStates/PlayerDead.cpp")
 target_compile_features(${TARGET_NAME} PUBLIC cxx_std_20)
 
 target_include_directories(${TARGET_NAME} PUBLIC

@@ -3,6 +3,7 @@
 #include <ComponentTypeMap.h>
 #include <TextRendererComponent.h>
 #include <GameObject.h>
+#include <GameManager.h>
 
 namespace
 {
@@ -14,7 +15,7 @@ namespace dae
 	void ScoreComponent::Init()
 	{
 		m_pTRC = GetParent()->GetComponent<TextRenderComponent>();
-		m_pTRC->SetText("0");
+		m_pTRC->SetText(std::to_string(GameManager::GetInstance().GetGameData().m_Score));
 
 		m_IncreaseScoreEventID = EventManager::GetInstance().Subscribe(ScoreComponent::SCOREHASH, 
 			[this](unsigned int, const std::any& Data)
@@ -37,5 +38,10 @@ namespace dae
 	bool ScoreComponent::Deserialize(const std::map<std::string, std::string>&, std::string&)
 	{
 		return true;
+	}
+
+	ScoreComponent::~ScoreComponent()
+	{
+		EventManager::GetInstance().Unsubscribe(ScoreComponent::SCOREHASH, m_IncreaseScoreEventID);
 	}
 };

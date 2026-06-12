@@ -25,8 +25,10 @@ namespace dae
 
 		// EXPOSE_TO_EDITOR("Gamescenename", "Game scene name")
 		std::string m_GameSceneName{ "" };
-		// EXPOSE_TO_EDITOR("Highscorescenename", "Game scene name")
+		// EXPOSE_TO_EDITOR("Highscorescenename", "High score scene name")
 		std::string m_HighSceneName{ "" };
+		// EXPOSE_TO_EDITOR("HighscoreSubmitscenename", "High score submission scene name")
+		std::string m_HighSubSceneName{ "" };
 
 		// EXPOSE_TO_EDITOR("VerticalInput", "VerticalInput")
 		std::string m_VerticalInputName{ "" };

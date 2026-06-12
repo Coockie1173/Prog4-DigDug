@@ -8,6 +8,7 @@
 #include <Timing.h>
 #include <EventManager.h>
 #include <SceneManager.h>
+#include <GameManager.h>
 
 namespace
 {
@@ -48,9 +49,11 @@ namespace dae
 		if (!GetRequiredProperty(properties, "VerticalInputNameController", m_VerticalInputNameController, errorMessage, "MenuCursorComponent")) return false;
 		if (!GetRequiredProperty(properties, "SubmitButton", m_SubmitButton, errorMessage, "MenuCursorComponent")) return false;
 		if (!GetRequiredProperty(properties, "SubmitButtonController", m_SubmitButtonController, errorMessage, "MenuCursorComponent")) return false;
+		if (!GetRequiredProperty(properties, "HighSubSceneName", m_HighSubSceneName, errorMessage, "MenuCursorComponent")) return false;
 
 		m_GameSceneName = "Data/" + m_GameSceneName;
 		m_HighSceneName = "Data/" + m_HighSceneName;
+		m_HighSubSceneName = "Data/" + m_HighSubSceneName;
 
 		return true;
 	}
@@ -85,15 +88,19 @@ namespace dae
 		switch (m_CurrentSelection)
 		{
 		case 0:
+			GameManager::GetInstance().StartSoloGame(m_GameSceneName, m_HighSubSceneName);
 			EventManager::GetInstance().Publish(SceneManager::CHANGELEVELHASH, m_GameSceneName);
 			break;
 		case 1:
+			GameManager::GetInstance().StartMPGame(m_GameSceneName, m_HighSubSceneName);
 			EventManager::GetInstance().Publish(SceneManager::CHANGELEVELHASH, m_GameSceneName);
 			break;
 		case 2:
+			GameManager::GetInstance().StartVSGame(m_GameSceneName, m_HighSubSceneName);
 			EventManager::GetInstance().Publish(SceneManager::CHANGELEVELHASH, m_GameSceneName);
 			break;
 		case 3:
+			EventManager::GetInstance().Publish(SceneManager::CHANGELEVELHASH, m_HighSceneName);
 			break;
 		default:
 			break;

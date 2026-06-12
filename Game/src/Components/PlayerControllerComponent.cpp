@@ -1,28 +1,29 @@
-#include <Components/PlayerControllerComponent.h>
-#include <ComponentFactoryRegistry.h>
-#include <Hash.h>
-#include <GameObject.h>
-#include <vector>
-#include <InputManager.h>
-#include <Timing.h>
-#include <SwappableRenderComponent.h>
-#include <Components/ObjectMoveComponent.h>
+#include <algorithm>
+#include <cmath>
 #include <Commands/AttackCommand.h>
 #include <Commands/MoveIntentCommand.h>
-
-#include <cmath>
-#include <algorithm>
-#include <string_view>
-#include <ranges>
-
-#include <Components/PlayerStates/PlayerState.h>
-#include <Components/PlayerStates/PlayerIdle.h>
+#include <ComponentFactoryRegistry.h>
+#include <Components/ObjectMoveComponent.h>
+#include <Components/PlayerControllerComponent.h>
+#include <Components/EnemyComponent.h>
 #include <Components/PlayerStates/PlayerAttack.h>
 #include <Components/PlayerStates/PlayerDig.h>
+#include <Components/PlayerStates/PlayerIdle.h>
 #include <Components/PlayerStates/PlayerPumping.h>
 #include <Components/PlayerStates/PlayerStart.h>
+#include <Components/PlayerStates/PlayerDead.h>
+#include <Components/PlayerStates/PlayerState.h>
 #include <Components/TerrainGridComponent.h>
+#include <GameObject.h>
+#include <EventManager.h>
+#include <Hash.h>
+#include <InputManager.h>
+#include <ranges>
 #include <Scene.h>
+#include <string_view>
+#include <SwappableRenderComponent.h>
+#include <Timing.h>
+#include <vector>
 
 namespace
 {
@@ -69,6 +70,11 @@ void dae::PlayerControllerComponent::Update()
 		}
 	}
 
+	if (m_PlayerDied)
+	{
+		return;
+	}
+
 	auto* terrain = GetTerrainGrid();
 
 	if (terrain != nullptr)
@@ -82,6 +88,22 @@ void dae::PlayerControllerComponent::Update()
 
 		m_PreviousCell = currentCell;
 		m_HasPreviousCell = true;
+	}
+
+	auto* scene = GetPlayer()->GetScene();
+	if (scene != nullptr)
+	{
+		scene->ForEachGameObject([&](GameObject* obj)
+			{
+				if (obj == GetParent()) return;
+				auto* enemy = obj->GetComponent<EnemyComponent>();
+				if (enemy == nullptr) return;
+
+				if (GetParent()->OverlapsWith(obj))
+				{
+					PlayerDeath();
+				}
+			});
 	}
 
 	ApplyFacingToRenderComponent();
@@ -165,13 +187,18 @@ bool dae::PlayerControllerComponent::Deserialize(const std::map<std::string, std
 
 void dae::PlayerControllerComponent::OnPlayerMove()
 {
-	if (m_PlayerAttacking)
+	if (m_PlayerAttacking || m_PlayerDied)
 		return;
 	m_WalkTimer += Timing::GetInstance().GetDeltaTime();
 }
 
 void dae::PlayerControllerComponent::OnPlayerAttack()
 {
+	if (m_PlayerDied)
+	{
+		return;
+	}
+
 	if (m_pStatePool->Get<PlayerStart>() == m_pCurrentState)
 	{
 		//don't do anything in the start state
@@ -374,4 +401,15 @@ void dae::PlayerControllerComponent::AlertPumperDone()
 	m_pCurrentState->Exit(*this);
 	IdleState->Enter(*this);
 	m_pCurrentState = IdleState;
+}
+
+void dae::PlayerControllerComponent::PlayerDeath()
+{
+	m_PlayerDied = true;
+
+	auto* DeadState = m_pStatePool->Get<PlayerDead>();
+	m_pCurrentState->Exit(*this);
+	DeadState->Enter(*this);
+	m_pCurrentState = DeadState;
+	//EventManager::GetInstance().Publish(PlayerControllerComponent::PLAYERDEADHASH);
 }

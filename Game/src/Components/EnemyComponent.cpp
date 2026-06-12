@@ -151,4 +151,10 @@ namespace dae
         EventManager::GetInstance().Publish(ScoreComponent::SCOREHASH, ScoreVal);
         this->GetParent()->MarkForDeletion();
     }
+
+    EnemyComponent::~EnemyComponent()
+    {
+        //always unsubscribe when we kill an object
+        EventManager::GetInstance().Unsubscribe(PlayerControllerComponent::PLAYERREADYHASH, m_PlayerReadyEventID);
+    }
 }
