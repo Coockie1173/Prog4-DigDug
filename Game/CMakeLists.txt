@@ -21,6 +21,7 @@ add_executable(${TARGET_NAME}
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/EnemyStates/EnemyWander.cpp 
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/EnemyStates/EnemyPumped.cpp 
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/EnemyStates/EnemyPop.cpp 
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/EnemyStates/EnemyGhost.cpp
   
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/PlayerStates/PlayerIdle.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/PlayerStates/PlayerAttack.cpp
@@ -31,14 +32,15 @@ add_executable(${TARGET_NAME}
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/PlayerStates/PlayerDead.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/LivesDisplayComponent.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/MenuCursorComponent.cpp 
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/NameSelectorComponent.cpp 
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/HighScoreComponent.cpp 
   
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Commands/FrameCounterCommand.cpp 
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Commands/MovementInputCommand.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Commands/AttackCommand.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Commands/MoveIntentCommand.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Commands/MenuSubmit.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/Commands/MainMenuMovementCommand.cpp 
- "src/Components/EnemyStates/EnemyGhost.cpp")
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Commands/MainMenuMovementCommand.cpp )
 target_compile_features(${TARGET_NAME} PUBLIC cxx_std_20)
 
 target_include_directories(${TARGET_NAME} PUBLIC

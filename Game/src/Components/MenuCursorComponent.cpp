@@ -88,15 +88,15 @@ namespace dae
 		switch (m_CurrentSelection)
 		{
 		case 0:
-			GameManager::GetInstance().StartSoloGame(m_GameSceneName, m_HighSubSceneName);
+			GameManager::GetInstance().StartSoloGame(m_GameSceneName, m_HighSubSceneName, m_HighSceneName);
 			EventManager::GetInstance().Publish(SceneManager::CHANGELEVELHASH, m_GameSceneName);
 			break;
 		case 1:
-			GameManager::GetInstance().StartMPGame(m_GameSceneName, m_HighSubSceneName);
+			GameManager::GetInstance().StartMPGame(m_GameSceneName, m_HighSubSceneName, m_HighSceneName);
 			EventManager::GetInstance().Publish(SceneManager::CHANGELEVELHASH, m_GameSceneName);
 			break;
 		case 2:
-			GameManager::GetInstance().StartVSGame(m_GameSceneName, m_HighSubSceneName);
+			GameManager::GetInstance().StartVSGame(m_GameSceneName, m_HighSubSceneName, m_HighSceneName);
 			EventManager::GetInstance().Publish(SceneManager::CHANGELEVELHASH, m_GameSceneName);
 			break;
 		case 3:

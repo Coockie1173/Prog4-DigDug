@@ -1,7 +1,6 @@
 #include "SceneLoader.h"
 #include "GameObject.h"
 #include "ResourceManager.h"
-#include "TextObject.h"
 #include "Scene.h"
 #include "Debugger.h"
 #include "ComponentFactoryRegistry.h"

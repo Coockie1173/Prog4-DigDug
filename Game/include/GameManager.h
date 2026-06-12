@@ -8,6 +8,12 @@
 #include <Components/PlayerControllerComponent.h>
 #include <optional>
 #include <Components/EnemyComponent.h>
+#include <fstream>
+#include <filesystem>
+#include <ranges>
+#include <vector>
+#include <string>
+
 
 namespace dae
 {
@@ -39,11 +45,13 @@ namespace dae
 	class GameManager : public Singleton<GameManager>
 	{
 	public:
-		void StartSoloGame(const std::string& GameSceneName, const std::string& SubmitSceneName);
-		void StartMPGame(const std::string& GameSceneName, const std::string& SubmitSceneName);
-		void StartVSGame(const std::string& GameSceneName, const std::string& SubmitSceneName);
+		void StartSoloGame(const std::string& GameSceneName, const std::string& SubmitSceneName, const std::string& ScoreName);
+		void StartMPGame(const std::string& GameSceneName, const std::string& SubmitSceneName, const std::string& ScoreName);
+		void StartVSGame(const std::string& GameSceneName, const std::string& SubmitSceneName, const std::string& ScoreName);
 
 		GameData& GetGameData() { return m_Data; };
+
+		static constexpr auto SUBMITSCOREHASH = make_sdbm_hash("Player Submits Score");
 
 	private:
 		friend class Singleton<GameManager>;
@@ -86,19 +94,67 @@ namespace dae
 						EventManager::GetInstance().Publish(SceneManager::CHANGELEVELHASH, m_GameSceneName);
 					}
 				});
+			m_SubmitScoreEvent = EventManager::GetInstance().Subscribe(GameManager::SUBMITSCOREHASH,
+				[this](unsigned int, const std::any& Data)
+				{
+					const std::string playerName{ std::any_cast<std::string>(Data) };
+
+					const std::filesystem::path scoreFile{ "./Data/Scores.txt" };
+
+					std::vector<std::pair<std::string, int>> scores;
+
+					{
+						std::ifstream input{ scoreFile };
+
+						std::string name;
+						int score{};
+						while (input >> name >> score)
+						{
+							scores.emplace_back(std::move(name), score);
+						}
+					}
+
+					const auto insertPos = std::ranges::find_if(
+						scores,
+						[this](const auto& entry)
+						{
+							return m_Data.m_Score > entry.second;
+						});
+
+					if (insertPos == scores.end() && scores.size() >= 10)
+						return;
+
+					scores.insert(
+						insertPos,
+						{ playerName, m_Data.m_Score });
+
+					if (scores.size() > 10)
+						scores.resize(10);
+
+					std::ofstream output{ scoreFile, std::ios::trunc };
+
+					for (const auto& [name, score] : scores)
+					{
+						output << name << '\t' << score << '\n';
+					}
+
+					EventManager::GetInstance().Publish(SceneManager::CHANGELEVELHASH, m_HighScoreSceneName);
+				});
 		}
 
-		void ResetPlayerData(const std::string& GameScene, const std::string& SubmitScene);
+		void ResetPlayerData(const std::string& GameScene, const std::string& SubmitScene, const std::string& ScoreName);
 
 		static constexpr int LIVESONSTART{ 4 };
 		std::string m_GameSceneName;
 		std::string m_HighScoreSubmitSceneName;
+		std::string m_HighScoreSceneName;
 
 		GameData m_Data{};
 		EventManager::EventId m_ScoreEvent{0};
 		EventManager::EventId m_PlayerDeathEvent{0};
 		EventManager::EventId m_OnEnemySpawn{ 0 };
 		EventManager::EventId m_OnEnemyDeath{ 0 };
+		EventManager::EventId m_SubmitScoreEvent{ 0 };
 	};
 };
 

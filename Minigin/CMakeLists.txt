@@ -10,7 +10,7 @@ add_library(minigin_engine STATIC
   ${CMAKE_SOURCE_DIR}/Minigin/Scene.cpp
   
   ${CMAKE_SOURCE_DIR}/Minigin/SceneManager.cpp
-  ${CMAKE_SOURCE_DIR}/Minigin/TextObject.cpp
+  
   ${CMAKE_SOURCE_DIR}/Minigin/Texture2D.cpp
   ${CMAKE_SOURCE_DIR}/Minigin/Timing.cpp
   ${CMAKE_SOURCE_DIR}/Minigin/ComponentFactoryRegistry.cpp
