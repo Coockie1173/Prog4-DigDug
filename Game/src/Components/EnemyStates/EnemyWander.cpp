@@ -1,5 +1,6 @@
 #include <Components/EnemyStates/EnemyWander.h>
 #include <Components/EnemyStates/EnemyGhost.h>
+#include <Components/EnemyStates/EnemyFireState.h>
 #include <Components/SwappableRenderComponent.h>
 #include <Components/EnemyComponent.h>
 #include <Timing.h>
@@ -8,182 +9,172 @@
 #include <GameObject.h>
 #include <SceneManager.h>
 
+#include <cstdlib>
+
 namespace dae
 {
-	void EnemyWanderState::Enter(IEnemyContext& ctx)
-	{
-		m_WaddleTimer = 0;
-		ctx.GetRenderer()->SetTexture(ctx.GetTextureMap()[EnemyComponent::WalkFiles[m_WaddleFrame].hash]);
+    void EnemyWanderState::Enter(IEnemyContext& ctx)
+    {
+        m_WaddleTimer   = 0.f;
+        m_FireCheckTimer = 0.f;
 
-		OMC = ctx.GetOMC();
+        ctx.GetRenderer()->SetTexture(ctx.GetTextureMap()[EnemyComponent::WalkFiles[m_WaddleFrame].hash]);
 
-		auto* terrain = GetTerrain(ctx);
-		const glm::vec2 worldPos = ctx.GetMe()->GetParent()->GetWorldPosition();
+        OMC = ctx.GetOMC();
 
-		m_CurrentCell = terrain ? terrain->WorldToCell(worldPos) : glm::ivec2{ 0, 0 };
+        auto* terrain = GetTerrain(ctx);
+        const glm::vec2 worldPos = ctx.GetMe()->GetParent()->GetWorldPosition();
 
-		m_TargetCell = m_CurrentCell;
+        m_CurrentCell = terrain ? terrain->WorldToCell(worldPos) : glm::ivec2{ 0, 0 };
+        m_TargetCell = m_CurrentCell;
 
-		m_StuckTimer = 0.f;
-		m_LastCheckedPos = ctx.GetMe()->GetParent()->GetWorldPosition();
-	}
-	
-	EnemyState* EnemyWanderState::Update(IEnemyContext& ctx)
-	{
-		const float dt = Timing::GetInstance().GetDeltaTime();
+        m_StuckTimer = 0.f;
+        m_LastCheckedPos = worldPos;
+    }
 
-		m_WaddleTimer += dt;
-		if (m_WaddleTimer > TIMEBETWEENFRAMES)
-		{
-			m_WaddleTimer = 0.f;
-			m_WaddleFrame ^= 1;
-			ctx.GetRenderer()->SetTexture(
-				ctx.GetTextureMap()[EnemyComponent::WalkFiles[m_WaddleFrame].hash]
-			);
-		}
+    EnemyState* EnemyWanderState::Update(IEnemyContext& ctx)
+    {
+        const float dt = Timing::GetInstance().GetDeltaTime();
 
-		auto* terrain = GetTerrain(ctx);
-		if (!terrain) return nullptr;
+        m_WaddleTimer += dt;
+        if (m_WaddleTimer > TIMEBETWEENFRAMES)
+        {
+            m_WaddleTimer = 0.f;
+            m_WaddleFrame ^= 1;
+            ctx.GetRenderer()->SetTexture(
+                ctx.GetTextureMap()[EnemyComponent::WalkFiles[m_WaddleFrame].hash]);
+        }
 
-		auto* parent = ctx.GetMe()->GetParent();
+        if (m_Direction.x != 0.f)
+        {
+            ctx.GetRenderer()->SetFacingDirection({ m_Direction.x > 0.f ? 1.f : -1.f, 0.f });
+            ctx.SetFacing({ m_Direction.x > 0.f ? 1.f : -1.f, 0.f });
+        }
 
-		const glm::vec2 worldPos = parent->GetWorldPosition();
-		const glm::vec2 targetWorld = terrain->CellToWorldCenter(m_TargetCell);
+        auto* terrain = GetTerrain(ctx);
+        if (!terrain) return nullptr;
 
-		const glm::vec2 toTarget = targetWorld - worldPos;
-		const float distSq = glm::dot(toTarget, toTarget);
+        auto* parent = ctx.GetMe()->GetParent();
+        const glm::vec2 worldPos = parent->GetWorldPosition();
+        const glm::vec2 targetWorld = terrain->CellToWorldCenter(m_TargetCell);
+        const glm::vec2 toTarget = targetWorld - worldPos;
+        const float distSq = glm::dot(toTarget, toTarget);
+        const float stepDist = WADDLESPEED * dt;
 
-		const float stepDist = WADDLESPEED * dt;
+        if (distSq <= stepDist * stepDist)
+        {
+            parent->SetLocalPosition(targetWorld);
 
-		if (distSq <= stepDist * stepDist)
-		{
-			parent->SetLocalPosition(targetWorld);
+            const glm::ivec2 cameFrom = m_CurrentCell;
+            m_CurrentCell = m_TargetCell;
+            m_TargetCell  = PickNextCell(m_CurrentCell, cameFrom, terrain);
+        }
+        else if (distSq > 0.0001f)
+        {
+            m_Direction = glm::normalize(toTarget);
+            OMC->MoveObject(m_Direction, WADDLESPEED);
+        }
 
-			const glm::ivec2 cameFrom = m_CurrentCell;
+        m_StuckTimer += dt;
+        if (m_StuckTimer >= STUCK_CHECK_INTERVAL)
+        {
+            m_StuckTimer = 0.f;
+            const glm::vec2 currentPos = parent->GetWorldPosition();
+            const glm::vec2 moved      = currentPos - m_LastCheckedPos;
+            m_LastCheckedPos = currentPos;
 
-			m_CurrentCell = m_TargetCell;
-			m_TargetCell = PickNextCell(m_CurrentCell, cameFrom, terrain);
+            if (glm::dot(moved, moved) < STUCK_DISTANCE_SQ)
+            {
+                return m_pStatePool->Get<EnemyGhostState>();
+            }
+        }
 
-			return nullptr;
-		}
+        if (ctx.CanAttack())
+        {
+            m_FireCheckTimer += dt;
+            if (m_FireCheckTimer >= FIRE_CHECK_INTERVAL)
+            {
+                m_FireCheckTimer = 0.f;
+                const float roll = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+                if (roll < FIRE_CHANCE)
+                {
+                    return m_pStatePool->Get<EnemyFireState>();
+                }
+            }
+        }
 
-		if (distSq > 0.0001f)
-		{
-			m_Direction = glm::normalize(toTarget);
-			OMC->MoveObject(m_Direction, WADDLESPEED);
-		}
+        return nullptr;
+    }
 
-		m_StuckTimer += dt;
-		if (m_StuckTimer >= STUCK_CHECK_INTERVAL)
-		{
-			m_StuckTimer = 0.f;
-			const glm::vec2 currentPos = ctx.GetMe()->GetParent()->GetWorldPosition();
-			const glm::vec2 moved = currentPos - m_LastCheckedPos;
-			m_LastCheckedPos = currentPos;
+    void EnemyWanderState::Exit(IEnemyContext& ctx)
+    {
+        (void)ctx;
+    }
 
-			if (glm::dot(moved, moved) < STUCK_DISTANCE_SQ)
-			{
-				return m_pStatePool->Get<EnemyGhostState>();
-			}
-		}
+    dae::TerrainGridComponent* dae::EnemyWanderState::GetTerrain(IEnemyContext& ctx) const
+    {
+        if (m_pCachedTerrainGrid != nullptr)
+            return m_pCachedTerrainGrid;
 
-		return nullptr;
-	}
+        auto* enemy = ctx.GetMe()->GetParent();
+        if (!enemy) return nullptr;
 
-	void EnemyWanderState::Exit(IEnemyContext&)
-	{
+        auto* scene = enemy->GetScene();
+        if (!scene) return nullptr;
 
-	}
+        auto* terrainObject = scene->FindGameObject("Terrain");
+        if (!terrainObject) return nullptr;
 
-	dae::TerrainGridComponent* dae::EnemyWanderState::GetTerrain(IEnemyContext& ctx) const
-	{
-		if (m_pCachedTerrainGrid != nullptr)
-			return m_pCachedTerrainGrid;
+        m_pCachedTerrainGrid = terrainObject->GetComponent<dae::TerrainGridComponent>();
+        return m_pCachedTerrainGrid;
+    }
 
-		auto* enemy = ctx.GetMe()->GetParent();
-		if (enemy == nullptr)
-			return nullptr;
+    std::vector<glm::ivec2> EnemyWanderState::GetOpenNeighbours(const glm::ivec2& cell, TerrainGridComponent* terrain) const
+    {
+        static const std::pair<glm::ivec2, WallFlags> kNeighbours[4] =
+        {
+            { { 0, -1}, WallFlags::Top },
+            { { 0, 1}, WallFlags::Bottom },
+            { {-1, 0}, WallFlags::Left },
+            { { 1, 0}, WallFlags::Right },
+        };
 
-		auto* scene = enemy->GetScene();
-		if (scene == nullptr)
-			return nullptr;
+        if (terrain->IndexOf(cell) < 0) return {};
 
-		auto* terrainObject = scene->FindGameObject("Terrain");
-		if (terrainObject == nullptr)
-			return nullptr;
+        const uint8_t walls = terrain->GetCellWalls(cell);
+        std::vector<glm::ivec2> open;
 
-		m_pCachedTerrainGrid = terrainObject->GetComponent<dae::TerrainGridComponent>();
-		return m_pCachedTerrainGrid;
-	}
+        for (auto& [delta, flag] : kNeighbours)
+        {
+            if ((walls & static_cast<uint8_t>(flag)) == 0)
+            {
+                const glm::ivec2 neighbour = cell + delta;
+                if (terrain->IsValidCell(neighbour))
+                    open.push_back(neighbour);
+            }
+        }
 
-	std::vector<glm::ivec2> EnemyWanderState::GetOpenNeighbours(const glm::ivec2& cell, TerrainGridComponent* terrain) const
-	{
-		//the four cardinal neighbours and the WallFlag that separates us from them.
-		static const std::pair<glm::ivec2, WallFlags> kNeighbours[4] =
-		{
-			{ { 0, -1}, WallFlags::Top    },
-			{ { 0,  1}, WallFlags::Bottom },
-			{ {-1,  0}, WallFlags::Left   },
-			{ { 1,  0}, WallFlags::Right  },
-		};
+        return open;
+    }
 
-		const int idx = terrain->IndexOf(cell);
-		if (idx < 0) return {};
+    glm::ivec2 EnemyWanderState::PickNextCell(const glm::ivec2& current, const glm::ivec2& cameFrom, TerrainGridComponent* terrain) const
+    {
+        auto neighbours = GetOpenNeighbours(current, terrain);
+        if (neighbours.empty()) return current;
 
-		const uint8_t walls = terrain->GetCellWalls(cell);   //see note below
-		std::vector<glm::ivec2> open;
+        std::vector<glm::ivec2> preferred, fallback;
+        for (auto& n : neighbours)
+        {
+            if (n == cameFrom) fallback.push_back(n);
+            else preferred.push_back(n);
+        }
 
-		for (auto& [delta, flag] : kNeighbours)
-		{
-			// Wall bit clear -> connection is open -> passable
-			if ((walls & static_cast<uint8_t>(flag)) == 0)
-			{
-				const glm::ivec2 neighbour = cell + delta;
-				if (terrain->IsValidCell(neighbour))
-				{
-					open.push_back(neighbour);
-				}
-			}
-		}
+        auto& pool = preferred.empty() ? fallback : preferred;
 
-		return open;
-	}
+        const glm::ivec2 forward = current + (current - cameFrom);
+        for (auto& n : pool)
+            if (n == forward) return n;
 
-	glm::ivec2 EnemyWanderState::PickNextCell(const glm::ivec2& current, const glm::ivec2& cameFrom, TerrainGridComponent* terrain) const
-	{
-		auto neighbours = GetOpenNeighbours(current, terrain);
-		if (neighbours.empty())
-		{
-			return current;
-		}
-
-		//separate "forward / turns" from "reverse"
-		std::vector<glm::ivec2> preferred, fallback;
-		for (auto& n : neighbours)
-		{
-			if (n == cameFrom) 
-			{
-				fallback.push_back(n);
-			}
-			else               
-			{
-				preferred.push_back(n);
-			}
-		}
-
-		auto& pool = preferred.empty() ? fallback : preferred;
-
-		//bias toward continuing in the current direction if it is available
-		const glm::ivec2 forward = current + (current - cameFrom);
-		for (auto& n : pool)
-		{
-			if (n == forward)
-			{
-				return n;
-			}
-		}
-
-		//otherwise pick randomly among the non-reverse options
-		return pool[static_cast<size_t>(rand()) % pool.size()];
-	}
-};
+        return pool[static_cast<size_t>(rand()) % pool.size()];
+    }
+}

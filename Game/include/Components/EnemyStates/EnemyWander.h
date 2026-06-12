@@ -1,45 +1,55 @@
 #ifndef _ENEMYWANDER_H_
 #define _ENEMYWANDER_H_
 
-#include "./EnemyState.h"
+#include <Components/EnemyStates/EnemyState.h>
 #include <glm/glm.hpp>
+#include <vector>
 
 namespace dae
 {
-	class ObjectMoveComponent;
-	class TerrainGridComponent;
-	class EnemyWanderState final : public EnemyState
-	{
-	public:
-		EnemyWanderState(StatePool<EnemyState>* pStatePool) : EnemyState(pStatePool) {};
+    class TerrainGridComponent;
 
-		void Enter(IEnemyContext& ctx) override;
-		EnemyState* Update(IEnemyContext& ctx) override;
-		void Exit(IEnemyContext& ctx) override;
+    class EnemyWanderState final : public EnemyState
+    {
+    public:
+        EnemyWanderState(StatePool<EnemyState>* pStatePool) : EnemyState(pStatePool) {};
 
-	private:
-		static constexpr float PROBE_MARGIN = 2.f;
-		glm::ivec2 m_CurrentCell{ -1, -1 };
-		glm::ivec2 m_TargetCell{ -1, -1 };
-		glm::vec2 m_Direction{ 1.f, 0.f };
+        void Enter(IEnemyContext& ctx) override;
+        EnemyState* Update(IEnemyContext& ctx) override;
+        void Exit(IEnemyContext& ctx) override;
 
-		float m_WaddleTimer{ 0 };
-		uint8_t m_WaddleFrame{ 0 };
-		static constexpr float TIMEBETWEENFRAMES{ 0.25f };
-		static constexpr float WADDLESPEED{ 40.f };
-		ObjectMoveComponent* OMC{ nullptr };
+    private:
+        static constexpr float WADDLESPEED         = 64.f;
+        static constexpr float TIMEBETWEENFRAMES   = 0.2f;
 
-		TerrainGridComponent* GetTerrain(IEnemyContext& ctx) const;
-		std::vector<glm::ivec2> GetOpenNeighbours(const glm::ivec2& cell, TerrainGridComponent* terrain) const;
-		glm::ivec2 PickNextCell(const glm::ivec2& current, const glm::ivec2& came_from, TerrainGridComponent* terrain) const;
+        static constexpr float STUCK_CHECK_INTERVAL = 0.5f;
+        static constexpr float STUCK_DISTANCE_SQ    = 4.f * 4.f;
 
-		mutable TerrainGridComponent* m_pCachedTerrainGrid{ nullptr };
+        static constexpr float FIRE_CHECK_INTERVAL  = 2.5f;
+        static constexpr float FIRE_CHANCE          = 0.40f;
 
-		float m_StuckTimer{ 0.f };
-		glm::vec2 m_LastCheckedPos{};
-		static constexpr float STUCK_CHECK_INTERVAL = 2.f;
-		static constexpr float STUCK_DISTANCE_SQ = 4.f;   
-	};
-};
+        float m_WaddleTimer  { 0.f };
+        int m_WaddleFrame  { 0   };
+
+        glm::ivec2 m_CurrentCell{};
+        glm::ivec2 m_TargetCell{};
+        glm::vec2 m_Direction{ 1.f, 0.f };
+
+        float m_StuckTimer{ 0.f };
+        glm::vec2 m_LastCheckedPos{};
+
+        float m_FireCheckTimer{ 0.f };
+
+        ObjectMoveComponent* OMC{ nullptr };
+
+        mutable TerrainGridComponent* m_pCachedTerrainGrid{ nullptr };
+
+        TerrainGridComponent* GetTerrain(IEnemyContext& ctx) const;
+
+        std::vector<glm::ivec2> GetOpenNeighbours(const glm::ivec2& cell, TerrainGridComponent* terrain) const;
+
+        glm::ivec2 PickNextCell(const glm::ivec2& current, const glm::ivec2& cameFrom, TerrainGridComponent* terrain) const;
+    };
+}
 
 #endif

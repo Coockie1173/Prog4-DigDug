@@ -22,6 +22,7 @@ add_executable(${TARGET_NAME}
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/EnemyStates/EnemyPumped.cpp 
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/EnemyStates/EnemyPop.cpp 
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/EnemyStates/EnemyGhost.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/EnemyStates/EnemyFireState.cpp
   
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/PlayerStates/PlayerIdle.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/PlayerStates/PlayerAttack.cpp
@@ -34,6 +35,7 @@ add_executable(${TARGET_NAME}
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/MenuCursorComponent.cpp 
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/NameSelectorComponent.cpp 
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/HighScoreComponent.cpp 
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/FireComponent.cpp 
   
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Commands/FrameCounterCommand.cpp 
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Commands/MovementInputCommand.cpp

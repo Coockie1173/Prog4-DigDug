@@ -4,6 +4,7 @@
 #include <Components/EnemyStates/EnemyPumped.h>
 #include <Components/EnemyStates/EnemyWander.h>
 #include <Components/EnemyStates/EnemyGhost.h>
+#include <Components/EnemyStates/EnemyFireState.h>
 #include <Components/ObjectMoveComponent.h>
 #include <Components/PlayerControllerComponent.h>
 #include <Components/ScoreComponent.h>
@@ -16,13 +17,13 @@
 
 namespace
 {
-    const bool EnemyComponentRegistered = dae::RegisterComponentFactoryFor<dae::EnemyComponent>(dae::HASH_EnemyComponent);
+    const bool EnemyComponentRegistered =
+        dae::RegisterComponentFactoryFor<dae::EnemyComponent>(dae::HASH_EnemyComponent);
 }
 
 namespace dae
 {
-    EnemyComponent::EnemyComponent(GameObject* Parent) : Component(Parent)
-    {}
+    EnemyComponent::EnemyComponent(GameObject* Parent) : Component(Parent) {}
 
     void EnemyComponent::Update()
     {
@@ -34,8 +35,7 @@ namespace dae
         }
     }
 
-    void EnemyComponent::LateUpdate()
-    {}
+    void EnemyComponent::LateUpdate() {}
 
     SwappableRenderComponent* EnemyComponent::GetRenderer()
     {
@@ -45,36 +45,38 @@ namespace dae
     ObjectMoveComponent* EnemyComponent::GetOMC()
     {
         if (OMC != nullptr)
-        {
             return OMC;
-        }
 
         OMC = this->GetParent()->GetComponent<ObjectMoveComponent>();
 
         if (OMC == nullptr)
         {
-            Debugger::GetInstance().LogError("Warning: Gameobject " + this->GetParent()->GetName() + "\nhas no ObjectMoveComponent");
+            Debugger::GetInstance().LogError(
+                "Warning: Gameobject " + this->GetParent()->GetName() +
+                "\nhas no ObjectMoveComponent");
         }
 
         return OMC;
     }
 
-    //you may be wondering why it's like this here and different for the player, the reason might shock you:
-    //I did NOT think of it at the time, if I have enough time I'll refactor it like so, if I didn't have enough time
-    //oh well, you'll have this comment to look at instead
     void EnemyComponent::Init()
     {
-        static constexpr NamedFile AllFiles[]
+        static constexpr NamedFile BaseFiles[]
         {
             AttackFile, SplatFile,
             GhostFiles[0], GhostFiles[1],
-            PumpFiles[0], PumpFiles[1], PumpFiles[2], PumpFiles[3],
-            WalkFiles[0], WalkFiles[1]
+            PumpFiles[0],  PumpFiles[1], PumpFiles[2], PumpFiles[3],
+            WalkFiles[0],  WalkFiles[1]
         };
 
-        for (const auto& file : AllFiles)
+        for (const auto& file : BaseFiles)
         {
             TextureLinks.emplace(file.hash, ResourceManager::GetInstance().LoadTexture(m_SpriteDirs + file.name));
+        }
+
+        for (int i = 0; i < FIRE_FILE_COUNT; ++i)
+        {
+            TextureLinks.emplace(FireFiles[i].hash, ResourceManager::GetInstance().LoadTexture(m_SpriteDirs + FireFiles[i].name));
         }
 
         m_pRenderComponent = dynamic_cast<SwappableRenderComponent*>(GetParent()->GetAttachedRenderer());
@@ -85,7 +87,6 @@ namespace dae
 
         EventManager::GetInstance().Publish(EnemyComponent::ENEMYSPAWNHASH);
 
-        //once the player enters the center we can make the enemy waddle about
         m_PlayerReadyEventID = EventManager::GetInstance().Subscribe(PlayerControllerComponent::PLAYERREADYHASH,
             [this](unsigned int, const std::any&) { this->PlayerReady(); });
     }
@@ -93,10 +94,10 @@ namespace dae
     bool EnemyComponent::Deserialize(const std::map<std::string, std::string>& properties, std::string& errorMessage)
     {
         std::string CA{};
-        if (!GetRequiredProperty(properties, "SpriteDirs", m_SpriteDirs, errorMessage, "PlayerControllerComponent")) return false;
+        if (!GetRequiredProperty(properties, "SpriteDirs",  m_SpriteDirs, errorMessage, "PlayerControllerComponent")) return false;
         m_SpriteDirs += "/";
         if (!GetRequiredProperty(properties, "CanAttack", CA, errorMessage, "PlayerControllerComponent")) return false;
-        m_CanAttack = CA == "true";
+        m_CanAttack = (CA == "true");
         return true;
     }
 
@@ -120,7 +121,7 @@ namespace dae
     {
         if (m_pCurrentState == m_pStatePool->Get<EnemyPumpedState>())
         {
-            auto p = dynamic_cast<EnemyPumpedState*>(m_pCurrentState);
+            auto* p = dynamic_cast<EnemyPumpedState*>(m_pCurrentState);
             p->OnAirPumped();
         }
     }
@@ -143,7 +144,9 @@ namespace dae
 
                     uint8_t depth = terrain->GetCellDepth(cell);
                     if (depth == 0)
+                    {
                         depth = terrain->GetOriginalDepthAt(cell);
+                    }
 
                     layerIndex = (depth > 0) ? (depth - 1) : 0;
                 }
@@ -158,7 +161,6 @@ namespace dae
 
     EnemyComponent::~EnemyComponent()
     {
-        //always unsubscribe when we kill an object
         EventManager::GetInstance().Unsubscribe(PlayerControllerComponent::PLAYERREADYHASH, m_PlayerReadyEventID);
     }
 

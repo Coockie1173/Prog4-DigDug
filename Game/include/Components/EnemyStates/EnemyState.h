@@ -15,14 +15,25 @@ namespace dae
 	class SwappableRenderComponent;
 	class ObjectMoveComponent;
 	class EnemyComponent;
+	class Texture2D;
+
 	struct IEnemyContext
 	{
+	public:
+		virtual ~IEnemyContext() = default;
+
 		virtual std::unordered_map<unsigned int, std::shared_ptr<Texture2D>>& GetTextureMap() = 0;
 		virtual SwappableRenderComponent* GetRenderer() = 0;
 		virtual ObjectMoveComponent* GetOMC() = 0;
 		virtual EnemyComponent* GetMe() = 0;
 		virtual void KillMe() = 0;
+
+		virtual glm::vec2 GetFacing() const = 0;
+		virtual void SetFacing(glm::vec2 f) = 0;
+
+		virtual bool CanAttack() const = 0;
 	};
+	
 
 	class EnemyState
 	{

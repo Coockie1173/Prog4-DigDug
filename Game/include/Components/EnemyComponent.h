@@ -14,90 +14,94 @@
 
 namespace dae
 {
-	struct NamedFile
-	{
-		const char* name;
-		unsigned int hash;
+    struct NamedFile
+    {
+        const char*  name;
+        unsigned int hash;
 
-		template<size_t N>
-		consteval NamedFile(const char(&text)[N]) : name(text), hash(make_sdbm_hash(text))
-		{}
-	};
+        template<size_t N>
+        consteval NamedFile(const char(&text)[N]) : name(text), hash(make_sdbm_hash(text))
+        {}
+    };
 
-	class SwappableRenderComponent;
-	class PlayerControllerComponent;
-	class ObjectMoveComponent;
-	class EnemyComponent : public Component, public IEnemyContext, public ITerrainDeserializeHelper
-	{
-	public:
-		EnemyComponent(GameObject* Parent);
-		~EnemyComponent();
-		void Update() override;
-		void LateUpdate() override;
-		void Init() override;
-		bool Deserialize(const std::map<std::string, std::string>& properties, std::string& errorMessage) override;
+    class SwappableRenderComponent;
+    class PlayerControllerComponent;
+    class ObjectMoveComponent;
 
-		//interface nonsense
-		std::unordered_map<unsigned int, std::shared_ptr<Texture2D>>& GetTextureMap() override
-		{
-			return TextureLinks;
-		}
+    class EnemyComponent : public Component, public IEnemyContext, public ITerrainDeserializeHelper
+    {
+    public:
+        explicit EnemyComponent(GameObject* Parent);
+        ~EnemyComponent();
 
-		SwappableRenderComponent* GetRenderer() override;
-		ObjectMoveComponent* GetOMC() override;
-		EnemyComponent* GetMe() override { return this; };
-		void KillMe() override;
+        void Update() override;
+        void LateUpdate() override;
+        void Init() override;
+        bool Deserialize(const std::map<std::string, std::string>& properties, std::string& errorMessage) override;
 
-		//interface for terrain
-		void PassData(bool CanAttack, std::string SpriteDir) override
-		{
-			m_SpriteDirs = SpriteDir;
-			m_CanAttack = CanAttack;
-		}
+        std::unordered_map<unsigned int, std::shared_ptr<Texture2D>>& GetTextureMap() override
+        {
+            return TextureLinks;
+        }
 
-		static_assert(NamedFile{ "Attack.png" }.hash == make_sdbm_hash("Attack.png"));
+        SwappableRenderComponent* GetRenderer() override;
+        ObjectMoveComponent* GetOMC() override;
+        EnemyComponent* GetMe() override { return this; }
+        void KillMe() override;
 
-		//allows us to access both the hashes and actual filenames
-		//for some reason emscriptem doesn't allow this, emscriptem is therefore stupid and dumb
-		inline static constexpr NamedFile AttackFile{ "Attack.png" };
-		inline static constexpr NamedFile SplatFile{ "Splat.png" };
-		inline static constexpr NamedFile GhostFiles[2]{ "Ghost01.png", "Ghost02.png" };
-		inline static constexpr NamedFile PumpFiles[4]{ "Pump01.png", "Pump02.png", "Pump03.png", "Pump04.png" };
-		inline static constexpr NamedFile WalkFiles[2]{ "Walk01.png", "Walk02.png" };
+        glm::vec2 GetFacing() const { return m_Facing; }
+        void SetFacing(glm::vec2 f) { m_Facing = f; }
 
-		inline static auto ENEMYSPAWNHASH{ make_sdbm_hash("Enemy has appeared!")};
-		inline static auto ENEMYDEATHHASH{ make_sdbm_hash("Enemy has perished!")};
+        bool CanAttack() const { return m_CanAttack; }
 
-		void OnPumped(PlayerControllerComponent* Player);
-		void OnAirBlownIntoEnemy();
+        void PassData(bool CanAttack, std::string SpriteDir) override
+        {
+            m_SpriteDirs = std::move(SpriteDir);
+            m_CanAttack  = CanAttack;
+        }
 
-		bool IsGhost() const;
-		bool IsPumped() const;
+        static_assert(NamedFile{ "Attack.png" }.hash == make_sdbm_hash("Attack.png"));
 
-	private:
-		dae::SwappableRenderComponent* m_pRenderComponent{ nullptr };
+        inline static constexpr NamedFile AttackFile { "Attack.png"  };
+        inline static constexpr NamedFile SplatFile { "Splat.png"   };
+        inline static constexpr NamedFile GhostFiles[2] { "Ghost01.png", "Ghost02.png" };
+        inline static constexpr NamedFile PumpFiles[4] { "Pump01.png", "Pump02.png", "Pump03.png", "Pump04.png" };
+        inline static constexpr NamedFile WalkFiles[2] { "Walk01.png", "Walk02.png" };
 
-		//we put all the textures in a directory (pooka/fygar) and then follow specific patterns to load them in
-		//since behaviour is the same for both enemies (exept we have the funny fire spit I guess) we can do it like this
-		// EXPOSE_TO_EDITOR("Directory", "Name of the directory that the sprites are in")
-		std::string m_SpriteDirs{};
-		//based on the items in ^ we'll precache/load in all textures we need
-		//we can then just pass that data along to our states
-		
-		// EXPOSE_TO_EDITOR("CanAttack", "Can this enemy spit fire?")
-		bool m_CanAttack{};
+        inline static constexpr NamedFile FireFiles[3] { "Fire1.png", "Fire2.png", "Fire3.png"   };
+        static constexpr int FIRE_FILE_COUNT = 3;
 
-		std::unordered_map<unsigned int, std::shared_ptr<Texture2D>> TextureLinks;
-		std::unique_ptr<StatePool<EnemyState>> m_pStatePool{ nullptr };
-		EnemyState* m_pCurrentState{ nullptr };
+        inline static auto ENEMYSPAWNHASH{ make_sdbm_hash("Enemy has appeared!") };
+        inline static auto ENEMYDEATHHASH{ make_sdbm_hash("Enemy has perished!") };
 
-		const uint32_t KillValues[4]{ 200,300,400,500 };		
+        void OnPumped(PlayerControllerComponent* Player);
+        void OnAirBlownIntoEnemy();
 
-		void PlayerReady();
+        bool IsGhost()  const;
+        bool IsPumped() const;
 
-		EventManager::EventId m_PlayerReadyEventID{0};
-		ObjectMoveComponent* OMC{ nullptr };
-	};
+    private:
+        dae::SwappableRenderComponent* m_pRenderComponent{ nullptr };
+
+        // EXPOSE_TO_EDITOR("Directory", "Name of the directory that the sprites are in")
+        std::string m_SpriteDirs{};
+
+        // EXPOSE_TO_EDITOR("CanAttack", "Can this enemy spit fire?")
+        bool m_CanAttack{ false };
+
+        glm::vec2 m_Facing{ 1.f, 0.f };
+
+        std::unordered_map<unsigned int, std::shared_ptr<Texture2D>> TextureLinks;
+        std::unique_ptr<StatePool<EnemyState>> m_pStatePool{ nullptr };
+        EnemyState* m_pCurrentState{ nullptr };
+
+        const uint32_t KillValues[4]{ 200, 300, 400, 500 };
+
+        void PlayerReady();
+
+        EventManager::EventId m_PlayerReadyEventID{ 0 };
+        ObjectMoveComponent*  OMC{ nullptr };
+    };
 }
 
 #endif
