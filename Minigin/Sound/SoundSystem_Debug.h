@@ -17,6 +17,15 @@ public:
 		Debugger::GetInstance().LogDebug("Playing sound: " + sound_name);
 		m_realSoundSystem->PlaySound(sound_name);
 	}
+
+	void ToggleMuted() override
+	{
+		Debugger::GetInstance().LogDebug(
+			std::string{ "Sound " } + (m_realSoundSystem->IsMuted() ? "unmuted" : "muted"));
+		m_realSoundSystem->ToggleMuted();
+	}
+
+	bool IsMuted() const override { return m_realSoundSystem->IsMuted(); }
 };
 
 #endif

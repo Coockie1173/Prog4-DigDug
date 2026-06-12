@@ -1,14 +1,15 @@
-#include <SDL3/SDL.h>
-#include <backends/imgui_impl_sdl3.h>
-#include "InputManager.h"
-#include "Debugger.h"
-#include "Commands/Command.h"
 #include "Commands/AxisCommand.h"
+#include "Commands/Command.h"
+#include "Debugger.h"
+#include "InputManager.h"
 #include <algorithm>
-#include <unordered_map>
-#include <vector>
+#include <backends/imgui_impl_sdl3.h>
 #include <cmath>
 #include <EventManager.h>
+#include <SDL3/SDL.h>
+#include <SoundSerivceLocator.h>
+#include <unordered_map>
+#include <vector>
 
 namespace dae
 {
@@ -189,6 +190,8 @@ bool dae::InputManager::ProcessInput()
 			case SDLK_F1:
 				EventManager::GetInstance().Publish(ENEMYKILLDEBUGKILLHASH);
 				break;
+			case SDLK_F2:
+				SoundServiceLocator::GetSoundSystem().ToggleMuted();
             }
         }
 

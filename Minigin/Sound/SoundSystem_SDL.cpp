@@ -70,6 +70,9 @@ void sound_system_SDL::Worker(std::stop_token st)
         lock.unlock();
         for (auto& sound : soundsToPlay)
         {
+            if (m_muted)
+                continue;
+
             auto audioIt = m_audioCache.find(sound);
             if (audioIt == m_audioCache.end())
             {

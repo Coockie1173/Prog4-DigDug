@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 #include <unordered_map>
+#include <atomic>
 
 struct MIX_Mixer;
 struct MIX_Audio;
@@ -17,6 +18,8 @@ public:
 	sound_system_SDL();
 	~sound_system_SDL() override;
 	void PlaySound(const std::string& SoundName) override;
+	void ToggleMuted() override { m_muted = !m_muted; }
+	bool IsMuted() const override { return m_muted; }
 private:
 	struct MixerDeleter
 	{
@@ -28,6 +31,7 @@ private:
 		void operator()(MIX_Audio* audio) const noexcept;
 	};
 
+	std::atomic<bool> m_muted{ false };
 	std::mutex m_mutex;
 	std::condition_variable m_cv;
 	void Worker(std::stop_token st);

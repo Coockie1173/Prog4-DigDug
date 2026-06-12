@@ -14,7 +14,8 @@
 [x] Add coop functionality
 [x] Make the pump not travel through walls unless it's a thin one
 [x] Add sounds
-[] F2 mute button
+[x] F2 mute button
 [] Make Fygar blow fire
-[] Add vs functionality
 [] Implement rocks
+[] Make the blowup phase not damage
+[] --Add vs functionality--
