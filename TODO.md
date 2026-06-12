@@ -6,7 +6,9 @@
 [x] Implement lives
 [x] Make player die on touch
 [x] Implement lives view
-[] Add in ghost mode
+[x] Add in ghost mode
+[x] Remember terrain on death
+[x] Add round flow
 [] High Score scene
 [] F2 mute button
 [] F1 skip level button
@@ -15,5 +17,4 @@
 [] Add sounds
 [] Add coop functionality
 [] Add vs functionality
-[] Add round flow
 [] Implement rocks

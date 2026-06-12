@@ -83,6 +83,8 @@ namespace dae
         m_pCurrentState = m_pStatePool->Get<EnemyIdleState>();
         m_pCurrentState->Enter(*this);
 
+        EventManager::GetInstance().Publish(EnemyComponent::ENEMYSPAWNHASH);
+
         //once the player enters the center we can make the enemy waddle about
         m_PlayerReadyEventID = EventManager::GetInstance().Subscribe(PlayerControllerComponent::PLAYERREADYHASH,
             [this](unsigned int, const std::any&) { this->PlayerReady(); });
@@ -150,6 +152,7 @@ namespace dae
 
         uint32_t ScoreVal = KillValues[layerIndex] * (m_CanAttack ? 2 : 1);
         EventManager::GetInstance().Publish(ScoreComponent::SCOREHASH, ScoreVal);
+        EventManager::GetInstance().Publish(EnemyComponent::ENEMYDEATHHASH);
         this->GetParent()->MarkForDeletion();
     }
 

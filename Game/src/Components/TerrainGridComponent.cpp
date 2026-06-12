@@ -11,6 +11,7 @@
 #include <Components/ObjectMoveComponent.h>
 #include <memory>
 #include <Scene.h>
+#include <GameManager.h>
 
 namespace
 {
@@ -101,6 +102,22 @@ namespace dae
 	void TerrainGridComponent::Init()
 	{
 		LoadTextures();
+
+		auto& gameData = GameManager::GetInstance().GetGameData();
+		m_LevelIndex = gameData.m_LevelNo;
+
+		if (gameData.m_IsRespawn && gameData.m_TerrainSnapshot.has_value())
+		{
+			RestoreSnapshot(*gameData.m_TerrainSnapshot);
+			const std::string path = "Data/terrain/level" + std::to_string(m_LevelIndex) + ".tdbin";
+			m_LevelData = TerrainLoader::Read(path);
+			for (const auto& enem : m_LevelData.enemySpawns)
+			{
+				SpawnEnemy(enem);
+			}
+			return;
+		}
+
 		if (m_Cells.empty() && m_Width > 0 && m_Height > 0)
 		{
 			ResizeStorage();
@@ -502,6 +519,29 @@ namespace dae
 		if (cell.y <= 2) return 0;
 
 		return static_cast<uint8_t>(std::min(4, 1 + (((cell.y - 1) * 4) / std::max(1, m_Height - 2))));
+	}
+
+	TerrainGridComponent::~TerrainGridComponent()
+	{
+		SaveSnapshot();
+	}
+
+	void TerrainGridComponent::SaveSnapshot() const
+	{
+		TerrainSnapshot snap;
+		snap.cells = m_Cells;
+		snap.cellWalls = m_CellWalls;
+		snap.width = m_Width;
+		snap.height = m_Height;
+		GameManager::GetInstance().GetGameData().m_TerrainSnapshot = std::move(snap);
+	}
+
+	void TerrainGridComponent::RestoreSnapshot(const TerrainSnapshot& snap)
+	{
+		m_Width = snap.width;
+		m_Height = snap.height;
+		m_Cells = snap.cells;
+		m_CellWalls = snap.cellWalls;
 	}
 }
 

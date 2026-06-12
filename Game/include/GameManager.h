@@ -6,18 +6,34 @@
 #include <SceneManager.h>
 #include <Components/ScoreComponent.h>
 #include <Components/PlayerControllerComponent.h>
+#include <optional>
+#include <Components/EnemyComponent.h>
 
 namespace dae
 {
+	struct TerrainSnapshot
+	{
+		TerrainSnapshot() = default;
+		std::vector<uint8_t> cells;
+		std::vector<uint8_t> cellWalls;
+		int width{ 0 };
+		int height{ 0 };
+	};
+
 	struct GameData
 	{
 	public:
 		GameData() = default;
-		bool m_IsSoloGame;
-		bool m_IsVSGame;
+		bool m_IsSoloGame{ false };
+		bool m_IsVSGame{ false };
+		bool m_IsRespawn{ false };
 
-		int m_Lives;
-		int m_Score;
+		int m_Lives{ 0 };
+		int m_LevelNo{ 0 };
+		int m_Score{ 0 };
+		int m_EnemyCount{ 0 };
+
+		std::optional<TerrainSnapshot> m_TerrainSnapshot{};
 	};
 
 	class GameManager : public Singleton<GameManager>
@@ -49,9 +65,27 @@ namespace dae
 						EventManager::GetInstance().Publish(SceneManager::CHANGELEVELHASH, m_HighScoreSubmitSceneName);
 						return;
 					}
+					m_Data.m_IsRespawn = true;
 					EventManager::GetInstance().Publish(SceneManager::CHANGELEVELHASH, m_GameSceneName);
 				}
 				);
+			m_OnEnemySpawn = EventManager::GetInstance().Subscribe(EnemyComponent::ENEMYSPAWNHASH,
+				[this](unsigned int, const std::any&) {
+					m_Data.m_EnemyCount++;
+				});
+			m_OnEnemyDeath = EventManager::GetInstance().Subscribe(EnemyComponent::ENEMYDEATHHASH,
+				[this](unsigned int, const std::any&) {
+					m_Data.m_EnemyCount--;
+					if (m_Data.m_EnemyCount == 0)
+					{
+						if ((++m_Data.m_LevelNo) == 3)
+						{
+							EventManager::GetInstance().Publish(SceneManager::CHANGELEVELHASH, m_HighScoreSubmitSceneName);
+							return;
+						}
+						EventManager::GetInstance().Publish(SceneManager::CHANGELEVELHASH, m_GameSceneName);
+					}
+				});
 		}
 
 		void ResetPlayerData(const std::string& GameScene, const std::string& SubmitScene);
@@ -63,6 +97,8 @@ namespace dae
 		GameData m_Data{};
 		EventManager::EventId m_ScoreEvent{0};
 		EventManager::EventId m_PlayerDeathEvent{0};
+		EventManager::EventId m_OnEnemySpawn{ 0 };
+		EventManager::EventId m_OnEnemyDeath{ 0 };
 	};
 };
 

@@ -65,6 +65,9 @@ namespace dae
 		inline static constexpr NamedFile PumpFiles[4]{ "Pump01.png", "Pump02.png", "Pump03.png", "Pump04.png" };
 		inline static constexpr NamedFile WalkFiles[2]{ "Walk01.png", "Walk02.png" };
 
+		inline static auto ENEMYSPAWNHASH{ make_sdbm_hash("Enemy has appeared!")};
+		inline static auto ENEMYDEATHHASH{ make_sdbm_hash("Enemy has perished!")};
+
 		void OnPumped(PlayerControllerComponent* Player);
 		void OnAirBlownIntoEnemy();
 

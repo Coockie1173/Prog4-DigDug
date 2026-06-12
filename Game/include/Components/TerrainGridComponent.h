@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 #include <TerrainGridLevelLoader.h>
+#include <GameManager.h>
 
 namespace dae
 {
@@ -86,9 +87,13 @@ namespace dae
 		const TerrainData& GetLevelData() const { return m_LevelData; }
 		uint8_t GetOriginalDepthAt(const glm::ivec2& cell) const;
 
+		~TerrainGridComponent() override;
 	private:
+		void SaveSnapshot() const;
+		void RestoreSnapshot(const TerrainSnapshot& snap);
+
 		int m_LevelIndex{ 0 };
-		TerrainData   m_LevelData{};
+		TerrainData m_LevelData{};
 
 		void ResizeStorage();
 		void LoadTextures();

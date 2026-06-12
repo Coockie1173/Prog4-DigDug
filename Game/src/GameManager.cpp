@@ -27,7 +27,10 @@ namespace dae
 	{
 		m_Data.m_Lives = LIVESONSTART;
 		m_Data.m_Score = 0;
+		m_Data.m_LevelNo = 0;
+		m_Data.m_EnemyCount = 0;
 		m_GameSceneName = GameScene;
 		m_HighScoreSubmitSceneName = SubmitScene;
+		m_Data.m_IsRespawn = false;
 	}
 };
