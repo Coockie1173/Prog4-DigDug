@@ -14,6 +14,7 @@ namespace dae
     inline constexpr auto HASH_TextRenderComponent = make_sdbm_hash("TextRenderComponent");
     inline constexpr auto HASH_TextureRenderComponent = make_sdbm_hash("TextureRenderComponent");
     inline constexpr auto HASH_EnemyComponent = make_sdbm_hash("EnemyComponent");
+    inline constexpr auto HASH_LivesDisplayComponent = make_sdbm_hash("LivesDisplayComponent");
     inline constexpr auto HASH_MenuCursorComponent = make_sdbm_hash("MenuCursorComponent");
     inline constexpr auto HASH_ObjectMoveComponent = make_sdbm_hash("ObjectMoveComponent");
     inline constexpr auto HASH_PlayerControllerComponent = make_sdbm_hash("PlayerControllerComponent");
@@ -28,6 +29,7 @@ namespace dae
         { HASH_TextRenderComponent, "TextRenderComponent" },
         { HASH_TextureRenderComponent, "TextureRenderComponent" },
         { HASH_EnemyComponent, "EnemyComponent" },
+        { HASH_LivesDisplayComponent, "LivesDisplayComponent" },
         { HASH_MenuCursorComponent, "MenuCursorComponent" },
         { HASH_ObjectMoveComponent, "ObjectMoveComponent" },
         { HASH_PlayerControllerComponent, "PlayerControllerComponent" },

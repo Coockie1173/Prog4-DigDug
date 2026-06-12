@@ -7,6 +7,7 @@ endif()
 add_executable(${TARGET_NAME}
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Main.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/TerrainGridLevelLoader.cpp 
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/GameManager.cpp
   
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/ObjectMoveComponent.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/PlayerControllerComponent.cpp   
@@ -27,13 +28,17 @@ add_executable(${TARGET_NAME}
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/PlayerStates/PlayerDig.cpp 
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/PlayerStates/PlayerStart.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/PlayerStates/PlayerPumping.cpp 
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/PlayerStates/PlayerDead.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/LivesDisplayComponent.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/MenuCursorComponent.cpp 
   
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Commands/FrameCounterCommand.cpp 
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Commands/MovementInputCommand.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Commands/AttackCommand.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Commands/MoveIntentCommand.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/MenuCursorComponent.cpp 
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/Commands/MainMenuMovementCommand.cpp "src/Commands/MenuSubmit.cpp" "src/GameManager.cpp" "src/Components/PlayerStates/PlayerDead.cpp")
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Commands/MenuSubmit.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Commands/MainMenuMovementCommand.cpp 
+)
 target_compile_features(${TARGET_NAME} PUBLIC cxx_std_20)
 
 target_include_directories(${TARGET_NAME} PUBLIC

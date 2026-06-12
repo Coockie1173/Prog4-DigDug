@@ -19,8 +19,7 @@ namespace
 
 namespace dae
 {
-	TerrainGridComponent::TerrainGridComponent(GameObject* Parent)
-		: RenderComponent(Parent)
+	TerrainGridComponent::TerrainGridComponent(GameObject* Parent) : RenderComponent(Parent)
 	{
 	}
 
