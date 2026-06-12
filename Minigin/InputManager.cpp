@@ -340,11 +340,11 @@ void dae::InputManager::BindAxisActionToCommand(const std::string& action, std::
 void dae::InputManager::DumpAxisBindings() const
 {
 	return; //removed due to fixed
-	for (const auto& binding : m_AxisBindings)
+	/*for (const auto& binding : m_AxisBindings)
 	{
 		std::string type = (binding->deviceType == AxisBinding::DeviceType::Gamepad) ? "Gamepad" : "Keyboard";
 		std::cout << (std::format("AxisBinding: action='{}' type='{}' controllerId={} axis={}",
 				binding->action, type, binding->controllerId, (int)binding->axis)
 			) << "\n";
-	}
+	}*/
 }
