@@ -19,6 +19,7 @@ namespace dae
 		void LateUpdate() override;
 
 		void MoveCursor(bool Up);
+		void Submit();
 	private:
 		bool Deserialize(const std::map<std::string, std::string>& properties, std::string& errorMessage) override;
 
@@ -31,6 +32,10 @@ namespace dae
 		std::string m_VerticalInputName{ "" };
 		// EXPOSE_TO_EDITOR("VerticalInputC", "VerticalInput Controller")
 		std::string m_VerticalInputNameController{ "" };
+		// EXPOSE_TO_EDITOR("Submit", "Submit")
+		std::string m_SubmitButton{ "" };
+		// EXPOSE_TO_EDITOR("SubmitC", "Submit Controller")
+		std::string m_SubmitButtonController{ "" };
 
 		float m_OrigY{ 0 };
 		int m_CurrentSelection{ 0 };

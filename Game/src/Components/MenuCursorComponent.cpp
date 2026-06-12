@@ -1,10 +1,13 @@
 #include <Components/MenuCursorComponent.h>
 #include <GameObject.h>
 #include <Commands/MainMenuMovementCommand.h>
+#include <Commands/MenuSubmit.h>
 #include <InputManager.h>
 #include <ComponentFactoryRegistry.h>
 #include <ComponentTypeMap.h>
 #include <Timing.h>
+#include <EventManager.h>
+#include <SceneManager.h>
 
 namespace
 {
@@ -21,6 +24,10 @@ namespace dae
 		InputManager::GetInstance().BindAxisActionToCommand(m_VerticalInputName, cmd);
 		InputManager::GetInstance().BindAxisActionToCommand(m_VerticalInputNameController, cmd);
 		m_Commands.push_back(std::move(cmd));
+		auto submitcmd = std::make_shared<MenuSubmitCommand>(this);
+		InputManager::GetInstance().BindActionToCommand(m_SubmitButton, submitcmd, InputManager::InputType::Pressed);
+		InputManager::GetInstance().BindActionToCommand(m_SubmitButtonController, submitcmd, InputManager::InputType::Pressed);
+		m_Commands.push_back(std::move(submitcmd));
 	}
 
 	void MenuCursorComponent::Update()
@@ -39,6 +46,8 @@ namespace dae
 		if (!GetRequiredProperty(properties, "HighSceneName", m_HighSceneName, errorMessage, "MenuCursorComponent")) return false;
 		if (!GetRequiredProperty(properties, "VerticalInputName", m_VerticalInputName, errorMessage, "MenuCursorComponent")) return false;
 		if (!GetRequiredProperty(properties, "VerticalInputNameController", m_VerticalInputNameController, errorMessage, "MenuCursorComponent")) return false;
+		if (!GetRequiredProperty(properties, "SubmitButton", m_SubmitButton, errorMessage, "MenuCursorComponent")) return false;
+		if (!GetRequiredProperty(properties, "SubmitButtonController", m_SubmitButtonController, errorMessage, "MenuCursorComponent")) return false;
 
 		m_GameSceneName = "Data/" + m_GameSceneName;
 		m_HighSceneName = "Data/" + m_HighSceneName;
@@ -69,5 +78,25 @@ namespace dae
 		this->GetParent()->SetLocalPosition(pos);
 
 		m_TimerBetweenMoves = 0.2f;
+	}
+
+	void MenuCursorComponent::Submit()
+	{
+		switch (m_CurrentSelection)
+		{
+		case 0:
+			EventManager::GetInstance().Publish(SceneManager::CHANGELEVELHASH, m_GameSceneName);
+			break;
+		case 1:
+			EventManager::GetInstance().Publish(SceneManager::CHANGELEVELHASH, m_GameSceneName);
+			break;
+		case 2:
+			EventManager::GetInstance().Publish(SceneManager::CHANGELEVELHASH, m_GameSceneName);
+			break;
+		case 3:
+			break;
+		default:
+			break;
+		}
 	}
 };

@@ -28,6 +28,13 @@ void dae::SceneManager::Render()
 
 void dae::SceneManager::Cleanup()
 {
+	if (m_MustChangeScene)
+	{
+		ChangeScene();
+		m_MustChangeScene = false;
+		return;
+	}
+
 	for (auto& scene : m_scenes)
 	{
 		scene->CleanupMarked();
@@ -54,4 +61,23 @@ dae::Scene& dae::SceneManager::CreateScene()
 void dae::SceneManager::Clear()
 {
 	m_scenes.clear();
+}
+
+void dae::SceneManager::ChangeScene()
+{
+	this->Clear();
+
+	auto& scene = this->CreateScene();
+	Debugger::GetInstance().AttachToScene(&scene);
+
+	std::string errorMessage;
+	if (!SceneLoader::LoadSceneFromFile(m_EnqueuedScene, scene, errorMessage))
+	{
+		Debugger::GetInstance().LogError("Failed to load scene from '" + m_EnqueuedScene + "': " + errorMessage);
+	}
+	else
+	{
+		Debugger::GetInstance().LogDebug("Successfully loaded scene from '" + m_EnqueuedScene + "'");
+		Debugger::GetInstance().LogDebug("Press F6 to remove these debug messages.");
+	}
 }
