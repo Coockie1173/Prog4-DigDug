@@ -10,6 +10,8 @@
 #include <SoundSerivceLocator.h>
 #include <unordered_map>
 #include <vector>
+#include <iostream>
+#include <format>
 
 namespace dae
 {
@@ -266,6 +268,7 @@ void dae::InputManager::UnbindKeyPadAction(const std::string& Action)
 void dae::InputManager::ClearAllBindings()
 {
 	m_Bindings.clear();
+	m_AxisBindings.clear();
 }
 
 void dae::InputManager::BindActionToCommand(const std::string& Action, std::shared_ptr<Command> Command, InputType InputType)
@@ -331,5 +334,17 @@ void dae::InputManager::BindAxisActionToCommand(const std::string& action, std::
 	else
 	{
 		(*bindingIt)->commands.push_back(command);
+	}
+}
+
+void dae::InputManager::DumpAxisBindings() const
+{
+	return; //removed due to fixed
+	for (const auto& binding : m_AxisBindings)
+	{
+		std::string type = (binding->deviceType == AxisBinding::DeviceType::Gamepad) ? "Gamepad" : "Keyboard";
+		std::cout << (std::format("AxisBinding: action='{}' type='{}' controllerId={} axis={}",
+				binding->action, type, binding->controllerId, (int)binding->axis)
+			) << "\n";
 	}
 }

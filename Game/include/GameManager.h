@@ -70,7 +70,7 @@ namespace dae
 				[this](unsigned int, const std::any&)
 				{
 					this->m_Data.m_Lives--;
-					if (m_Data.m_Lives == 0)
+					if (m_Data.m_Lives <=  0)
 					{
 						EventManager::GetInstance().Publish(SceneManager::CHANGELEVELHASH, m_HighScoreSubmitSceneName);
 						return;

@@ -55,6 +55,8 @@ namespace dae
 		InputManager& operator=(const InputManager&) = delete;
 		InputManager& operator=(InputManager&&) = delete;
 
+		void DumpAxisBindings() const;
+
 	private:
 		struct InputBinding;
 		struct ActionBinding;

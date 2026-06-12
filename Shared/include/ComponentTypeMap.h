@@ -20,6 +20,7 @@ namespace dae
     inline constexpr auto HASH_NameSelectorComponent = make_sdbm_hash("NameSelectorComponent");
     inline constexpr auto HASH_ObjectMoveComponent = make_sdbm_hash("ObjectMoveComponent");
     inline constexpr auto HASH_PlayerControllerComponent = make_sdbm_hash("PlayerControllerComponent");
+    inline constexpr auto HASH_RockComponent = make_sdbm_hash("RockComponent");
     inline constexpr auto HASH_ScoreComponent = make_sdbm_hash("ScoreComponent");
     inline constexpr auto HASH_TerrainGridComponent = make_sdbm_hash("TerrainGridComponent");
 
@@ -37,6 +38,7 @@ namespace dae
         { HASH_NameSelectorComponent, "NameSelectorComponent" },
         { HASH_ObjectMoveComponent, "ObjectMoveComponent" },
         { HASH_PlayerControllerComponent, "PlayerControllerComponent" },
+        { HASH_RockComponent, "RockComponent" },
         { HASH_ScoreComponent, "ScoreComponent" },
         { HASH_TerrainGridComponent, "TerrainGridComponent" }
     };

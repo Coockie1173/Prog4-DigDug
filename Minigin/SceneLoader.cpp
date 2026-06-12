@@ -34,6 +34,7 @@ namespace dae
 
     bool SceneLoader::AddSceneDataToScene(const SceneData& sceneData, Scene& scene, std::string& errorMessage)
     {
+        dae::InputManager::GetInstance().ClearAllBindings();
         //Register input bindings (editor stores action names + device/key). Commands will be attached at runtime by game code.
         for (const auto& [actionName, binding] : sceneData.inputBindings)
         {
@@ -67,6 +68,8 @@ namespace dae
                 );
             }
         }
+
+        dae::InputManager::GetInstance().DumpAxisBindings();
 
         //Map deserialized object IDs to created GameObject pointers
         std::map<uint32_t, GameObject*> idToGameObjectMap;
