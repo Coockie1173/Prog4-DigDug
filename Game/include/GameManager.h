@@ -39,6 +39,7 @@ namespace dae
 		int m_LevelNo{ 0 };
 		int m_Score{ 0 };
 		int m_EnemyCount{ 0 };
+		int m_RockCrushCount{ 0 };
 
 		std::optional<TerrainSnapshot> m_TerrainSnapshot{};
 	};
@@ -92,6 +93,7 @@ namespace dae
 							EventManager::GetInstance().Publish(SceneManager::CHANGELEVELHASH, m_HighScoreSubmitSceneName);
 							return;
 						}
+						m_Data.m_IsRespawn = false;
 						EventManager::GetInstance().Publish(SceneManager::CHANGELEVELHASH, m_GameSceneName);
 					}
 				});

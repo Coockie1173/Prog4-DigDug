@@ -445,6 +445,6 @@ void dae::PlayerControllerComponent::OnPlayerCancel()
 
 	if (m_pCurrentState == m_pStatePool->Get<PlayerPumping>())
 	{
-		AlertPumperDone(); // reuses existing logic to transition back to Idle
+		AlertPumperDone(); 
 	}
 }

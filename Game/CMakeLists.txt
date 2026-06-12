@@ -16,6 +16,7 @@ add_executable(${TARGET_NAME}
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/TerrainGridComponent.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/ScoreComponent.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/EnemyComponent.cpp 
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/RockComponent.cpp 
 
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/EnemyStates/EnemyIdle.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Components/EnemyStates/EnemyWander.cpp 

@@ -17,6 +17,7 @@
 [x] Add sounds
 [x] F2 mute button
 [x] Make the blowup phase not damage
-[] Make Fygar blow fire
+[x] Make Fygar blow fire
 [] Implement rocks
+[] Rewrite readme
 [] --Add vs functionality--

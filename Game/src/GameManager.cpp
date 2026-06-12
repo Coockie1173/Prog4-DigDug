@@ -33,5 +33,6 @@ namespace dae
 		m_HighScoreSubmitSceneName = SubmitScene;
 		m_HighScoreSceneName = ScoreName;
 		m_Data.m_IsRespawn = false;
+		m_Data.m_RockCrushCount = 0;
 	}
 };

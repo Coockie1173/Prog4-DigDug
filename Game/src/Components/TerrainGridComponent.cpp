@@ -1,17 +1,19 @@
-#include <Components/TerrainGridComponent.h>
-#include <ComponentFactoryRegistry.h>
-#include <Hash.h>
-#include <GameObject.h>
-#include <Renderer.h>
-#include <ResourceManager.h>
 #include <algorithm>
 #include <cmath>
+#include <ComponentFactoryRegistry.h>
 #include <Components/EnemyComponent.h>
-#include <Components/SwappableRenderComponent.h>
 #include <Components/ObjectMoveComponent.h>
-#include <memory>
-#include <Scene.h>
+#include <Components/SwappableRenderComponent.h>
+#include <Components/TerrainGridComponent.h>
+#include <ctime>
 #include <GameManager.h>
+#include <GameObject.h>
+#include <Hash.h>
+#include <memory>
+#include <random>
+#include <Renderer.h>
+#include <ResourceManager.h>
+#include <Scene.h>
 
 namespace
 {
@@ -163,6 +165,8 @@ namespace dae
 		{
 			SpawnEnemy(enem);
 		}
+
+		SpawnRocks();
 	}
 
 
@@ -543,5 +547,38 @@ namespace dae
 		m_Cells = snap.cells;
 		m_CellWalls = snap.cellWalls;
 	}
+
+	void TerrainGridComponent::SpawnRocks()
+	{
+		constexpr int ROCK_COUNT = 5;
+		std::vector<glm::ivec2> candidates;
+
+		for (int y = 1; y < m_Height; ++y)
+		{
+			for (int x = 0; x < m_Width; ++x)
+			{
+				const glm::ivec2 cell{ x, y };
+				const glm::ivec2 above{ x, y - 1 };
+				if (GetCellDepth(cell) > 0 && GetCellDepth(above) == 0)
+				{
+					candidates.push_back(cell);
+				}
+			}
+		}
+
+		std::shuffle(candidates.begin(), candidates.end(), std::default_random_engine{ static_cast<unsigned>(std::time(nullptr)) });
+
+		const int toSpawn = std::min(ROCK_COUNT, static_cast<int>(candidates.size()));
+		for (int i = 0; i < toSpawn; ++i)
+		{
+			const glm::vec2 worldPos = CellToWorldCenter(candidates[i]);
+			auto rockObj = std::make_unique<GameObject>("Rock");
+			rockObj->SetLocalPosition(worldPos);
+			rockObj->AddComponent<SwappableRenderComponent>()->SetPriority(true);
+			rockObj->AddComponent<RockComponent>();
+			this->GetParent()->GetScene()->QueueAdd(std::move(rockObj));
+		}
+	}
+
 }
 

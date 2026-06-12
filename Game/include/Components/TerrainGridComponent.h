@@ -11,6 +11,7 @@
 #include <vector>
 #include <TerrainGridLevelLoader.h>
 #include <GameManager.h>
+#include <Components/RockComponent.h>
 
 namespace dae
 {
@@ -111,6 +112,7 @@ namespace dae
 		std::vector<std::shared_ptr<Texture2D>> m_DirtTextures{};
 		std::shared_ptr<Texture2D> m_WallTexture;
 
+		void SpawnRocks();
 
 		WallFlags GetWallBetween(const glm::ivec2& from, const glm::ivec2& to) const;
 		WallFlags OppositeWall(WallFlags wall) const;
