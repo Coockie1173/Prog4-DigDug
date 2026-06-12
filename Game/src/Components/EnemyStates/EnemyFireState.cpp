@@ -33,7 +33,7 @@ namespace dae
             if (scene)
             {
                 const glm::vec2 facing = ctx.GetFacing();  
-                const glm::vec2 spawnPos = enemy->GetWorldPosition();
+                const glm::vec2 spawnPos = enemy->GetWorldPosition() + (enemy->GetAttachedRenderer()->GetTexture()->GetSize().x * facing.x);
 
                 auto& texMap = ctx.GetTextureMap();
 

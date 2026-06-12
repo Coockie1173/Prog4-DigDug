@@ -27,7 +27,6 @@ namespace dae
         static constexpr float FRAME_TIME = 0.12f; 
         static constexpr int FRAME_COUNT = 3;
         static constexpr float LIFETIME = 0.8f;  
-        static constexpr float TRAVEL_SPEED = 96.f;  
 
         glm::vec2 m_Direction{ 1.f, 0.f };
 
