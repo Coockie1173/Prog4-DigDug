@@ -13,6 +13,7 @@
 #include <ranges>
 #include <vector>
 #include <string>
+#include <InputManager.h>
 
 
 namespace dae
@@ -140,6 +141,15 @@ namespace dae
 
 					EventManager::GetInstance().Publish(SceneManager::CHANGELEVELHASH, m_HighScoreSceneName);
 				});
+			m_KILLKILLKILLEvent = EventManager::GetInstance().Subscribe(InputManager::ENEMYKILLDEBUGKILLHASH,
+				[this](unsigned int, const std::any&)
+				{
+					for (int i = m_Data.m_EnemyCount; i >= 0; --i)
+					{
+						EventManager::GetInstance().Publish(EnemyComponent::ENEMYDEATHHASH);
+					}
+				}
+				);
 		}
 
 		void ResetPlayerData(const std::string& GameScene, const std::string& SubmitScene, const std::string& ScoreName);
@@ -155,6 +165,7 @@ namespace dae
 		EventManager::EventId m_OnEnemySpawn{ 0 };
 		EventManager::EventId m_OnEnemyDeath{ 0 };
 		EventManager::EventId m_SubmitScoreEvent{ 0 };
+		EventManager::EventId m_KILLKILLKILLEvent{ 0 };
 	};
 };
 

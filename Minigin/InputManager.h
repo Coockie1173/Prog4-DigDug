@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 #include <cstdint>
+#include <hash.h>
 
 namespace dae
 {
@@ -23,19 +24,8 @@ namespace dae
 			Released
 		};
 
-	private:
-		struct InputBinding;
-		struct ActionBinding;
-		struct AxisActionBinding;
-		struct AxisBinding;
+		static constexpr auto ENEMYKILLDEBUGKILLHASH = make_sdbm_hash("DEBUG ENEMIES PAIN DEBUG DEBUG");
 
-		ControllerManager m_ControllerManager;
-		std::vector<std::unique_ptr<InputBinding>> m_Bindings;
-		std::vector<std::unique_ptr<ActionBinding>> m_ActionBindings;
-		std::vector<std::unique_ptr<AxisBinding>> m_AxisBindings;
-		std::vector<std::unique_ptr<AxisActionBinding>> m_AxisActionBindings;
-
-	public:
 		bool ProcessInput();
 
 		// Register a button binding without attaching a command. Commands are attached later via BindActionToCommand.
@@ -64,6 +54,18 @@ namespace dae
 		InputManager(InputManager&&) = delete;
 		InputManager& operator=(const InputManager&) = delete;
 		InputManager& operator=(InputManager&&) = delete;
+
+	private:
+		struct InputBinding;
+		struct ActionBinding;
+		struct AxisActionBinding;
+		struct AxisBinding;
+
+		ControllerManager m_ControllerManager;
+		std::vector<std::unique_ptr<InputBinding>> m_Bindings;
+		std::vector<std::unique_ptr<ActionBinding>> m_ActionBindings;
+		std::vector<std::unique_ptr<AxisBinding>> m_AxisBindings;
+		std::vector<std::unique_ptr<AxisActionBinding>> m_AxisActionBindings;
 	};
 
 }

@@ -50,10 +50,12 @@ namespace dae
 		if (!GetRequiredProperty(properties, "SubmitButton", m_SubmitButton, errorMessage, "MenuCursorComponent")) return false;
 		if (!GetRequiredProperty(properties, "SubmitButtonController", m_SubmitButtonController, errorMessage, "MenuCursorComponent")) return false;
 		if (!GetRequiredProperty(properties, "HighSubSceneName", m_HighSubSceneName, errorMessage, "MenuCursorComponent")) return false;
+		if (!GetRequiredProperty(properties, "GameSceneNameCoop", m_GameSceneNameCoop, errorMessage, "MenuCursorComponent")) return false;
 
 		m_GameSceneName = "Data/" + m_GameSceneName;
 		m_HighSceneName = "Data/" + m_HighSceneName;
 		m_HighSubSceneName = "Data/" + m_HighSubSceneName;
+		m_GameSceneNameCoop = "Data/" + m_GameSceneNameCoop;
 
 		return true;
 	}
@@ -92,8 +94,8 @@ namespace dae
 			EventManager::GetInstance().Publish(SceneManager::CHANGELEVELHASH, m_GameSceneName);
 			break;
 		case 1:
-			GameManager::GetInstance().StartMPGame(m_GameSceneName, m_HighSubSceneName, m_HighSceneName);
-			EventManager::GetInstance().Publish(SceneManager::CHANGELEVELHASH, m_GameSceneName);
+			GameManager::GetInstance().StartMPGame(m_GameSceneNameCoop, m_HighSubSceneName, "Data/MainMenu.mbin");
+			EventManager::GetInstance().Publish(SceneManager::CHANGELEVELHASH, m_GameSceneNameCoop);
 			break;
 		case 2:
 			GameManager::GetInstance().StartVSGame(m_GameSceneName, m_HighSubSceneName, m_HighSceneName);

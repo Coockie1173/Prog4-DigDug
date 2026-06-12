@@ -10,11 +10,11 @@
 [x] Remember terrain on death
 [x] Add round flow
 [x] High Score scene
+[x] F1 skip level button
+[x] Add coop functionality
 [] F2 mute button
-[] F1 skip level button
 [] Make Fygar blow fire
 [] Make the pump not travel through walls unless it's a thin one
 [] Add sounds
-[] Add coop functionality
 [] Add vs functionality
 [] Implement rocks

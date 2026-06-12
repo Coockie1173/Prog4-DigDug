@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include <vector>
 #include <cmath>
+#include <EventManager.h>
 
 namespace dae
 {
@@ -137,8 +138,8 @@ bool dae::InputManager::ProcessInput()
             binding->wasPressed = isCurrentlyPressed;
         }
 
-        if (pressed)  executeAction(binding->action, InputType::Pressed);
-        if (down)     executeAction(binding->action, InputType::Down);
+        if (pressed) executeAction(binding->action, InputType::Pressed);
+        if (down) executeAction(binding->action, InputType::Down);
         if (released) executeAction(binding->action, InputType::Released);
     }
 
@@ -185,6 +186,9 @@ bool dae::InputManager::ProcessInput()
             case SDLK_F6:
                 Debugger::GetInstance().DeleteAllLogs();
                 break;
+			case SDLK_F1:
+				EventManager::GetInstance().Publish(ENEMYKILLDEBUGKILLHASH);
+				break;
             }
         }
 

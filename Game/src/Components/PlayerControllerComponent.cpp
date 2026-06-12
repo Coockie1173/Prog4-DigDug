@@ -152,22 +152,31 @@ void dae::PlayerControllerComponent::Init()
 			m_Commands.push_back(std::move(cmd));
 		};
 
-	bindAxis(parts[0], { -1.f,  0.f });
-	bindAxis(parts[1], { 0.f, -1.f });
 
 	//if we have four it means we also bound controller/keyboard to this player
 	if (parts.size() > 2)
 	{
+		bindAxis(parts[0], { -1.f,  0.f });
+		bindAxis(parts[1], { 0.f, -1.f });
 		bindAxis(parts[2], { 1.f,  0.f });
 		bindAxis(parts[3], { 0.f, -1.f });
+		m_PrimaryPlayer = true; //player one has four bindings
+	}
+	else
+	{
+		bindAxis(parts[0], { 1.f,  0.f });
+		bindAxis(parts[1], { 0.f, -1.f });
 	}
 
 	parts = SplitStringView(m_attackActionName, '|');
 
 	bindAction(parts[0], true);
-	bindAction(parts[1], true);
 	bindAction(parts[0], false);
-	bindAction(parts[1], false);
+	if (parts.size() > 1)
+	{
+		bindAction(parts[1], true);
+		bindAction(parts[1], false);
+	}
 
 	m_pCurrentState = m_pStatePool->Get<PlayerStart>();
 	m_pCurrentState->Enter(*this);

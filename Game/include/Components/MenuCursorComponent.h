@@ -25,6 +25,8 @@ namespace dae
 
 		// EXPOSE_TO_EDITOR("Gamescenename", "Game scene name")
 		std::string m_GameSceneName{ "" };
+		// EXPOSE_TO_EDITOR("Coopscenename", "Coop Game scene name")
+		std::string m_GameSceneNameCoop{ "" };
 		// EXPOSE_TO_EDITOR("Highscorescenename", "High score scene name")
 		std::string m_HighSceneName{ "" };
 		// EXPOSE_TO_EDITOR("HighscoreSubmitscenename", "High score submission scene name")

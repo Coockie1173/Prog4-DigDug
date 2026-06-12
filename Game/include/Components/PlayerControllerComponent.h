@@ -50,6 +50,7 @@ namespace dae
 		T* GetState() { return m_pStatePool->Get<T>(); }
 
 		void OnPlayerHitEnemy(EnemyComponent* enemy);
+		bool GetPrimaryPlayerFlag() { return m_PrimaryPlayer; };
 
 		static constexpr unsigned int PLAYERREADYHASH = make_sdbm_hash("PlayerReady");
 		static constexpr unsigned int PLAYERDEADHASH = make_sdbm_hash("PlayerDied");
@@ -95,6 +96,7 @@ namespace dae
 		bool m_PlayerDied{ false };
 
 		mutable TerrainGridComponent* m_pCachedTerrainGrid{ nullptr };
+		bool m_PrimaryPlayer{ false };
 	};
 }
 

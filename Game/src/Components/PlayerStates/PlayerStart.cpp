@@ -125,9 +125,12 @@ namespace dae
         return nullptr;
 	}
 
-	void PlayerStart::Exit(PlayerControllerComponent&)
+	void PlayerStart::Exit(PlayerControllerComponent& ctx)
 	{
 		//tell the game we are ready to rock n roll racing
-		EventManager::GetInstance().Publish(PlayerControllerComponent::PLAYERREADYHASH);
+        if (ctx.GetPrimaryPlayerFlag())
+        {
+		    EventManager::GetInstance().Publish(PlayerControllerComponent::PLAYERREADYHASH);
+        }
 	}
 };
