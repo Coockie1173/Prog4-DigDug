@@ -34,6 +34,11 @@ namespace dae
 		glm::ivec2 PickNextCell(const glm::ivec2& current, const glm::ivec2& came_from, TerrainGridComponent* terrain) const;
 
 		mutable TerrainGridComponent* m_pCachedTerrainGrid{ nullptr };
+
+		float m_StuckTimer{ 0.f };
+		glm::vec2 m_LastCheckedPos{};
+		static constexpr float STUCK_CHECK_INTERVAL = 2.f;
+		static constexpr float STUCK_DISTANCE_SQ = 4.f;   
 	};
 };
 

@@ -1,4 +1,5 @@
 #include <Components/EnemyStates/EnemyWander.h>
+#include <Components/EnemyStates/EnemyGhost.h>
 #include <Components/SwappableRenderComponent.h>
 #include <Components/EnemyComponent.h>
 #include <Timing.h>
@@ -22,6 +23,9 @@ namespace dae
 		m_CurrentCell = terrain ? terrain->WorldToCell(worldPos) : glm::ivec2{ 0, 0 };
 
 		m_TargetCell = m_CurrentCell;
+
+		m_StuckTimer = 0.f;
+		m_LastCheckedPos = ctx.GetMe()->GetParent()->GetWorldPosition();
 	}
 	
 	EnemyState* EnemyWanderState::Update(IEnemyContext& ctx)
@@ -67,6 +71,20 @@ namespace dae
 		{
 			m_Direction = glm::normalize(toTarget);
 			OMC->MoveObject(m_Direction, WADDLESPEED);
+		}
+
+		m_StuckTimer += dt;
+		if (m_StuckTimer >= STUCK_CHECK_INTERVAL)
+		{
+			m_StuckTimer = 0.f;
+			const glm::vec2 currentPos = ctx.GetMe()->GetParent()->GetWorldPosition();
+			const glm::vec2 moved = currentPos - m_LastCheckedPos;
+			m_LastCheckedPos = currentPos;
+
+			if (glm::dot(moved, moved) < STUCK_DISTANCE_SQ)
+			{
+				return m_pStatePool->Get<EnemyGhostState>();
+			}
 		}
 
 		return nullptr;

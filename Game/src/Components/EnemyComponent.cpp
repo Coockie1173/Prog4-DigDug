@@ -3,6 +3,7 @@
 #include <Components/EnemyStates/EnemyIdle.h>
 #include <Components/EnemyStates/EnemyPumped.h>
 #include <Components/EnemyStates/EnemyWander.h>
+#include <Components/EnemyStates/EnemyGhost.h>
 #include <Components/ObjectMoveComponent.h>
 #include <Components/PlayerControllerComponent.h>
 #include <Components/ScoreComponent.h>
@@ -156,5 +157,10 @@ namespace dae
     {
         //always unsubscribe when we kill an object
         EventManager::GetInstance().Unsubscribe(PlayerControllerComponent::PLAYERREADYHASH, m_PlayerReadyEventID);
+    }
+
+    bool EnemyComponent::IsGhost() const
+    {
+        return m_pCurrentState == m_pStatePool->Get<EnemyGhostState>();
     }
 }

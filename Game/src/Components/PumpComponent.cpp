@@ -54,6 +54,7 @@ void dae::PumpComponent::Update()
 					if (m_IsFinished) return;
 					if (obj == parent) return;
 					if (obj->GetComponent<EnemyComponent>() == nullptr) return;
+					if (obj->GetComponent<EnemyComponent>()->IsGhost()) return;
 
 					if (parent->OverlapsWith(obj))
 					{
