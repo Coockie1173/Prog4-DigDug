@@ -25,7 +25,9 @@ void dae::FireComponent::Configure(glm::vec2 direction, std::shared_ptr<Texture2
 void dae::FireComponent::Update()
 {
     if (!m_IsConfigured)
+    {
         return;
+    }
 
     const float dt = Timing::GetInstance().GetDeltaTime();
 
@@ -43,7 +45,9 @@ void dae::FireComponent::Update()
         m_Frame = (m_Frame + 1) % FRAME_COUNT;
 
         if (m_pRenderer && m_Textures[m_Frame])
+        {
             m_pRenderer->SetTexture(m_Textures[m_Frame]);
+        }
     }
 
     auto* parent = GetParent();
@@ -73,7 +77,9 @@ void dae::FireComponent::Init()
 {
     m_pRenderer = GetParent()->GetComponent<SwappableRenderComponent>();
     if (m_pRenderer && m_Textures[0])
+    {
         m_pRenderer->SetTexture(m_Textures[0]);
+    }
 }
 
 bool dae::FireComponent::Deserialize(const std::map<std::string, std::string>&, std::string&)

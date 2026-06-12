@@ -49,10 +49,10 @@ namespace dae
         EnemyComponent* GetMe() override { return this; }
         void KillMe() override;
 
-        glm::vec2 GetFacing() const { return m_Facing; }
-        void SetFacing(glm::vec2 f) { m_Facing = f; }
+        glm::vec2 GetFacing() const override { return m_Facing; }
+        void SetFacing(glm::vec2 f) override { m_Facing = f; }
 
-        bool CanAttack() const { return m_CanAttack; }
+        bool CanAttack() const override { return m_CanAttack; }
 
         void PassData(bool CanAttack, std::string SpriteDir) override
         {
