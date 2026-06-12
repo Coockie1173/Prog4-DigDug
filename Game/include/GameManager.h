@@ -12,6 +12,7 @@ namespace dae
 	struct GameData
 	{
 	public:
+		GameData() = default;
 		bool m_IsSoloGame;
 		bool m_IsVSGame;
 
@@ -59,7 +60,7 @@ namespace dae
 		std::string m_GameSceneName;
 		std::string m_HighScoreSubmitSceneName;
 
-		GameData m_Data{ 0 };
+		GameData m_Data{};
 		EventManager::EventId m_ScoreEvent{0};
 		EventManager::EventId m_PlayerDeathEvent{0};
 	};
