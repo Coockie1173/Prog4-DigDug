@@ -7,7 +7,7 @@
 #include <memory>
 #include <string>
 #include <cstdint>
-#include <hash.h>
+#include <Hash.h>
 
 namespace dae
 {

@@ -12,6 +12,7 @@ namespace dae
 
 	//don't expose, since this gets auto-added to our gameobject
 	// NOEXPOSE
+	class TerrainGridComponent;
 	class PumpComponent final : public Component
 	{
 	public:
@@ -33,6 +34,14 @@ namespace dae
 		std::function<void(GameObject*)> m_OnHitEnemy{};
 		bool m_IsConfigured{ false };
 		bool m_IsFinished{ false };
+
+		TerrainGridComponent* m_pCachedTerrainGrid{ nullptr };
+		glm::ivec2 m_CurrentCell{};
+
+		TerrainGridComponent* GetTerrain();
+		glm::ivec2 DirectionToCell() const;
+
+		bool m_CellInitialized{ false };
 	};
 }
 

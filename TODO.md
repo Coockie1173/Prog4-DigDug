@@ -12,9 +12,9 @@
 [x] High Score scene
 [x] F1 skip level button
 [x] Add coop functionality
+[x] Make the pump not travel through walls unless it's a thin one
+[x] Add sounds
 [] F2 mute button
 [] Make Fygar blow fire
-[] Make the pump not travel through walls unless it's a thin one
-[] Add sounds
 [] Add vs functionality
 [] Implement rocks
