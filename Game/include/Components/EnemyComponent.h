@@ -72,6 +72,7 @@ namespace dae
 		void OnAirBlownIntoEnemy();
 
 		bool IsGhost() const;
+		bool IsPumped() const;
 
 	private:
 		dae::SwappableRenderComponent* m_pRenderComponent{ nullptr };

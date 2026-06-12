@@ -55,6 +55,8 @@ namespace dae
 		static constexpr unsigned int PLAYERREADYHASH = make_sdbm_hash("PlayerReady");
 		static constexpr unsigned int PLAYERDEADHASH = make_sdbm_hash("PlayerDied");
 
+		void OnPlayerCancel();
+
 	private:
 		enum class FacingDirection
 		{

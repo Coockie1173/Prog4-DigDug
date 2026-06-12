@@ -15,7 +15,7 @@
 [x] Make the pump not travel through walls unless it's a thin one
 [x] Add sounds
 [x] F2 mute button
+[x] Make the blowup phase not damage
 [] Make Fygar blow fire
 [] Implement rocks
-[] Make the blowup phase not damage
 [] --Add vs functionality--

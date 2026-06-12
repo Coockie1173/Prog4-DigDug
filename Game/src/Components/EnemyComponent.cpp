@@ -166,4 +166,9 @@ namespace dae
     {
         return m_pCurrentState == m_pStatePool->Get<EnemyGhostState>();
     }
+
+    bool EnemyComponent::IsPumped() const
+    {
+        return m_pCurrentState == m_pStatePool->Get<EnemyPumpedState>();
+    }
 }

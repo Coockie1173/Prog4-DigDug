@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <cmath>
 #include <Commands/AttackCommand.h>
+#include <Commands/CancelCommand.h>
 #include <Commands/MoveIntentCommand.h>
 #include <ComponentFactoryRegistry.h>
 #include <Components/ObjectMoveComponent.h>
@@ -99,6 +100,8 @@ void dae::PlayerControllerComponent::Update()
 				auto* enemy = obj->GetComponent<EnemyComponent>();
 				if (enemy == nullptr) return;
 
+				if (enemy->IsPumped() || enemy->IsGhost()) return;
+
 				if (GetParent()->OverlapsWith(obj))
 				{
 					PlayerDeath();
@@ -183,6 +186,18 @@ void dae::PlayerControllerComponent::Init()
 	m_PlayerDigging = false;
 	m_DigCooldownRemaining = 0.0f;
 
+	parts = SplitStringView(m_cancelActionName, '|');
+	{
+		auto cmd = std::make_shared<dae::CancelCommand>(this);
+		dae::InputManager::GetInstance().BindActionToCommand(std::string(parts[0]), cmd, dae::InputManager::InputType::Pressed);
+		m_Commands.push_back(std::move(cmd));
+		if (parts.size() > 1)
+		{
+			auto cmd2 = std::make_shared<dae::CancelCommand>(this);
+			dae::InputManager::GetInstance().BindActionToCommand(std::string(parts[1]), cmd2, dae::InputManager::InputType::Pressed);
+			m_Commands.push_back(std::move(cmd2));
+		}
+	}
 }
 
 bool dae::PlayerControllerComponent::Deserialize(const std::map<std::string, std::string>& properties, std::string& errorMessage)
@@ -421,4 +436,15 @@ void dae::PlayerControllerComponent::PlayerDeath()
 	DeadState->Enter(*this);
 	m_pCurrentState = DeadState;
 	//EventManager::GetInstance().Publish(PlayerControllerComponent::PLAYERDEADHASH);
+}
+
+void dae::PlayerControllerComponent::OnPlayerCancel()
+{
+	if (m_PlayerDied)
+		return;
+
+	if (m_pCurrentState == m_pStatePool->Get<PlayerPumping>())
+	{
+		AlertPumperDone(); // reuses existing logic to transition back to Idle
+	}
 }

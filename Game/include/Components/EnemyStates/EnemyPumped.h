@@ -21,7 +21,7 @@ namespace dae
 	private:
 		PlayerControllerComponent* m_pPumper{nullptr};
 		int8_t m_PumpCount{0};
-		static constexpr float TIMETODEFLATE{ .5f };
+		static constexpr float TIMETODEFLATE{ 1.f };
 		float m_DeflateTimer{ 0 };
 		SwappableRenderComponent* m_pSRC{nullptr};
 	};
