@@ -17,6 +17,9 @@
 #include <format>
 #include <sstream>
 #include <stdexcept>
+#include <EventManager.h>
+#include <SceneManager.h>
+#include <InputManager.h>
 
 namespace
 {
@@ -68,6 +71,10 @@ namespace dae
 	void HighScoreComponent::Init()
 	{
 		LoadScores();
+		auto cmd = std::make_shared<HighScoreSubmitCommand>(this);
+		InputManager::GetInstance().BindActionToCommand(m_BackButton, cmd, InputManager::InputType::Pressed);
+		InputManager::GetInstance().BindActionToCommand(m_BackButtonController, cmd, InputManager::InputType::Pressed);
+		m_Commands.push_back(std::move(cmd));
 	}
 
 	void HighScoreComponent::LoadScores()
@@ -114,10 +121,19 @@ namespace dae
 		if (!GetRequiredProperty(properties, "Color", ColBuf, errorMessage, "HighScoreComponent")) return false;
 		if (!GetRequiredProperty(properties, "FontSize", FontSizeBuf, errorMessage, "HighScoreComponent")) return false;
 		if (!GetRequiredProperty(properties, "FilePath", m_FilePath, errorMessage, "HighScoreComponent")) return false;
+		if (!GetRequiredProperty(properties, "BackButton", m_BackButton, errorMessage, "HighScoreComponent")) return false;
+		if (!GetRequiredProperty(properties, "BackButtonController", m_BackButtonController, errorMessage, "HighScoreComponent")) return false;
 
 		m_FontSize = static_cast<uint8_t>(std::stoi(FontSizeBuf));
 		m_Font = ResourceManager::GetInstance().LoadFont("Lingua.otf", m_FontSize);
 
+		return true;
+	}
+
+	bool HighScoreSubmitCommand::Execute()
+	{
+		std::string MenuString{ "Data/MainMenu.mbin" };
+		EventManager::GetInstance().Publish(SceneManager::CHANGELEVELHASH, MenuString);
 		return true;
 	}
 }

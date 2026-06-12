@@ -9,7 +9,7 @@
 [x] Add in ghost mode
 [x] Remember terrain on death
 [x] Add round flow
-[] High Score scene
+[x] High Score scene
 [] F2 mute button
 [] F1 skip level button
 [] Make Fygar blow fire

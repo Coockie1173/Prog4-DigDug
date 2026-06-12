@@ -2,9 +2,9 @@
 
 bool dae::MenuSubmitCommand::Execute()
 {
-	if (auto playerController = GetAttachedComponent())
+	if (auto MenuController = GetAttachedComponent())
 	{
-		playerController->Submit();
+		MenuController->Submit();
 		return true;
 	}
 	return false;
