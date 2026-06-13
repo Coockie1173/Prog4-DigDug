@@ -13,7 +13,7 @@
 #include <iomanip>
 #include "Texture2D.h"
 
-constexpr int DebugTextSize = 12;
+constexpr [[maybe_unused]] int DebugTextSize = 12;
 constexpr SDL_Color DebugColor{ 111, 227, 235, 255 };
 constexpr SDL_Color WarningColor{ 255, 207, 20, 255 };
 constexpr SDL_Color ErrorColor{ 255, 0, 0, 255 };
