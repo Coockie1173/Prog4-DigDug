@@ -8,7 +8,7 @@ Minigin is a very small project using [SDL3](https://www.libsdl.org/) and [glm](
 
 # Prog 4 DigDug
 This project aims to recreate DigDug using [Minigin](https://github.com/avadae/minigin). Although it passes all checks, due to this project using multithreading you can't actually see the emscriptem build in action.
-It consists out of four distinct parts:
+It consists out of five distinct parts:
 - Game
 - Minigin
 - Editor

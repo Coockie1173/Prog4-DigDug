@@ -13,7 +13,6 @@
 #include <iomanip>
 #include "Texture2D.h"
 
-constexpr [[maybe_unused]] int DebugTextSize = 12;
 constexpr SDL_Color DebugColor{ 111, 227, 235, 255 };
 constexpr SDL_Color WarningColor{ 255, 207, 20, 255 };
 constexpr SDL_Color ErrorColor{ 255, 0, 0, 255 };
@@ -40,6 +39,8 @@ void Debugger::LogMessage([[maybe_unused]] const std::string& Text,
 #ifndef DEBUG
 	return;
 #else
+	const int DebugTextSize = 12;
+
 	if (m_debugFont == nullptr)
 	{
 		m_debugFont = dae::ResourceManager::GetInstance().LoadFont("Lingua.otf", DebugTextSize);
