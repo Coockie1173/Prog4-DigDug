@@ -34,8 +34,12 @@ void Debugger::LogError(const std::string& TextToLog, bool Logtime)
 	LogMessage("ERROR: " + TextToLog, ErrorColor, Logtime);
 }
 
-void Debugger::LogMessage(const std::string& Text, const SDL_Color& LogColour, bool Logtime)
+void Debugger::LogMessage([[maybe_unused]] const std::string& Text, 
+	[[maybe_unused]] const SDL_Color& LogColour, [[maybe_unused]] bool Logtime)
 {
+#ifndef DEBUG
+	return;
+#else
 	if (m_debugFont == nullptr)
 	{
 		m_debugFont = dae::ResourceManager::GetInstance().LoadFont("Lingua.otf", DebugTextSize);
@@ -88,6 +92,7 @@ void Debugger::LogMessage(const std::string& Text, const SDL_Color& LogColour, b
 	to->SetPosition(10, (float)(((DebugTextSize + 1) * m_messageCount) + 10));
 	m_messageCount++;
 	m_attachedScene->Add(std::move(to));
+#endif
 }
 
 void Debugger::Shutdown()
