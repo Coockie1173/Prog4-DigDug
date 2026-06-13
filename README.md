@@ -106,6 +106,7 @@ Components make themselves known via the ComponentFactory. Each component does t
  const bool EnemyComponentRegistered = dae::RegisterComponentFactoryFor<dae::EnemyComponent>(dae::HASH_EnemyComponent);
  ```
 This will run at some point during startup, during static init. This registration can be done from within their own cpp file. Makes adding new Components a breeze, since they'll instantly work with serialization and deserializtion*
+
 <sub>*You still have to override the deserialize function, this just registers it so it's a known component.</sub>
 
 Once all that is done the engine will start it's main loop.
